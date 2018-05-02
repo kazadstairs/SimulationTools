@@ -10,6 +10,8 @@ namespace SimulationTools
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Hello Git. Two point ohh");
+            Console.ReadLine();
         }
     }
 }
