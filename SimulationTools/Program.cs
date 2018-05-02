@@ -10,7 +10,9 @@ namespace SimulationTools
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello Git. Two point ohh");
+            Console.WriteLine("Hello Git.");
+            Console.WriteLine("This version is different.");
+            Console.WriteLine("It even has bugs")
             Console.ReadLine();
         }
     }
