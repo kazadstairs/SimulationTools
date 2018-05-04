@@ -18,6 +18,7 @@ namespace SimulationTools
             Capacity = 2;
             Content = new T[Capacity];
             //Content.Add(default(T)); // To fill the indexed 0 position with junk. List is now a 1 based array.
+            //I made a change
         }
 
         public T PeekMin()
