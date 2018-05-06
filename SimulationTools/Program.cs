@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,31 +11,19 @@ namespace SimulationTools
         static void Main(string[] args)
         {
             Console.WriteLine("Hello Git.");
-            PriorityQueue<int> Heap = new PriorityQueue<int>();
-            //IntHeap.ExtractMin();
+            int Nruns = 100;
 
-            /*
-            Console.WriteLine(3.CompareTo(4));
-            Heap.Insert(4);
-            Heap.ExtractMin();
-            //IntHeap.ExtractMin();
-            Heap.Insert(3);
-            Heap.Print();
-            Heap.Insert(5);
-            Heap.Insert(4);
-            Heap.Print();
-            Heap.Insert(2);
-            Heap.Print();
-            Heap.Insert(1);
-            Heap.Print();
+            Simulation [] Sims = new Simulation[Nruns];
             
-            Heap.ExtractMin();
-            Heap.Print();
-            Heap.ExtractMin();
-            Heap.Print();
-            Heap.ExtractMin();
-            Heap.Print();
-            */
+
+            Stopwatch watch = Stopwatch.StartNew();
+            
+            Parallel.For(0, Nruns, (i) =>
+            {
+                Sims[i] = new Simulation();
+                Sims[i].Run();
+            });
+            Console.WriteLine(watch.ElapsedMilliseconds);
 
             Console.ReadLine();
         }

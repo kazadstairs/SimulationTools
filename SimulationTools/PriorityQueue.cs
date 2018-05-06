@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -95,7 +94,6 @@ namespace SimulationTools
                 if (l <= Count && Content[l].CompareTo(Content[i]) < 0)
                 {
                     // leftchild strictly less than current index.
-                    Console.WriteLine("{0} is smaller than {1}", Content[l], Content[i]);
                     smallest = l;
                 }
                 else
@@ -170,9 +168,9 @@ namespace SimulationTools
             if (Count > Capacity / 4 - 1) { Count--; return; }
             else // O(n), amortized O(1)
             {
-                int newCapacity = Capacity / 4;
+                int newCapacity = Capacity / 2;
                 T[] newContent = new T[newCapacity];
-                for (int i = 0; i < Capacity; i++)
+                for (int i = 0; i < newCapacity; i++)
                 {
                     newContent[i] = Content[i];
                 }
