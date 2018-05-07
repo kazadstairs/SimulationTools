@@ -10,5 +10,12 @@ namespace SimulationTools
     {
         public List<Job> AssignedJobs;
         public bool isAvailable;
+        public Queue<Job> JobsWaitingToStart;
+
+        public Machine()
+        {
+            AssignedJobs = new List<Job>();
+            JobsWaitingToStart = new Queue<Job>();
+        }
     }
 }

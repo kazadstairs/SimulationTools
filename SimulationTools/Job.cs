@@ -18,17 +18,34 @@ namespace SimulationTools
         public bool allPredComplete { get; private set; }
 
         // Schedule properties:
-        public Machine Machine; //Machine to which job is assigned in the schedule
-        public bool isAssigned; //true if the job has been assigned, false if not
+        public Machine Machine { get; private set; } //Machine to which job is assigned in the schedule
+        public bool isAssigned { get; private set; } //true if the job has been assigned, false if not
         public double ScheduleStartTime; //sj: The start time of the job in the schedule (
+
+        public Job(int id, double pj, double rj, Job predecessor)
+        {
+            ProcessingTime = pj;
+            ReleaseDate = rj;
+            Predecessors = new List<Job>();
+            Predecessors.Add(predecessor);
+            Successors = new List<Job>();
+
+            foreach (Job j in Predecessors)
+            {
+                j.Successors.Add(this);
+            }
+
+            nPredComplete = 0;
+        }
 
         public Job(int id, double pj, double rj, List<Job> predecessors)
         {
             ProcessingTime = pj;
             ReleaseDate = rj;
             Predecessors = predecessors;
+            Successors = new List<Job>();
 
-            foreach(Job j in Predecessors)
+            foreach (Job j in Predecessors)
             {
                 j.Successors.Add(this);
             }
@@ -42,7 +59,7 @@ namespace SimulationTools
         public void PredComplete()
         {
             nPredComplete++;
-            if(nPredComplete == Predecessors.Count) { allPredComplete = true};
+            if(nPredComplete == Predecessors.Count) { allPredComplete = true; }
         }
 
         public double GetProcessingTime()
@@ -54,6 +71,18 @@ namespace SimulationTools
         public bool isAvailableAt(double time)
         {
             return (ReleaseDate <= time) && allPredComplete && (ScheduleStartTime <= time);
+        }
+
+        public void AssignToMachine(Machine M)
+        {
+            Machine = M ?? throw new NullReferenceException("Attempting to assign job to a machine that is not yet instanciated"); //sets Machine to M and throws exception if M is null
+            isAssigned = true;
+        }
+
+        public void SetStartTime(double starttime)
+        {
+            if (!isAssigned) { throw new Exception("Cannot set start time for a job that is not yet assigned to a machine"); }
+            ScheduleStartTime = starttime;
         }
 
     }

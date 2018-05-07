@@ -7,6 +7,6 @@ namespace SimulationTools
 {
     static class Constants
     {
-        public static int NumberOfEvents = 100000;
+        public static int NumberOfEvents = 1000;
     }
 }

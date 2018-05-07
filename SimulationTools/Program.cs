@@ -10,20 +10,18 @@ namespace SimulationTools
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello Git.");
-            int Nruns = 100;
+            Console.WriteLine("Welcome to this Super Sweet Simulation Software");
+            int Nruns = 1;
 
             Simulation [] Sims = new Simulation[Nruns];
             
-
-            Stopwatch watch = Stopwatch.StartNew();
+            
             
             Parallel.For(0, Nruns, (i) =>
             {
                 Sims[i] = new Simulation();
                 Sims[i].Run();
             });
-            Console.WriteLine(watch.ElapsedMilliseconds);
 
             Console.ReadLine();
         }

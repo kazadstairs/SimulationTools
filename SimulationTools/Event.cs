@@ -9,6 +9,7 @@ namespace SimulationTools
     {
         public double Time { get; protected set; }
         protected Simulation Sim;
+        protected string DebugDescription;
 
         protected Event()
         {
@@ -23,8 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-
-            throw new System.NotImplementedException();
+            Console.WriteLine("A {0} Event occured at time {1}", DebugDescription, Time);
         }
 
         public int CompareTo(Event other)
@@ -32,16 +32,6 @@ namespace SimulationTools
             return this.Time.CompareTo(other.Time);
         }
 
-    }
-
-    class EGeneric : Event // Does nothing, for debugging only
-    {
-        public EGeneric(double time, Simulation sim) : base(time, sim) { }
-
-        override public void Handle()
-        {
-            Console.WriteLine("An EGeneric event happenned at time: {0}", Time);
-        }
     }
 
     class EJobRelease : Event // Triggers whenever a release date occurs
@@ -52,17 +42,57 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
+            DebugDescription = "Job Release";
         }
 
         override public void Handle()
         {
-            if (Time >= J.ScheduleStartTime)
+            if (J.isAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            base.Handle();
+        }
+    }
+
+    class EJobScheduledStart : Event // Triggers whenever a scheduledstart occurs
+    {
+        Job J;
+        public EJobScheduledStart(double time, Simulation sim, Job j)
+        {
+            Time = time;
+            Sim = sim;
+            J = j;
+            DebugDescription = "Job Scheduled to Start";
+        }
+
+        override public void Handle()
+        {
+            if (J.isAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            base.Handle();
+        }
+    }
+
+    
+
+    class EJobComplete : Event
+    {
+        Job J;
+        public EJobComplete(double time, Simulation sim, Job j)
+        {
+            Time = time;
+            Sim = sim;
+            J = j;
+            DebugDescription = "Job Completed";
+        }
+
+        public override void Handle()
+        {
+            // make machine available:
+            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, J.Machine));
+            // tell successor jobs this job is finished and check for new available jobs:
+            foreach(Job suc in J.Successors)
             {
-                // Currentime = r_j >= s_j
-                if (J.allPredComplete)
-                {
-                    // todo: make job available
-                }
+                suc.PredComplete();
+                if (suc.isAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, suc)); }
+                base.Handle();
             }
         }
     }
@@ -75,6 +105,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
+            DebugDescription = "Job becomes Available";
         }
 
         public override void Handle()
@@ -86,33 +117,11 @@ namespace SimulationTools
                 J.Machine.isAvailable = false;
                 Sim.EventList.Insert(new EJobComplete(Time + J.GetProcessingTime(), Sim, J));
             }
-            base.Handle();
-
-        }
-    }
-
-    class EJobComplete : Event
-    {
-        Job J;
-        public EJobComplete(double time, Simulation sim, Job j)
-        {
-            Time = time;
-            Sim = sim;
-            J = j;
-        }
-
-        public override void Handle()
-        {
-            // make machine available:
-            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, J.Machine));
-            // tell successor jobs this job is finished and check for new available jobs:
-            foreach(Job suc in J.Successors)
+            else
             {
-                suc.PredComplete();
-                if (suc.isAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, suc)); }
+                J.Machine.JobsWaitingToStart.Enqueue(J); // add to queue
             }
             base.Handle();
-
         }
     }
 
@@ -124,10 +133,19 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             M = m;
+            DebugDescription = "Machine becomes Available";
         }
 
         public override void Handle()
         {
+            M.isAvailable = true;
+
+            if(M.JobsWaitingToStart.Count > 0)
+            {
+                // start the next job that is ready on this machine
+                Sim.EventList.Insert(new EJobComplete(Time, Sim, M.JobsWaitingToStart.Dequeue()));
+                M.isAvailable = false;
+            }
             base.Handle();
         }
 
