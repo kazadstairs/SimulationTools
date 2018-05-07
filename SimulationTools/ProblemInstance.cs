@@ -17,15 +17,16 @@ namespace SimulationTools
         /// </summary>
         public void InstanciatePinedo()
         {
+            List<Job> NoPredecessors = new List<Job>();
             JobsList = new List<Job>();
-            DummyStart = new Job(0, 0, 0, new List<Job>());
+            DummyStart = new Job(0, 0, 0, NoPredecessors);
             JobsList.Add(DummyStart);
 
             
 
-            JobsList.Add(new Job(1, 4, 0, JobsList[0]));
+            JobsList.Add(new Job(1, 4, 0, NoPredecessors));
             JobsList.Add(new Job(2, 9, 0, JobsList[1]));
-            JobsList.Add(new Job(3, 3, 0, JobsList[0]));
+            JobsList.Add(new Job(3, 3, 0, NoPredecessors));
             JobsList.Add(new Job(4, 3, 0, JobsList[3]));
             JobsList.Add(new Job(5, 6, 0, JobsList[4]));
 
@@ -43,7 +44,7 @@ namespace SimulationTools
             Machines = new Machine[2];
             for(int i = 0; i < Machines.Length; i++)
             {
-                Machines[i] = new Machine();
+                Machines[i] = new Machine(i);
             }
 
 

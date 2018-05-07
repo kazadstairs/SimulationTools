@@ -10,12 +10,12 @@ namespace SimulationTools
     {
         public PriorityQueue<Event> EventList;
         public ProblemInstance Problem;
+        public Schedule Sched;
         //public State CurrentState; // not used
 
 
         public void Run()
         {
-            ;
             SetupSimulation();
             PerformSimulation();
             
@@ -26,8 +26,12 @@ namespace SimulationTools
         {
             Console.WriteLine("***** Setting Up Simulation...");
             EventList = new PriorityQueue<Event>();
+            // Todo: A simulation should just be given a schedule and a problem instance, not create them.
             Problem = new ProblemInstance();
             Problem.InstanciatePinedo();
+            Sched = new Schedule();
+            Sched.PinedoInstanceSchedule(Problem);
+
             foreach(Job J in Problem.JobsList)
             {
                 EventList.Insert(new EJobRelease(J.ReleaseDate, this, J));
@@ -49,7 +53,8 @@ namespace SimulationTools
             Stopwatch watch = Stopwatch.StartNew();
             while (EventList.Count > 0 && eventcounter < 1000)
             {
-                EventList.ExtractMin().Handle();
+                Event NextEvent = EventList.ExtractMin();
+                NextEvent.Handle();
                 eventcounter++;
                 if(eventcounter % 10 == 0)
                 {

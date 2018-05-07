@@ -15,18 +15,18 @@ namespace SimulationTools
         public void PinedoInstanceSchedule(ProblemInstance Problem)
         {
             
-            AssignJobToMachine(Problem.JobsList[0], Problem.Machines[1]); //Dummy job
+            AssignJobToMachine(Problem.JobsList[0], Problem.Machines[0]); //Dummy job
 
-            AssignJobToMachine(Problem.JobsList[1], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[2], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[6], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[8], Problem.Machines[1]);
+            AssignJobToMachine(Problem.JobsList[1], Problem.Machines[0]);
+            AssignJobToMachine(Problem.JobsList[2], Problem.Machines[0]);
+            AssignJobToMachine(Problem.JobsList[6], Problem.Machines[0]);
+            AssignJobToMachine(Problem.JobsList[8], Problem.Machines[0]);
 
-            AssignJobToMachine(Problem.JobsList[3], Problem.Machines[2]);
-            AssignJobToMachine(Problem.JobsList[4], Problem.Machines[2]);
-            AssignJobToMachine(Problem.JobsList[5], Problem.Machines[2]);
-            AssignJobToMachine(Problem.JobsList[7], Problem.Machines[2]);
-            AssignJobToMachine(Problem.JobsList[9], Problem.Machines[2]);
+            AssignJobToMachine(Problem.JobsList[3], Problem.Machines[1]);
+            AssignJobToMachine(Problem.JobsList[4], Problem.Machines[1]);
+            AssignJobToMachine(Problem.JobsList[5], Problem.Machines[1]);
+            AssignJobToMachine(Problem.JobsList[7], Problem.Machines[1]);
+            AssignJobToMachine(Problem.JobsList[9], Problem.Machines[1]);
 
 
         }
@@ -35,7 +35,7 @@ namespace SimulationTools
 
         void AssignJobToMachine(Job j, Machine m)
         {
-            if (j.isAssigned) { throw new System.Exception("Job already assigned!"); }
+            if (j.IsAssigned) { throw new System.Exception("Job already assigned!"); }
             else
             {
                 m.AssignedJobs.Add(j);

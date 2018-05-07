@@ -19,17 +19,24 @@ namespace SimulationTools
 
         // Schedule properties:
         public Machine Machine { get; private set; } //Machine to which job is assigned in the schedule
-        public bool isAssigned { get; private set; } //true if the job has been assigned, false if not
-        public double ScheduleStartTime; //sj: The start time of the job in the schedule (
+        public bool IsAssigned { get; private set; } //true if the job has been assigned, false if not
+        public double ScheduleStartTime; //sj: The start time of the job in the schedule
 
-        public Job(int id, double pj, double rj, Job predecessor)
+        bool DebugIsAvailable;
+
+        public Job(int _id, double pj, double rj, Job predecessor)
         {
+            id = _id;
             ProcessingTime = pj;
             ReleaseDate = rj;
+
             Predecessors = new List<Job>();
             Predecessors.Add(predecessor);
             Successors = new List<Job>();
 
+            IsAssigned = false;
+            DebugIsAvailable = false;
+            ScheduleStartTime = -1;
             foreach (Job j in Predecessors)
             {
                 j.Successors.Add(this);
@@ -38,19 +45,25 @@ namespace SimulationTools
             nPredComplete = 0;
         }
 
-        public Job(int id, double pj, double rj, List<Job> predecessors)
+        public Job(int _id, double pj, double rj, List<Job> predecessors)
         {
+            id = _id;
             ProcessingTime = pj;
             ReleaseDate = rj;
-            Predecessors = predecessors;
+
+            Predecessors = predecessors;            
             Successors = new List<Job>();
 
+            IsAssigned = false;
+            DebugIsAvailable = false;
+            ScheduleStartTime = -1;
             foreach (Job j in Predecessors)
             {
                 j.Successors.Add(this);
             }
 
             nPredComplete = 0;
+            if (predecessors.Count == 0) { allPredComplete = true; }
         }
 
         /// <summary>
@@ -68,20 +81,30 @@ namespace SimulationTools
             return ProcessingTime;
         }
 
-        public bool isAvailableAt(double time)
+        public bool IsAvailableAt(double time)
         {
-            return (ReleaseDate <= time) && allPredComplete && (ScheduleStartTime <= time);
+            if (DebugIsAvailable) { throw new Exception("Job Available for a second time!"); }
+            else if((ReleaseDate <= time) 
+                    && (allPredComplete) //|| Predecessors.Count == 0
+                    && (ScheduleStartTime <= time) 
+                    )
+            {
+                DebugIsAvailable = true;
+                return true;
+            }
+            return false;
+            
         }
 
         public void AssignToMachine(Machine M)
         {
             Machine = M ?? throw new NullReferenceException("Attempting to assign job to a machine that is not yet instanciated"); //sets Machine to M and throws exception if M is null
-            isAssigned = true;
+            IsAssigned = true;
         }
 
         public void SetStartTime(double starttime)
         {
-            if (!isAssigned) { throw new Exception("Cannot set start time for a job that is not yet assigned to a machine"); }
+            if (!IsAssigned) { throw new Exception("Cannot set start time for a job that is not yet assigned to a machine"); }
             ScheduleStartTime = starttime;
         }
 
