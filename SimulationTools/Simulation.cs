@@ -8,6 +8,7 @@ namespace SimulationTools
     class Simulation
     {
         public PriorityQueue<Event> EventList;
+        public State CurrentState;
 
 
         public void Run()
