@@ -42,7 +42,7 @@ namespace SimulationTools
             {
                 EventList.Insert(new EMachineAvailable(0, this, M));
             }
-            EventList.Insert(new EJobComplete(0, this, Problem.JobsList[0])); //Will start the simulation by saying the dummy job has finished.
+            //EventList.Insert(new EJobComplete(0, this, Problem.JobsList[0])); //Will start the simulation by saying the dummy job has finished.
         }
 
         private void PerformSimulation()
