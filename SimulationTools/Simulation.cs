@@ -9,12 +9,18 @@ namespace SimulationTools
     class Simulation
     {
         public PriorityQueue<Event> EventList;
-        public ProblemInstance Problem;
         public Schedule Sched;
+        int NRuns;
         //public State CurrentState; // not used
 
+        public Simulation(int _Nruns, Schedule _sched)
+        {
+            NRuns = _Nruns;
+            Sched = _sched;
+        }
 
-        public void Run()
+
+        public void Perform()
         {
             SetupSimulation();
             PerformSimulation();
@@ -27,41 +33,42 @@ namespace SimulationTools
             Console.WriteLine("***** Setting Up Simulation...");
             EventList = new PriorityQueue<Event>();
             // Todo: A simulation should just be given a schedule and a problem instance, not create them.
-            Problem = new ProblemInstance();
-            Problem.InstanciatePinedo();
-            Sched = new Schedule();
-            Sched.PinedoInstanceSchedule(Problem);
+            //Problem = new ProblemInstance();
 
-            foreach(Job J in Problem.JobsList)
+            foreach(Job J in Sched.DAG.Jobs)
             {
                 EventList.Insert(new EJobRelease(J.ReleaseDate, this, J));
                 EventList.Insert(new EJobScheduledStart(J.ScheduleStartTime, this, J));
             }
             // at the beginning, all machines are available
-            foreach(Machine M in Problem.Machines)
+            foreach(Machine M in Sched.Machines)
             {
                 EventList.Insert(new EMachineAvailable(0, this, M));
             }
-            //EventList.Insert(new EJobComplete(0, this, Problem.JobsList[0])); //Will start the simulation by saying the dummy job has finished.
         }
 
         private void PerformSimulation()
         {
-            Console.WriteLine("***** Performing Simulation...");
-            int eventcounter = 0;
-            //todo remove eventcounter
-            Stopwatch watch = Stopwatch.StartNew();
-            while (EventList.Count > 0 && eventcounter < 1000)
+            for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                Event NextEvent = EventList.ExtractMin();
-                NextEvent.Handle();
-                eventcounter++;
-                if(eventcounter % 10 == 0)
+                Console.WriteLine("***** Performing Simulation {0}...",runnr);
+                int eventcounter = 0;
+                //todo remove eventcounter
+                Stopwatch watch = Stopwatch.StartNew();
+                while (EventList.Count > 0 && eventcounter < 1000)
                 {
-                    Console.WriteLine("{0} events processed", eventcounter);
+                    Event NextEvent = EventList.ExtractMin();
+                    NextEvent.Handle();
+                    eventcounter++;
+                    if (eventcounter % 10 == 0)
+                    {
+                        Console.WriteLine("{0} events processed", eventcounter);
+                    }
                 }
+                Console.WriteLine("***** Simluation Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
+
+
             }
-            Console.WriteLine("***** Simluation Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
         }
     }
 }

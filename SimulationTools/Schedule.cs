@@ -8,10 +8,63 @@ namespace SimulationTools
 {
     class Schedule
     {
-       // Job[] Jobs;
-       // Machine[] Machines;
-       // List<Tuple<Job, Machine, double>> Assignments;
+        // Job[] Jobs;
+        // Machine[] Machines;
+        // List<Tuple<Job, Machine, double>> Assignments;
+        public DirectedAcyclicGraph DAG;
+        public List<Machine> Machines;
 
+        public Schedule()
+        {
+            DAG = new DirectedAcyclicGraph();
+            Machines = new List<Machine>();
+        }
+
+        public void InstanciatePinedo()
+        {
+            DAG.AddJob(new Job(1, 4, -1));
+            DAG.AddJob(new Job(2, 9, -1));
+            DAG.AddJob(new Job(3, 3, -1));
+            DAG.AddJob(new Job(4, 3, -1));
+            DAG.AddJob(new Job(5, 6, -1));
+            DAG.AddJob(new Job(6, 8, -1));
+            DAG.AddJob(new Job(7, 12, -1));
+            DAG.AddJob(new Job(8, 8, -1));
+            DAG.AddJob(new Job(9, 6, -1));
+
+
+            // precedence arcs
+            DAG.AddArcById(1, 2);
+            DAG.AddArcById(2, 6);
+            DAG.AddArcById(3, 4);
+            DAG.AddArcById(4, 5);
+            DAG.AddArcById(5, 6);
+            DAG.AddArcById(5, 7);
+            DAG.AddArcById(6, 8);
+            DAG.AddArcById(7, 8);
+            DAG.AddArcById(7, 9);
+
+            // machine arcs all match prec arcs in this instance
+            Machines.Add(new Machine(0));
+            Machines.Add(new Machine(1));
+
+            AssignJobToMachineById(1, 0);
+            AssignJobToMachineById(2, 0);
+            AssignJobToMachineById(6, 0);
+            AssignJobToMachineById(8, 0);
+
+            AssignJobToMachineById(3, 1);
+            AssignJobToMachineById(4, 1);
+            AssignJobToMachineById(5, 1);
+            AssignJobToMachineById(7, 1);
+            AssignJobToMachineById(9, 1);
+        }
+
+
+
+
+
+        /*
         public void PinedoInstanceSchedule(ProblemInstance Problem)
         {
             
@@ -30,6 +83,7 @@ namespace SimulationTools
 
 
         }
+        */
 
         // todo, algorithm to make feasible schedules.
 
@@ -41,6 +95,11 @@ namespace SimulationTools
                 m.AssignedJobs.Add(j);
                 j.AssignToMachine(m);
             }
+        }
+
+        void AssignJobToMachineById(int Jid, int Mid)
+        {
+            AssignJobToMachine(DAG.GetJobById(Jid), Machines[Mid]);
         }
     }
 }

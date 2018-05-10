@@ -14,14 +14,17 @@ namespace SimulationTools
             int Nruns = 1;
 
             Simulation [] Sims = new Simulation[Nruns];
-            
-            
-            
-            Parallel.For(0, Nruns, (i) =>
+
+            Schedule PinedoSched = new Schedule();
+            PinedoSched.InstanciatePinedo();
+            List<Schedule> SchedulesToSimulate = new List<Schedule>();
+            SchedulesToSimulate.Add(PinedoSched);
+
+            Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
             {
-                Sims[i] = new Simulation();
-                Sims[i].Run();
+                new Simulation(Nruns, currentSched).Perform();
             });
+            
 
             Console.ReadLine();
         }

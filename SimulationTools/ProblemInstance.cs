@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-    class ProblemInstance
+   /* class ProblemInstance
     {
+        public DirectedAcyclicGraph DAG;
         public List<Job> JobsList;
         public Machine [] Machines;
         public Job DummyStart;
@@ -50,4 +51,6 @@ namespace SimulationTools
 
         }
     }
+
+    */
 }

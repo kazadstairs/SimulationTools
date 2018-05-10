@@ -42,12 +42,12 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} released at time {1}",J.id,Time);
+            DebugDescription = string.Format("Job {0} released at time {1}",J.ID,Time);
         }
 
         override public void Handle()
         {
-            if (J.IsAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            if (!J.HasBeenMadeAvailable && J.IsAvailableAt(Time) ) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
             base.Handle();
         }
     }
@@ -60,12 +60,12 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} scheduled for start at time {1}", J.id, Time);
+            DebugDescription = string.Format("Job {0} scheduled for start at time {1}", J.ID, Time);
         }
 
         override public void Handle()
         {
-            if (J.IsAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            if (!J.HasBeenMadeAvailable  && J.IsAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
             base.Handle();
         }
     }
@@ -80,7 +80,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} was completed at time {1} on machine {2}", J.id, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} was completed at time {1} on machine {2}", J.ID, Time, J.Machine.id);
         }
 
         public override void Handle()
@@ -106,7 +106,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} became available at time {1}. It is assigned to machine {2}", J.id, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} became available at time {1}. It is assigned to machine {2}", J.ID, Time, J.Machine.id);
         }
 
         public override void Handle()
@@ -134,7 +134,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} started processing at time {1} on machine {2}", J.id, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} started processing at time {1} on machine {2}", J.ID, Time, J.Machine.id);
         }
 
         public override void Handle()
