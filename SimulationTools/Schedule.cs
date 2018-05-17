@@ -11,46 +11,25 @@ namespace SimulationTools
         // Job[] Jobs;
         // Machine[] Machines;
         // List<Tuple<Job, Machine, double>> Assignments;
+
         public DirectedAcyclicGraph DAG;
         public List<Machine> Machines;
         public double EstimatedCmax;
+        public double[] Starttimes;
 
-        public Schedule()
+        public Schedule(ProblemInstance Prob)
         {
-            DAG = new DirectedAcyclicGraph();
-            Machines = new List<Machine>();
+            DAG = Prob.DAG;
+            Machines = Prob.Machines;
+            Starttimes = new double[DAG.Jobs.Count + 1];
+            for (int i = 0; i < Starttimes.Length; i++)
+            {
+                Starttimes[i] = -1;
+            }
         }
 
-        public void InstanciatePinedo()
+        public void PinedoSchedule()
         {
-            DAG.AddJob(new Job(1, 4, 0));
-            DAG.AddJob(new Job(2, 9, 0));
-            DAG.AddJob(new Job(3, 3, 0));
-            DAG.AddJob(new Job(4, 3, 0));
-            DAG.AddJob(new Job(5, 6, 0));
-            DAG.AddJob(new Job(6, 8, 0));
-            DAG.AddJob(new Job(7, 12, 0));
-            DAG.AddJob(new Job(8, 8, 0));
-            DAG.AddJob(new Job(9, 6, 0));
-
-
-            // precedence arcs
-            DAG.AddArcById(1, 2);
-            DAG.AddArcById(2, 6);
-            DAG.AddArcById(3, 4);
-            DAG.AddArcById(4, 5);
-            DAG.AddArcById(5, 6);
-            DAG.AddArcById(5, 7);
-            DAG.AddArcById(6, 8);
-            DAG.AddArcById(7, 8);
-            DAG.AddArcById(7, 9);
-
-            // machine arcs all match prec arcs in this instance
-            Machines.Add(new Machine(0));
-            Machines.Add(new Machine(1));
-
-            /*
-
             AssignJobToMachineById(1, 0);
             AssignJobToMachineById(2, 0);
             AssignJobToMachineById(6, 0);
@@ -61,7 +40,20 @@ namespace SimulationTools
             AssignJobToMachineById(5, 1);
             AssignJobToMachineById(7, 1);
             AssignJobToMachineById(9, 1);
-            */
+        }
+
+        public void EstimateCmax()
+        {
+            //placeholder;
+            double Maximum = 0;
+            int MaxID = 0;
+            for (int i = 1; i < Starttimes.Length; i++)
+            {
+                if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
+                if(Starttimes[i] > Maximum) { Maximum = Starttimes[i]; MaxID = i; }
+            }
+            EstimatedCmax = Maximum + DAG.GetJobById(MaxID).GetProcessingTime();
+            Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
         }
 
         /// <summary>
@@ -170,6 +162,70 @@ namespace SimulationTools
                 }
             }
 
+        }
+
+        public void MakeHTMLImage(string title)
+        {
+            using (System.IO.StreamWriter file =
+            new System.IO.StreamWriter(string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\SchedulePDFs\InstanceName_{0}.html",title) ))
+            {
+                file.WriteLine(@"<!DOCTYPE html>");
+                file.WriteLine(@"<head>");
+                file.WriteLine(@"<style>");
+
+                // css part:
+                int scale = 20;
+                double top, left, width;                
+                foreach (Job j in DAG.Jobs)
+                {
+                    top = 50 + 50 * j.Machine.id;
+                    left =  Starttimes[j.ID] * scale;
+                    width = j.GetProcessingTime() * scale;
+                    file.WriteLine("div.j{0}",j.ID);
+                    file.WriteLine("{position: fixed;");
+                    file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
+                    file.WriteLine(@"height: 20px; border: 1px solid #73AD21; text-align: center; vertical-align: middle;}");
+                }
+                file.WriteLine(@"</style></head><body>");
+                file.WriteLine(@"<div>");
+                file.WriteLine(title);
+                file.WriteLine(@"</div>");
+                foreach (Job j in DAG.Jobs)
+                {
+                    file.WriteLine("<div class=\"j{0}\"> J{0}; </div>",j.ID);
+                }
+                file.WriteLine(@"</body></html>");
+            }
+        }
+
+        public void MakeTikzImage()
+        {
+            throw new System.NotImplementedException();
+            using (System.IO.StreamWriter file =
+            new System.IO.StreamWriter(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\SchedulePDFs\InstanceName_ScheduleId.txt"))
+            {
+                file.WriteLine(@"\begin{tikzpicture}");
+
+
+                file.WriteLine(@"\end{tikzpicture}");
+            }
+
+        }
+
+        public void ESS()
+        {
+            foreach (Job j in DAG.Jobs)
+            {
+                Starttimes[j.ID] = j.DynamicReleaseDate;
+            }
+        }
+
+        public void LSS()
+        {
+            foreach (Job j in DAG.Jobs)
+            {
+                Starttimes[j.ID] = j.DynamicDueDate - j.GetProcessingTime();
+            }
         }
 
         /// <summary>

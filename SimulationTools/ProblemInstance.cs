@@ -6,51 +6,46 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-   /* class ProblemInstance
+    class ProblemInstance
     {
         public DirectedAcyclicGraph DAG;
-        public List<Job> JobsList;
-        public Machine [] Machines;
-        public Job DummyStart;
+        public List<Machine> Machines;
 
-        /// <summary>
-        /// Creates a problem instance like that in Pinedo, page 116: figure 5.2. However Job 8 and 7 have been exchanged
-        /// </summary>
+        public ProblemInstance()
+        {
+            DAG = new DirectedAcyclicGraph();
+            Machines = new List<Machine>();
+        }
         public void InstanciatePinedo()
         {
-            List<Job> NoPredecessors = new List<Job>();
-            JobsList = new List<Job>();
-            DummyStart = new Job(0, 0, 0, NoPredecessors);
-            JobsList.Add(DummyStart);
+            DAG.AddJob(new Job(1, 4, 0));
+            DAG.AddJob(new Job(2, 9, 0));
+            DAG.AddJob(new Job(3, 3, 0));
+            DAG.AddJob(new Job(4, 3, 0));
+            DAG.AddJob(new Job(5, 6, 0));
+            DAG.AddJob(new Job(6, 8, 0));
+            DAG.AddJob(new Job(7, 12, 0));
+            DAG.AddJob(new Job(8, 8, 0));
+            DAG.AddJob(new Job(9, 6, 0));
+
+
+            // precedence arcs
+            DAG.AddArcById(1, 2);
+            DAG.AddArcById(2, 6);
+            DAG.AddArcById(3, 4);
+            DAG.AddArcById(4, 5);
+            DAG.AddArcById(5, 6);
+            DAG.AddArcById(5, 7);
+            DAG.AddArcById(6, 8);
+            DAG.AddArcById(7, 8);
+            DAG.AddArcById(7, 9);
+
+            // machine arcs all match prec arcs in this instance
+            Machines.Add(new Machine(0));
+            Machines.Add(new Machine(1));
 
             
-
-            JobsList.Add(new Job(1, 4, -1, DummyStart));
-            JobsList.Add(new Job(2, 9, -1, JobsList[1]));
-            JobsList.Add(new Job(3, 3, -1, DummyStart));
-            JobsList.Add(new Job(4, 3, -1, JobsList[3]));
-            JobsList.Add(new Job(5, 6, -1, JobsList[4]));
-
-            List<Job> tempPredecessors = new List<Job>();
-            tempPredecessors.Add(JobsList[2]);
-            tempPredecessors.Add(JobsList[5]);
-            JobsList.Add(new Job(6, 8, -1, tempPredecessors));
-            tempPredecessors.Clear();
-            JobsList.Add(new Job(7, 12, -1, JobsList[5]));
-            tempPredecessors.Add(JobsList[6]);
-            tempPredecessors.Add(JobsList[7]);
-            JobsList.Add(new Job(8, 8, -1, tempPredecessors));
-            JobsList.Add(new Job(9, 6, -1, JobsList[7]));
-
-            Machines = new Machine[2];
-            for(int i = 0; i < Machines.Length; i++)
-            {
-                Machines[i] = new Machine(i);
-            }
-
-
         }
     }
-
-    */
+    
 }
