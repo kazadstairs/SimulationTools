@@ -49,6 +49,8 @@ namespace SimulationTools
             Machines.Add(new Machine(0));
             Machines.Add(new Machine(1));
 
+            /*
+
             AssignJobToMachineById(1, 0);
             AssignJobToMachineById(2, 0);
             AssignJobToMachineById(6, 0);
@@ -59,6 +61,115 @@ namespace SimulationTools
             AssignJobToMachineById(5, 1);
             AssignJobToMachineById(7, 1);
             AssignJobToMachineById(9, 1);
+            */
+        }
+
+        /// <summary>
+        /// Given a problem with precedence arcs and jobs in a DAG. Use this function to create a schedule.
+        /// </summary>
+        public void Build()
+        {
+            if (DAG.Jobs.Count <= 1)
+            {
+                throw new Exception("No DAG given. Cannot build schedule without problem instance");
+            }
+            int NJobsAssigned = 0;
+            int[] nParentsProcessed = new int[DAG.N + 1];
+            Queue<Job> AllPredDone = new Queue<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
+            foreach (Job j in DAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
+            {
+                if (j.Predecessors.Count == 0)
+                {
+                    AllPredDone.Enqueue(j);
+                }
+            }
+
+            int CandidateMachineID = 0;
+
+            while (AllPredDone.Count > 0)
+            {
+                // todo: this is not a good way of doing machine assignment.
+                bool DebugAssignmentSuccess = false;
+                CandidateMachineID++;
+                if (CandidateMachineID >= Machines.Count) { CandidateMachineID = 0; }
+
+                Job CurrentJob = AllPredDone.Dequeue();
+
+                for (int i = 0; i < Machines.Count; i++)
+                {
+                    if (!IsFeasibleAssignment(CurrentJob, Machines[CandidateMachineID]))
+                    {
+                        // try the next machine:
+                        CandidateMachineID++;
+                        if (CandidateMachineID >= Machines.Count) { CandidateMachineID = 0; }
+                    }
+                    else
+                    {
+                        // assign to that machine
+                        //IMPORTANT: Update the Queue before adding any arcs, or things may be added to the queue twice:
+                        foreach (Job Succ in CurrentJob.Successors)
+                        {
+                            nParentsProcessed[Succ.ID]++;
+                            if (nParentsProcessed[Succ.ID] == Succ.Predecessors.Count)
+                            {
+                                AllPredDone.Enqueue(Succ);
+                            }
+                        }
+                        //IMPORTANT: Only do this after the queue has been updated. 
+                        // if it is the first job on the machine, no precedence arc is needed:
+                        if (Machines[CandidateMachineID].AssignedJobs.Count > 0)
+                        {
+                            DAG.AddArc(Machines[CandidateMachineID].LastJob(), CurrentJob);
+                        }
+                        //IMPORTANT: Only do this after the queue has been updated and after machine arcs have been updated                         
+                        AssignJobToMachine(CurrentJob, Machines[CandidateMachineID]);
+
+                        DebugAssignmentSuccess = true;
+                        break;
+                    }
+                }
+                if (!DebugAssignmentSuccess) { throw new Exception("Schedulde.Build was unable to create a feasible schedule: the algorithm is bugged."); }
+                NJobsAssigned++;                
+            }
+            if (NJobsAssigned < DAG.Jobs.Count)
+            {
+                throw new Exception("Not all jobs assigned");
+            }
+        }
+
+        /// <summary>
+        /// Prints a summary of the current schedule
+        /// </summary>
+        public void Print()
+        {
+            Console.WriteLine("Schedule information:");
+            Console.WriteLine("Machine info:");
+            foreach (Machine m in Machines)
+            {
+                Console.Write("  M {0}: ", m.id);
+                foreach(Job j in m.AssignedJobs)
+                {
+                    Console.Write("{0}, ", j.ID);
+                }
+                Console.Write(Environment.NewLine);
+            }
+            Console.WriteLine("Job info:");
+            foreach (Job j in DAG.Jobs)
+            {
+                Console.WriteLine("  Job {0} is on M {1}. OutArcs:", j.ID, j.Machine.id);
+                foreach(Job succ in j.Successors)
+                {
+                    if (succ.Machine == j.Machine)
+                    {
+                        Console.WriteLine("    {0} {1} (machine arc)", j.ID, succ.ID);
+                    }
+                    else
+                    {
+                        Console.WriteLine("    {0} {1}", j.ID, succ.ID);
+                    }
+                }
+            }
+
         }
 
         /// <summary>
@@ -198,13 +309,28 @@ namespace SimulationTools
 
         // todo, algorithm to make feasible schedules.
 
-        void AssignJobToMachine(Job j, Machine m)
+        bool IsFeasibleAssignment(Job j, Machine m)
         {
             if (j.IsAssigned) { throw new System.Exception("Job already assigned!"); }
             else
             {
+                if (DAG.PathExists(j, m.LastJob()))
+                {
+                    //then adding j to m will create a cycle
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        void AssignJobToMachine(Job j, Machine m)
+        {
+            if (j.IsAssigned) { throw new System.Exception("Job already assigned!"); }
+            else
+            {                
                 m.AssignedJobs.Add(j);
                 j.AssignToMachine(m);
+
             }
         }
 

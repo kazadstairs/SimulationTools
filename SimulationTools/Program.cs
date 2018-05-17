@@ -17,8 +17,12 @@ namespace SimulationTools
 
             Schedule PinedoSched = new Schedule();
             PinedoSched.InstanciatePinedo();
-            PinedoSched.SetReleaseDates();
-            PinedoSched.SetDeadlines(32);
+            PinedoSched.Build();
+            PinedoSched.Print();
+
+
+            //PinedoSched.SetReleaseDates();
+            //PinedoSched.SetDeadlines(32);
     
 
             /*

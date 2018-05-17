@@ -43,6 +43,10 @@ namespace SimulationTools
                 throw new Exception(string.Format("Adding arc from vertex {0} to vertex {1} would create a cycle in DAG", u.ID, v.ID));
             }
             M++;
+            if (u.Successors.Count > 0 && u.Successors.Contains(v))
+            { //Arc already present, no need to add it again 
+                return;
+            }
             Arcs.Add(new Arc(u, v));
             u.Successors.Add(v);
             v.Predecessors.Add(u);

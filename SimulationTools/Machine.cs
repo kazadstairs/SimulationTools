@@ -19,5 +19,17 @@ namespace SimulationTools
             JobsWaitingToStart = new Queue<Job>();
             id = _id;
         }
+
+        public Job LastJob()
+        {
+            if(AssignedJobs.Count == 0)
+            {
+                return null;
+            }
+            else
+            {
+                return AssignedJobs[AssignedJobs.Count - 1];
+            }
+        }
     }
 }
