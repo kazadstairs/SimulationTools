@@ -44,7 +44,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="Event.cs" />
-    <Compile Include="Graph.cs" />
+    <Compile Include="DirectedAcyclicGraph.cs" />
     <Compile Include="Job.cs" />
     <Compile Include="Machine.cs" />
     <Compile Include="PriorityQueue.cs" />

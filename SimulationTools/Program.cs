@@ -17,6 +17,11 @@ namespace SimulationTools
 
             Schedule PinedoSched = new Schedule();
             PinedoSched.InstanciatePinedo();
+            PinedoSched.SetReleaseDates();
+            PinedoSched.SetDeadlines(32);
+    
+
+            /*
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
             SchedulesToSimulate.Add(PinedoSched);
 
@@ -24,6 +29,7 @@ namespace SimulationTools
             {
                 new Simulation(Nruns, currentSched).Perform();
             });
+            */
             
 
             Console.ReadLine();

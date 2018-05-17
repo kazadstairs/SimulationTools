@@ -37,7 +37,7 @@ namespace SimulationTools
 
             foreach(Job J in Sched.DAG.Jobs)
             {
-                EventList.Insert(new EJobRelease(J.ReleaseDate, this, J));
+                EventList.Insert(new EJobRelease(J.EarliestReleaseDate, this, J));
                 EventList.Insert(new EJobScheduledStart(J.ScheduleStartTime, this, J));
             }
             // at the beginning, all machines are available

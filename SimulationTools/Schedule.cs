@@ -13,6 +13,7 @@ namespace SimulationTools
         // List<Tuple<Job, Machine, double>> Assignments;
         public DirectedAcyclicGraph DAG;
         public List<Machine> Machines;
+        public double EstimatedCmax;
 
         public Schedule()
         {
@@ -22,15 +23,15 @@ namespace SimulationTools
 
         public void InstanciatePinedo()
         {
-            DAG.AddJob(new Job(1, 4, -1));
-            DAG.AddJob(new Job(2, 9, -1));
-            DAG.AddJob(new Job(3, 3, -1));
-            DAG.AddJob(new Job(4, 3, -1));
-            DAG.AddJob(new Job(5, 6, -1));
-            DAG.AddJob(new Job(6, 8, -1));
-            DAG.AddJob(new Job(7, 12, -1));
-            DAG.AddJob(new Job(8, 8, -1));
-            DAG.AddJob(new Job(9, 6, -1));
+            DAG.AddJob(new Job(1, 4, 0));
+            DAG.AddJob(new Job(2, 9, 0));
+            DAG.AddJob(new Job(3, 3, 0));
+            DAG.AddJob(new Job(4, 3, 0));
+            DAG.AddJob(new Job(5, 6, 0));
+            DAG.AddJob(new Job(6, 8, 0));
+            DAG.AddJob(new Job(7, 12, 0));
+            DAG.AddJob(new Job(8, 8, 0));
+            DAG.AddJob(new Job(9, 6, 0));
 
 
             // precedence arcs
@@ -60,7 +61,117 @@ namespace SimulationTools
             AssignJobToMachineById(9, 1);
         }
 
+        /// <summary>
+        /// In O(|Vertices| + |Arcs|), determine the earliest Rj for all jobs
+        /// </summary>
+        public void SetReleaseDates()
+        {
+            //init
+            int[] nParentsProcessed = new int[DAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
+            Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
+            foreach (Job j in DAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
+            {
+                if (j.Predecessors.Count == 0)
+                {
+                    AllPredDone.Push(j);
+                    j.DynamicReleaseDate = j.EarliestReleaseDate;
+                }
+            }
+            Job CurrentJob = null;
+            double CandidateRj = -1;
 
+            //algo
+            while (AllPredDone.Count > 0)
+            {
+                CurrentJob = AllPredDone.Pop();
+                foreach (Job Child in CurrentJob.Successors)
+                {
+                    CandidateRj = CurrentJob.DynamicReleaseDate + CurrentJob.GetProcessingTime();
+                    if (CandidateRj > Child.DynamicReleaseDate) // if new Rj is larger, update Rj
+                    {
+                        Child.DynamicReleaseDate = CandidateRj;
+                    }
+                    nParentsProcessed[Child.ID]++;
+                    if (nParentsProcessed[Child.ID] == Child.Predecessors.Count)
+                    {
+                        AllPredDone.Push(Child);
+                    }
+                }
+            }
+
+            //debug:
+            Console.WriteLine("*************************************************");
+            Console.WriteLine("Printing earliest release dates:");
+            foreach (Job j in DAG.Jobs)
+            {
+                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, j.DynamicReleaseDate);
+            }
+
+        }
+
+        public void SetDeadlines(double Cmax)
+        {
+            //init
+            int[] nChildrenProcessed = new int[DAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
+            Stack<Job> AllSuccDone = new Stack<Job>(); // The jobs that will no longer change due date are those for which all Parents have been considered.           
+            foreach (Job j in DAG.Jobs)  //All jobs without successor can know their final duedate (it is equal to Cmax).
+            {
+                if (j.Successors.Count == 0)
+                {
+                    AllSuccDone.Push(j);
+                    j.DynamicDueDate = Cmax;
+                }
+                else
+                {
+                    j.DynamicDueDate = double.MaxValue;
+                }
+            }
+            Job CurrentJob = null;
+            double CandidateDj = -1;
+
+            //algo
+            while (AllSuccDone.Count > 0)
+            {
+                CurrentJob = AllSuccDone.Pop();
+                foreach (Job Parent in CurrentJob.Predecessors)
+                {
+                    CandidateDj = CurrentJob.DynamicDueDate - CurrentJob.GetProcessingTime();
+                    if (CandidateDj < Parent.DynamicDueDate) // if new Dj is smaller, update Dj
+                    {
+                        Parent.DynamicDueDate = CandidateDj;
+                    }
+                    nChildrenProcessed[Parent.ID]++;
+                    if (nChildrenProcessed[Parent.ID] == Parent.Successors.Count)
+                    {
+                        AllSuccDone.Push(Parent);
+                    }
+                }
+            }
+
+            //debug:
+            Console.WriteLine("*************************************************");
+            Console.WriteLine("Printing latest due dates:");
+            foreach (Job j in DAG.Jobs)
+            {
+                Console.WriteLine("Job with ID {0} has Dj {1}", j.ID, j.DynamicDueDate);
+            }
+
+            Console.WriteLine("*************************************************");
+            Console.WriteLine("Printing Latest Start times:");
+            foreach (Job j in DAG.Jobs)
+            {
+                Console.WriteLine("Job with ID {0} has LSS {1}", j.ID, j.DynamicDueDate - j.GetProcessingTime());
+            }
+
+            Console.WriteLine("*************************************************");
+            Console.WriteLine("Printing Slack:");
+            foreach (Job j in DAG.Jobs)
+            {
+                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, j.DynamicDueDate - j.GetProcessingTime() - j.DynamicReleaseDate); //LSS - ESS
+            }
+
+
+        }
 
 
 
