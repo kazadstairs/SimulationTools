@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,13 +29,22 @@ namespace SimulationTools
             OutPutPath = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\OutPut\");
             string InstanceName = Sched.Problem.Description;
             OutPutPath += string.Format("Instace_{0}_Runs_{1}.txt", InstanceName,NRuns);
+            using (StreamWriter sw = File.CreateText(OutPutPath))
+            {
+            }
         }
 
 
         public void Perform()
         {
+            for (int runnr = 0; runnr < NRuns; runnr++)
+            {
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr);
+                Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
-                PerformSimulation();         
+                PerformSimulation();
+                PerformanceMeasures.WriteToFile(OutPutPath);
+            }
 
         }
 
@@ -59,10 +69,7 @@ namespace SimulationTools
 
         private void PerformSimulation()
         {
-            for (int runnr = 0; runnr < NRuns; runnr++)
-            {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr);
-                Console.WriteLine("***** Performing Simulation {0}...",runnr);
+             
                 int eventcounter = 0;
                 //todo remove eventcounter
                 Stopwatch watch = Stopwatch.StartNew();
@@ -75,11 +82,12 @@ namespace SimulationTools
                     {
                         Console.WriteLine("{0} events processed", eventcounter);
                     }
+                    PerformanceMeasures.Cmax = NextEvent.Time;
                 }
+                
                 Console.WriteLine("***** Simluation Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
 
-
-            }
+               
         }
     }
 }

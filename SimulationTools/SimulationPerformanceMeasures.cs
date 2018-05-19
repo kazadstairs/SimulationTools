@@ -13,7 +13,7 @@ namespace SimulationTools
         //
         //Measures pertaining to the ENTIRE RUN:
         //
-        double Cmax;
+        public double Cmax;
         //Quality Robustness:
 
         // Solution Robustness
