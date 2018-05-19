@@ -10,21 +10,31 @@ namespace SimulationTools
     {
         public PriorityQueue<Event> EventList;
         public Schedule Sched;
+        public SimulationPerformanceMeasures PerformanceMeasures;
         int NRuns;
+        public string OutPutPath { get; private set; }
         //public State CurrentState; // not used
 
         public Simulation(int _Nruns, Schedule _sched)
         {
             NRuns = _Nruns;
             Sched = _sched;
+            BuildPath();
+            
+        }
+
+        private void BuildPath()
+        {
+            OutPutPath = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\OutPut\");
+            string InstanceName = Sched.Problem.Description;
+            OutPutPath += string.Format("Instace_{0}_Runs_{1}.txt", InstanceName,NRuns);
         }
 
 
         public void Perform()
         {
-            SetupSimulation();
-            PerformSimulation();
-            
+                SetupSimulation();
+                PerformSimulation();         
 
         }
 
@@ -51,6 +61,7 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr);
                 Console.WriteLine("***** Performing Simulation {0}...",runnr);
                 int eventcounter = 0;
                 //todo remove eventcounter

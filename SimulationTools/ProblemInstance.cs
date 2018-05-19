@@ -10,6 +10,7 @@ namespace SimulationTools
     {
         public DirectedAcyclicGraph DAG;
         public List<Machine> Machines;
+        public string Description;
 
         public ProblemInstance()
         {
@@ -43,6 +44,8 @@ namespace SimulationTools
             // machine arcs all match prec arcs in this instance
             Machines.Add(new Machine(0));
             Machines.Add(new Machine(1));
+
+            Description = "Pinedo";
 
             
         }

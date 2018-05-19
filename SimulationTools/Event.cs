@@ -141,6 +141,7 @@ namespace SimulationTools
         {
             J.Machine.isAvailable = false;
             Sim.EventList.Insert(new EJobComplete(Time + J.GetProcessingTime(), Sim, J));
+            Sim.PerformanceMeasures.AddLinearStartDelay(J.ScheduleStartTime, Time);
             base.Handle();
         }
     }

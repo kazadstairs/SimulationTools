@@ -16,11 +16,13 @@ namespace SimulationTools
         public List<Machine> Machines;
         public double EstimatedCmax;
         public double[] Starttimes;
+        public ProblemInstance Problem;
 
-        public Schedule(ProblemInstance Prob)
+        public Schedule(ProblemInstance prob)
         {
-            DAG = Prob.DAG;
-            Machines = Prob.Machines;
+            Problem = prob;
+            DAG = Problem.DAG;
+            Machines = Problem.Machines;
             Starttimes = new double[DAG.Jobs.Count + 1];
             for (int i = 0; i < Starttimes.Length; i++)
             {
