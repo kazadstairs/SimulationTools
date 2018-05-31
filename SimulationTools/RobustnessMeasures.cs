@@ -14,16 +14,41 @@ namespace SimulationTools
         /// <param name="j">Job j</param>
         /// <param name="S">Schedule s</param>
         /// <returns></returns>
-        static double FreeSlack(Job j, Schedule S)
+        public static double SlowFreeSlack(Job j, Schedule S)
         {
-            
+            //TODO: faster implementations must exist.
+            if(j.Successors.Count > 0)
+            {
+                double freeSlack = double.MaxValue;
+                double candidate = double.MaxValue;
+
+                foreach (Job succ in j.Successors)
+                {
+                    candidate = S.GetStartTimeOfJob(succ) - j.MeanProcessingTime - S.GetStartTimeOfJob(j);
+                    if (candidate < freeSlack)
+                    {
+                        freeSlack = candidate;
+                    }
+                }
+                return freeSlack;
+            }
+            else
+            {
+                return S.EstimatedCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j);
+            }
         }
-        static double SumOfFreeSlacks(Schedule S)
+
+        /// <summary>
+        /// Calculate and return the sum of all free slacks. The free slack of job j in schedule S is the amount of time j can slip without delaying the start of the very next activity.
+        /// </summary>
+        /// <param name="S"></param>
+        /// <returns></returns>
+        public static double SumOfFreeSlacks(Schedule S)
         {
             double sum = 0.0;
             foreach (Job j in S.DAG.Jobs)
             {
-                sum += S.DynamicDueDate[j.ID] - j.MeanProcessingTime - S.ESS[j.ID];
+                sum += SlowFreeSlack(j, S);
             }
             return sum;
         }
