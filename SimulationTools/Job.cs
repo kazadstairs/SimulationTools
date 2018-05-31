@@ -125,11 +125,11 @@ namespace SimulationTools
             ScheduleStartTime = starttime;
         }
 */
-        public bool AllPredComplete()
+        public bool AllPredComplete() // todo, just return comparison
         {
             if (nPredComplete >= Predecessors.Count)
             {
-                Console.WriteLine("ALL PREDECESSORS COMPLETE FOR JOB {0}", ID);
+                //Console.WriteLine("ALL PREDECESSORS COMPLETE FOR JOB {0}", ID);
                 return true;
             }
             return false;

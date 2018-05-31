@@ -11,7 +11,14 @@ namespace SimulationTools
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to this Super Sweet Simulation Software");
-            int Nruns = 10;
+
+            //
+            // SETUP
+            //
+            int Nruns = 2;
+            //
+            // End of Setup
+            //
 
             Simulation [] Sims = new Simulation[Nruns];
             ProblemInstance Pinedo = new ProblemInstance();

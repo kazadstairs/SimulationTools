@@ -24,7 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-           //Console.WriteLine(DebugDescription);
+           Console.WriteLine(DebugDescription);
         }
 
         public int CompareTo(Event other)
@@ -140,7 +140,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} started processing at time {1} on machine {2}", J.ID, Time, GetMachineForJob(J).MachineID);
+            DebugDescription = string.Format("Job {0} STARTED PROCESSING at time {1} on machine {2}", J.ID, Time, GetMachineForJob(J).MachineID);
         }
 
         public override void Handle()

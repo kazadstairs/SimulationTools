@@ -68,7 +68,7 @@ namespace SimulationTools
             if (RealizedStart <= (1 + delta) * ScheduledStart)
             {
                 StartOnTimeJobs++;
-                Console.WriteLine("On time");
+                //Console.WriteLine("On time");
             }
             else { Console.WriteLine("Delayed"); }
 
