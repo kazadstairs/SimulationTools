@@ -22,7 +22,7 @@ namespace SimulationTools
 
         // useful vars:
         public double EstimatedCmax;
-        public double[] DynamicReleaseDate;
+        public double[] ESS; 
         public double[] DynamicDueDate;
 
         public Schedule(ProblemInstance prob)
@@ -43,7 +43,7 @@ namespace SimulationTools
 
             AssignedMachineID = new int[DAG.N];
             DynamicDueDate = new double[DAG.N];
-            DynamicReleaseDate = new double[DAG.N];
+            ESS = new double[DAG.N];
         }
 
         
@@ -205,7 +205,7 @@ namespace SimulationTools
                 {
                     top = 50 + 50 * GetMachineByJobID(j.ID).MachineID;
                     left =  Starttimes[j.ID] * scale;
-                    width = j.SampleProcessingTime() * scale;
+                    width = j.MeanProcessingTime * scale;
                     file.WriteLine("div.j{0}",j.ID);
                     file.WriteLine("{position: fixed;");
                     file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
@@ -237,19 +237,19 @@ namespace SimulationTools
 
         }
 
-        public void ESS()
+        public void SetESS()
         {
             foreach (Job j in DAG.Jobs)
             {
-                Starttimes[j.ID] = DynamicReleaseDate[j.ID];
+                Starttimes[j.ID] = ESS[j.ID];
             }
         }
 
-        public void LSS()
+        public void SetLSS()
         {
             foreach (Job j in DAG.Jobs)
             {
-                Starttimes[j.ID] = DynamicDueDate[j.ID] - j.SampleProcessingTime();
+                Starttimes[j.ID] = DynamicDueDate[j.ID] - j.MeanProcessingTime;
             }
         }
 
@@ -266,7 +266,7 @@ namespace SimulationTools
                 if (j.Predecessors.Count == 0)
                 {
                     AllPredDone.Push(j);
-                    DynamicReleaseDate[j.ID] = j.EarliestReleaseDate;
+                    ESS[j.ID] = j.EarliestReleaseDate;
                 }
             }
             Job CurrentJob = null;
@@ -278,10 +278,10 @@ namespace SimulationTools
                 CurrentJob = AllPredDone.Pop();
                 foreach (Job Child in CurrentJob.Successors)
                 {
-                    CandidateRj = DynamicReleaseDate[CurrentJob.ID] + CurrentJob.MeanProcessingTime;
-                    if (CandidateRj > DynamicReleaseDate[Child.ID]) // if new Rj is larger, update Rj
+                    CandidateRj = ESS[CurrentJob.ID] + CurrentJob.MeanProcessingTime;
+                    if (CandidateRj > ESS[Child.ID]) // if new Rj is larger, update Rj
                     {
-                        DynamicReleaseDate[Child.ID] = CandidateRj;
+                        ESS[Child.ID] = CandidateRj;
                     }
                     nParentsProcessed[Child.ID]++;
                     if (nParentsProcessed[Child.ID] == Child.Predecessors.Count)
@@ -296,7 +296,7 @@ namespace SimulationTools
             Console.WriteLine("Printing earliest release dates:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, DynamicReleaseDate[j.ID]);
+                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
             }
 
         }
@@ -363,7 +363,7 @@ namespace SimulationTools
             Console.WriteLine("Printing Slack:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - DynamicReleaseDate[j.ID]); //LSS - ESS
+                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - ESS[j.ID]); //LSS - ESS
             }
 
 

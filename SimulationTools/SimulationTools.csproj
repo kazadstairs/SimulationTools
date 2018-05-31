@@ -52,6 +52,7 @@
     <Compile Include="ProblemInstance.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RobustnessMeasures.cs" />
     <Compile Include="Schedule.cs" />
     <Compile Include="SimulationPerformanceMeasures.cs" />
     <Compile Include="Simulation.cs" />

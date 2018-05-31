@@ -15,7 +15,7 @@ namespace SimulationTools
             //
             // SETUP
             //
-            int Nruns = 2;
+            int Nruns = 10;
             //
             // End of Setup
             //
@@ -28,16 +28,16 @@ namespace SimulationTools
             Sched.Build();
             Sched.Print();
             Sched.SetReleaseDates();
-            Sched.ESS();
+            Sched.SetESS();
             Sched.MakeHTMLImage("Nonoptimal ESS schedule for Pinedo Instance");
 
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
             SchedulesToSimulate.Add(Sched);
             
-            //Sched.EstimateCmax();
-            //Sched.SetDeadlines(Sched.EstimatedCmax);
-            //Sched.LSS();
-            //Sched.MakeHTMLImage("Nonoptimal LSS schedule for Pinedo Instance");
+            Sched.EstimateCmax();
+            Sched.SetDeadlines(Sched.EstimatedCmax);
+            Sched.SetLSS();
+            Sched.MakeHTMLImage("Nonoptimal LSS schedule for Pinedo Instance");
             //SchedulesToSimulate.Add(Sched);
             
 
