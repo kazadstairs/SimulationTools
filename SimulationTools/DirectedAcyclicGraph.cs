@@ -54,10 +54,10 @@ namespace SimulationTools
 
         public Job GetJobById(int id)
         {
-            if (Jobs[id-1].ID != id) { throw new Exception("Id does not match index."); }
+            if (Jobs[id].ID != id) { throw new Exception("Id does not match index."); }
             else
             {
-                return Jobs[id-1];
+                return Jobs[id];
             }
         }
 

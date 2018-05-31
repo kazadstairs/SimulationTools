@@ -13,21 +13,44 @@ namespace SimulationTools
         // List<Tuple<Job, Machine, double>> Assignments;
 
         public DirectedAcyclicGraph DAG;
-        public List<Machine> Machines;
-        public double EstimatedCmax;
-        public double[] Starttimes;
+        public List<Machine> Machines; 
         public ProblemInstance Problem;
+
+        // schedule basics:
+        private double[] Starttimes;
+        private int[] AssignedMachineID; // keeps track of which machine each job is on: MachineId = MachineIdForJobId[j.id]
+
+        // useful vars:
+        public double EstimatedCmax;
+        public double[] DynamicReleaseDate;
+        public double[] DynamicDueDate;
 
         public Schedule(ProblemInstance prob)
         {
             Problem = prob;
             DAG = Problem.DAG;
-            Machines = Problem.Machines;
-            Starttimes = new double[DAG.Jobs.Count + 1];
+            Machines = new List<Machine>(prob.NMachines); 
+            for (int i = 0; i < prob.NMachines; i++)
+            {
+                Machines.Add(new Machine(i + 1));
+            }
+
+            Starttimes = new double[DAG.N];
             for (int i = 0; i < Starttimes.Length; i++)
             {
                 Starttimes[i] = -1;
             }
+
+            AssignedMachineID = new int[DAG.N];
+            DynamicDueDate = new double[DAG.N];
+            DynamicReleaseDate = new double[DAG.N];
+        }
+
+        
+
+        public double GetStartTimeOfJob(Job j)
+        {
+            return Starttimes[j.ID];
         }
 
         public void PinedoSchedule()
@@ -85,13 +108,13 @@ namespace SimulationTools
                 // todo: this is not a good way of doing machine assignment.
                 bool DebugAssignmentSuccess = false;
                 CandidateMachineID++;
-                if (CandidateMachineID >= Machines.Count) { CandidateMachineID = 0; }
+                if (CandidateMachineID >= Machines.Count + 1) { CandidateMachineID = 1; }
 
                 Job CurrentJob = AllPredDone.Dequeue();
 
                 for (int i = 0; i < Machines.Count; i++)
                 {
-                    if (!IsFeasibleAssignment(CurrentJob, Machines[CandidateMachineID]))
+                    if (!IsFeasibleAssignment(CurrentJob, GetMachineByID(CandidateMachineID)))
                     {
                         // try the next machine:
                         CandidateMachineID++;
@@ -111,12 +134,12 @@ namespace SimulationTools
                         }
                         //IMPORTANT: Only do this after the queue has been updated. 
                         // if it is the first job on the machine, no precedence arc is needed:
-                        if (Machines[CandidateMachineID].AssignedJobs.Count > 0)
+                        if (GetMachineByID(CandidateMachineID).AssignedJobs.Count > 0)
                         {
-                            DAG.AddArc(Machines[CandidateMachineID].LastJob(), CurrentJob);
+                            DAG.AddArc(GetMachineByID(CandidateMachineID).LastJob(), CurrentJob);
                         }
                         //IMPORTANT: Only do this after the queue has been updated and after machine arcs have been updated                         
-                        AssignJobToMachine(CurrentJob, Machines[CandidateMachineID]);
+                        AssignJobToMachine(CurrentJob, GetMachineByID(CandidateMachineID));
 
                         DebugAssignmentSuccess = true;
                         break;
@@ -140,7 +163,7 @@ namespace SimulationTools
             Console.WriteLine("Machine info:");
             foreach (Machine m in Machines)
             {
-                Console.Write("  M {0}: ", m.id);
+                Console.Write("  M {0}: ", m.MachineID);
                 foreach(Job j in m.AssignedJobs)
                 {
                     Console.Write("{0}, ", j.ID);
@@ -150,10 +173,10 @@ namespace SimulationTools
             Console.WriteLine("Job info:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("  Job {0} is on M {1}. OutArcs:", j.ID, j.Machine.id);
+                Console.WriteLine("  Job {0} is on M {1}. OutArcs:", j.ID, GetMachineByJobID(j.ID).MachineID);
                 foreach(Job succ in j.Successors)
                 {
-                    if (succ.Machine == j.Machine)
+                    if (GetMachineByJobID(succ.ID) == GetMachineByJobID(j.ID))
                     {
                         Console.WriteLine("    {0} {1} (machine arc)", j.ID, succ.ID);
                     }
@@ -180,9 +203,9 @@ namespace SimulationTools
                 double top, left, width;                
                 foreach (Job j in DAG.Jobs)
                 {
-                    top = 50 + 50 * j.Machine.id;
+                    top = 50 + 50 * GetMachineByJobID(j.ID).MachineID;
                     left =  Starttimes[j.ID] * scale;
-                    width = j.GetProcessingTime() * scale;
+                    width = j.SampleProcessingTime() * scale;
                     file.WriteLine("div.j{0}",j.ID);
                     file.WriteLine("{position: fixed;");
                     file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
@@ -218,7 +241,7 @@ namespace SimulationTools
         {
             foreach (Job j in DAG.Jobs)
             {
-                Starttimes[j.ID] = j.DynamicReleaseDate;
+                Starttimes[j.ID] = DynamicReleaseDate[j.ID];
             }
         }
 
@@ -226,12 +249,12 @@ namespace SimulationTools
         {
             foreach (Job j in DAG.Jobs)
             {
-                Starttimes[j.ID] = j.DynamicDueDate - j.GetProcessingTime();
+                Starttimes[j.ID] = DynamicDueDate[j.ID] - j.SampleProcessingTime();
             }
         }
 
         /// <summary>
-        /// In O(|Vertices| + |Arcs|), determine the earliest Rj for all jobs
+        /// In O(|Vertices| + |Arcs|), determine the earliest Rj based on Mean Processing time for all jobs
         /// </summary>
         public void SetReleaseDates()
         {
@@ -243,7 +266,7 @@ namespace SimulationTools
                 if (j.Predecessors.Count == 0)
                 {
                     AllPredDone.Push(j);
-                    j.DynamicReleaseDate = j.EarliestReleaseDate;
+                    DynamicReleaseDate[j.ID] = j.EarliestReleaseDate;
                 }
             }
             Job CurrentJob = null;
@@ -255,10 +278,10 @@ namespace SimulationTools
                 CurrentJob = AllPredDone.Pop();
                 foreach (Job Child in CurrentJob.Successors)
                 {
-                    CandidateRj = CurrentJob.DynamicReleaseDate + CurrentJob.GetProcessingTime();
-                    if (CandidateRj > Child.DynamicReleaseDate) // if new Rj is larger, update Rj
+                    CandidateRj = DynamicReleaseDate[CurrentJob.ID] + CurrentJob.MeanProcessingTime;
+                    if (CandidateRj > DynamicReleaseDate[Child.ID]) // if new Rj is larger, update Rj
                     {
-                        Child.DynamicReleaseDate = CandidateRj;
+                        DynamicReleaseDate[Child.ID] = CandidateRj;
                     }
                     nParentsProcessed[Child.ID]++;
                     if (nParentsProcessed[Child.ID] == Child.Predecessors.Count)
@@ -273,11 +296,15 @@ namespace SimulationTools
             Console.WriteLine("Printing earliest release dates:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, j.DynamicReleaseDate);
+                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, DynamicReleaseDate[j.ID]);
             }
 
         }
 
+        /// <summary>
+        /// For now, it is the Latest Feasible completion time Based on mean processing times. TODO: Decide what this means exactly. 
+        /// </summary>
+        /// <param name="Cmax"></param>
         public void SetDeadlines(double Cmax)
         {
             //init
@@ -288,11 +315,11 @@ namespace SimulationTools
                 if (j.Successors.Count == 0)
                 {
                     AllSuccDone.Push(j);
-                    j.DynamicDueDate = Cmax;
+                    DynamicDueDate[j.ID] = Cmax;
                 }
                 else
                 {
-                    j.DynamicDueDate = double.MaxValue;
+                    DynamicDueDate[j.ID] = double.MaxValue;
                 }
             }
             Job CurrentJob = null;
@@ -304,10 +331,10 @@ namespace SimulationTools
                 CurrentJob = AllSuccDone.Pop();
                 foreach (Job Parent in CurrentJob.Predecessors)
                 {
-                    CandidateDj = CurrentJob.DynamicDueDate - CurrentJob.GetProcessingTime();
-                    if (CandidateDj < Parent.DynamicDueDate) // if new Dj is smaller, update Dj
+                    CandidateDj = DynamicDueDate[CurrentJob.ID] - CurrentJob.MeanProcessingTime;
+                    if (CandidateDj < DynamicDueDate[Parent.ID]) // if new Dj is smaller, update Dj
                     {
-                        Parent.DynamicDueDate = CandidateDj;
+                        DynamicDueDate[Parent.ID] = CandidateDj;
                     }
                     nChildrenProcessed[Parent.ID]++;
                     if (nChildrenProcessed[Parent.ID] == Parent.Successors.Count)
@@ -322,21 +349,21 @@ namespace SimulationTools
             Console.WriteLine("Printing latest due dates:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has Dj {1}", j.ID, j.DynamicDueDate);
+                Console.WriteLine("Job with ID {0} has Dj {1}", j.ID, DynamicDueDate[j.ID]);
             }
 
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing Latest Start times:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has LSS {1}", j.ID, j.DynamicDueDate - j.GetProcessingTime());
+                Console.WriteLine("Job with ID {0} has LSS {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime());
             }
 
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing Slack:");
             foreach (Job j in DAG.Jobs)
             {
-                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, j.DynamicDueDate - j.GetProcessingTime() - j.DynamicReleaseDate); //LSS - ESS
+                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - DynamicReleaseDate[j.ID]); //LSS - ESS
             }
 
 
@@ -369,7 +396,7 @@ namespace SimulationTools
 
         bool IsFeasibleAssignment(Job j, Machine m)
         {
-            if (j.IsAssigned) { throw new System.Exception("Job already assigned!"); }
+            if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {
                 if (DAG.PathExists(j, m.LastJob()))
@@ -383,18 +410,27 @@ namespace SimulationTools
 
         void AssignJobToMachine(Job j, Machine m)
         {
-            if (j.IsAssigned) { throw new System.Exception("Job already assigned!"); }
+            if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {                
                 m.AssignedJobs.Add(j);
-                j.AssignToMachine(m);
-
+                AssignedMachineID[j.ID] = m.MachineID;
             }
+        }
+
+        public Machine GetMachineByJobID(int jobID)
+        {
+            return GetMachineByID(AssignedMachineID[jobID]);
         }
 
         void AssignJobToMachineById(int Jid, int Mid)
         {
-            AssignJobToMachine(DAG.GetJobById(Jid), Machines[Mid]);
+            AssignJobToMachine(DAG.GetJobById(Jid), GetMachineByID(Mid));
+        }
+
+        private Machine GetMachineByID(int MachineID)
+        {
+            return Machines[MachineID - 1];
         }
     }
 }

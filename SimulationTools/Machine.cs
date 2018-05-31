@@ -8,7 +8,7 @@ namespace SimulationTools
 {
     class Machine
     {
-        public int id;
+        public int MachineID;
         public List<Job> AssignedJobs;
         public bool isAvailable;
         public Queue<Job> JobsWaitingToStart;
@@ -17,7 +17,7 @@ namespace SimulationTools
         {
             AssignedJobs = new List<Job>();
             JobsWaitingToStart = new Queue<Job>();
-            id = _id;
+            MachineID = _id;
         }
 
         public Job LastJob()

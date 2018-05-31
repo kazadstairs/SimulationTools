@@ -21,15 +21,16 @@ namespace SimulationTools
 
         // for simulation
         public int nPredComplete { get; private set; }
-        public bool HasBeenMadeAvailable;
+        //public bool HasBeenMadeAvailable;
 
-        // Schedule properties: TODO move these out of Job class.
+        /*
+        // Schedule properties: TODO move these out of Job class. (job should not know these).
         public Machine Machine { get; private set; } //Machine to which job is assigned in the schedule
         public bool IsAssigned { get; private set; } //true if the job has been assigned, false if not
         public double DynamicReleaseDate; // earliest start date of the job in a schedule
         public double DynamicDueDate; // earliest start date of the job in a schedule
         // double ScheduleStartTime; //sj: The start time of the job in the schedule
-
+        */
 
 
         public Job(int _id, double pj, double rj)
@@ -43,8 +44,8 @@ namespace SimulationTools
             EarliestReleaseDate = rj;
             Successors = new List<Job>();
             IsBFSVisited = false;
-            IsAssigned = false;
-            HasBeenMadeAvailable = false;
+            //IsAssigned = false;
+            //HasBeenMadeAvailable = false;
             //ScheduleStartTime = -1;
             Predecessors = new List<Job>();
             Dist = new Distribution();
@@ -88,13 +89,14 @@ namespace SimulationTools
             nPredComplete++;
         }
 
-        public double GetProcessingTime()
+        public double SampleProcessingTime()
         {
             //todo: this is arbitrary std dev
             return Dist.SampleNormal(MeanProcessingTime,1.0);
             //return ProcessingTime;
         }
 
+        /* property of schedule => todo, move to schedule
         public bool IsAvailableAt(double time)
         {
             if (HasBeenMadeAvailable) { return false; } // throw new Exception("Job Available for a second time!"); }
@@ -109,19 +111,20 @@ namespace SimulationTools
             return false;
             
         }
-
+        */
+/*
         public void AssignToMachine(Machine M)
         {
             Machine = M ?? throw new NullReferenceException("Attempting to assign job to a machine that is not yet instanciated"); //sets Machine to M and throws exception if M is null
             IsAssigned = true;
-        }
+        
 
         public void SetStartTime(double starttime)
         {
             if (!IsAssigned) { throw new Exception("Cannot set start time for a job that is not yet assigned to a machine"); }
             ScheduleStartTime = starttime;
         }
-
+*/
         public bool AllPredComplete()
         {
             if (nPredComplete >= Predecessors.Count)
@@ -136,7 +139,7 @@ namespace SimulationTools
         public void ResetSimulationVars()
         {
             nPredComplete = 0;
-            HasBeenMadeAvailable = false;
+            //HasBeenMadeAvailable = false;
         }
 
     }

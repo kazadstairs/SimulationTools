@@ -14,6 +14,7 @@ namespace SimulationTools
         public SimulationPerformanceMeasures PerformanceMeasures;
         int NRuns;
         public string OutPutPath { get; private set; }
+        bool[] HasBeenMadeAvailable;
         //public State CurrentState; // not used
 
         public Simulation(int _Nruns, Schedule _sched)
@@ -21,7 +22,8 @@ namespace SimulationTools
             NRuns = _Nruns;
             Sched = _sched;
             BuildPath();
-            
+            HasBeenMadeAvailable = new bool[Sched.DAG.N];
+
         }
 
         private void BuildPath()
@@ -58,7 +60,7 @@ namespace SimulationTools
             foreach(Job J in Sched.DAG.Jobs)
             {
                 EventList.Insert(new EJobRelease(J.EarliestReleaseDate, this, J));
-                EventList.Insert(new EJobScheduledStart(J.ScheduleStartTime, this, J));
+                EventList.Insert(new EJobScheduledStart(Sched.GetStartTimeOfJob(J), this, J));
             }
             // at the beginning, all machines are available
             foreach(Machine M in Sched.Machines)
@@ -94,7 +96,23 @@ namespace SimulationTools
             foreach (Job j in Sched.DAG.Jobs)
             {
                 j.ResetSimulationVars();
+                HasBeenMadeAvailable[j.ID] = false;
             }
+        }
+
+        public bool IsAvailableAt(Job j, double time)
+        {
+            if (HasBeenMadeAvailable[j.ID]) { return false; } // throw new Exception("Job Available for a second time!"); }
+            if ((j.EarliestReleaseDate <= time)
+                    && (j.AllPredComplete()) //|| Predecessors.Count == 0
+                    && (Sched.GetStartTimeOfJob(j) <= time)
+                    )
+            {
+                HasBeenMadeAvailable[j.ID] = true;
+                return true;
+            }
+            return false;
+
         }
     }
 }

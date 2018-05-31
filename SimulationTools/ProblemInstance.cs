@@ -9,16 +9,18 @@ namespace SimulationTools
     class ProblemInstance
     {
         public DirectedAcyclicGraph DAG;
-        public List<Machine> Machines;
+        public int NMachines;
+        //public List<Machine> Machines;
         public string Description;
 
         public ProblemInstance()
         {
             DAG = new DirectedAcyclicGraph();
-            Machines = new List<Machine>();
         }
         public void InstanciatePinedo()
         {
+            DAG.AddJob(new Job(0, 0, 0));
+
             DAG.AddJob(new Job(1, 4, 0));
             DAG.AddJob(new Job(2, 9, 0));
             DAG.AddJob(new Job(3, 3, 0));
@@ -28,6 +30,8 @@ namespace SimulationTools
             DAG.AddJob(new Job(7, 12, 0));
             DAG.AddJob(new Job(8, 8, 0));
             DAG.AddJob(new Job(9, 6, 0));
+
+            
 
 
             // precedence arcs
@@ -41,9 +45,11 @@ namespace SimulationTools
             DAG.AddArcById(7, 8);
             DAG.AddArcById(7, 9);
 
+            DAG.AddArcById(0, 1);
+            DAG.AddArcById(0, 3);
+
             // machine arcs all match prec arcs in this instance
-            Machines.Add(new Machine(0));
-            Machines.Add(new Machine(1));
+            NMachines = 2;
 
             Description = "Pinedo";
 

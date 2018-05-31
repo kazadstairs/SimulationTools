@@ -32,6 +32,12 @@ namespace SimulationTools
             return this.Time.CompareTo(other.Time);
         }
 
+
+        protected Machine GetMachineForJob(Job j)
+        {
+            return Sim.Sched.GetMachineByJobID(j.ID);
+        }
+
     }
 
     class EJobRelease : Event // Triggers whenever a release date occurs
@@ -47,7 +53,7 @@ namespace SimulationTools
 
         override public void Handle()
         {
-            if (!J.HasBeenMadeAvailable && J.IsAvailableAt(Time) ) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            if (Sim.IsAvailableAt(J,Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
             base.Handle();
         }
     }
@@ -65,7 +71,7 @@ namespace SimulationTools
 
         override public void Handle()
         {
-            if (!J.HasBeenMadeAvailable  && J.IsAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
+            if (Sim.IsAvailableAt(J, Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, J)); }
             base.Handle();
         }
     }
@@ -80,21 +86,21 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} was completed at time {1} on machine {2}", J.ID, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} was completed at time {1} on machine {2}", J.ID, Time, GetMachineForJob(J).MachineID );
         }
 
         public override void Handle()
         {
             // make machine available:
-            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, J.Machine));            
+            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, GetMachineForJob(J)));            
             // tell successor jobs this job is finished and check for new available jobs:
             foreach(Job suc in J.Successors)
             {
                 suc.PredComplete();
-                if (suc.IsAvailableAt(Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, suc)); }
+                if (Sim.IsAvailableAt(suc, Time)) { Sim.EventList.Insert(new EJobAvailable(Time, Sim, suc)); }
                 base.Handle();
             }
-           // Console.WriteLine("Job {0} was completed at time {1} on machine {2}", J.id, Time, J.Machine.id);
+           // Console.WriteLine("Job {0} was completed at time {1} on machine {2}", J.id, Time, GetMachineForJob(J).id);
         }
     }
 
@@ -106,13 +112,13 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} became available at time {1}. It is assigned to machine {2}", J.ID, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} became available at time {1}. It is assigned to machine {2}", J.ID, Time, GetMachineForJob(J).MachineID);
         }
 
         public override void Handle()
         {
-            if (!J.IsAssigned) { throw new Exception("Unassigned job became available"); }
-            if (J.Machine.isAvailable) // if the machine for the job is available, then start the job on that machine
+            // todo: check elsewhere if (!J.IsAssigned) { throw new Exception("Unassigned job became available"); }
+            if (GetMachineForJob(J).isAvailable) // if the machine for the job is available, then start the job on that machine
             {
                 //start job j on the machine it is assigned to:
                 // machine is busy:
@@ -120,7 +126,7 @@ namespace SimulationTools
             }
             else
             {
-                J.Machine.JobsWaitingToStart.Enqueue(J); // add to queue
+                GetMachineForJob(J).JobsWaitingToStart.Enqueue(J); // add to queue
             }
             base.Handle();
         }
@@ -134,15 +140,15 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             J = j;
-            DebugDescription = string.Format("Job {0} started processing at time {1} on machine {2}", J.ID, Time, J.Machine.id);
+            DebugDescription = string.Format("Job {0} started processing at time {1} on machine {2}", J.ID, Time, GetMachineForJob(J).MachineID);
         }
 
         public override void Handle()
         {
-            J.Machine.isAvailable = false;
-            Sim.EventList.Insert(new EJobComplete(Time + J.GetProcessingTime(), Sim, J));
-            Sim.PerformanceMeasures.AddLinearStartDelay(J.ScheduleStartTime, Time);
-            Sim.PerformanceMeasures.UpdateStartPunctuality(J.ScheduleStartTime, Time);
+            GetMachineForJob(J).isAvailable = false;
+            Sim.EventList.Insert(new EJobComplete(Time + J.SampleProcessingTime(), Sim, J));
+            Sim.PerformanceMeasures.AddLinearStartDelay(Sim.Sched.GetStartTimeOfJob(J), Time);
+            Sim.PerformanceMeasures.UpdateStartPunctuality(Sim.Sched.GetStartTimeOfJob(J), Time);
             base.Handle();
         }
     }
@@ -155,7 +161,7 @@ namespace SimulationTools
             Time = time;
             Sim = sim;
             M = m;
-            DebugDescription = string.Format("Machine {0} became available at time {1} ", M.id, Time); ;
+            DebugDescription = string.Format("Machine {0} became available at time {1} ", M.MachineID, Time); ;
         }
 
         public override void Handle()
