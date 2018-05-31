@@ -54,7 +54,7 @@ namespace SimulationTools
                 if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
                 if(Starttimes[i] > Maximum) { Maximum = Starttimes[i]; MaxID = i; }
             }
-            EstimatedCmax = Maximum + DAG.GetJobById(MaxID).GetProcessingTime();
+            EstimatedCmax = Maximum + DAG.GetJobById(MaxID).MeanProcessingTime;
             Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
         }
 

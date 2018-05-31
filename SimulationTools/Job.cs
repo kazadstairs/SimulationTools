@@ -10,7 +10,8 @@ namespace SimulationTools
     {
         public int ID { get; private set; } // Identifier to recognize the job
         public double EarliestReleaseDate { get; private set; } // earliest start date of the job. Should NEVER be changed
-        private double ProcessingTime;
+        public double MeanProcessingTime { get; private set; }
+        private Distribution Dist;
 
         // for graph properties
         public List<Job> Predecessors { get; private set; }
@@ -20,15 +21,16 @@ namespace SimulationTools
 
         // for simulation
         public int nPredComplete { get; private set; }
+        public bool HasBeenMadeAvailable;
 
-        // Schedule properties:
+        // Schedule properties: TODO move these out of Job class.
         public Machine Machine { get; private set; } //Machine to which job is assigned in the schedule
         public bool IsAssigned { get; private set; } //true if the job has been assigned, false if not
         public double DynamicReleaseDate; // earliest start date of the job in a schedule
         public double DynamicDueDate; // earliest start date of the job in a schedule
-        public double ScheduleStartTime; //sj: The start time of the job in the schedule
+        // double ScheduleStartTime; //sj: The start time of the job in the schedule
 
-        public bool HasBeenMadeAvailable;
+
 
         public Job(int _id, double pj, double rj)
         {
@@ -37,14 +39,15 @@ namespace SimulationTools
         private void Init(int _id, double pj, double rj)
         {
             ID = _id;
-            ProcessingTime = pj;
+            MeanProcessingTime = pj;
             EarliestReleaseDate = rj;
             Successors = new List<Job>();
             IsBFSVisited = false;
             IsAssigned = false;
             HasBeenMadeAvailable = false;
-            ScheduleStartTime = -1;
+            //ScheduleStartTime = -1;
             Predecessors = new List<Job>();
+            Dist = new Distribution();
         }
 
         /*
@@ -87,8 +90,9 @@ namespace SimulationTools
 
         public double GetProcessingTime()
         {
-            //todo: make this stochastic
-            return ProcessingTime;
+            //todo: this is arbitrary std dev
+            return Dist.SampleNormal(MeanProcessingTime,1.0);
+            //return ProcessingTime;
         }
 
         public bool IsAvailableAt(double time)
@@ -99,7 +103,6 @@ namespace SimulationTools
                     && (ScheduleStartTime <= time)
                     )
             {
-                Console.WriteLine("IsAvailable SET TO TRUE");
                 HasBeenMadeAvailable = true;
                 return true;
             }
@@ -129,6 +132,12 @@ namespace SimulationTools
             return false;
         }
 
+
+        public void ResetSimulationVars()
+        {
+            nPredComplete = 0;
+            HasBeenMadeAvailable = false;
+        }
 
     }
 }

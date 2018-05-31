@@ -39,11 +39,12 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr);
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.DAG.N);
                 Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();
                 PerformanceMeasures.WriteToFile(OutPutPath);
+                CleanJobs();
             }
 
         }
@@ -52,7 +53,6 @@ namespace SimulationTools
         {
             Console.WriteLine("***** Setting Up Simulation...");
             EventList = new PriorityQueue<Event>();
-            // Todo: A simulation should just be given a schedule and a problem instance, not create them.
             //Problem = new ProblemInstance();
 
             foreach(Job J in Sched.DAG.Jobs)
@@ -86,8 +86,15 @@ namespace SimulationTools
                 }
                 
                 Console.WriteLine("***** Simluation Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
+                           
+        }
 
-               
+        private void CleanJobs()
+        {
+            foreach (Job j in Sched.DAG.Jobs)
+            {
+                j.ResetSimulationVars();
+            }
         }
     }
 }

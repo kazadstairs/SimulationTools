@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Distribution.cs" />
     <Compile Include="Event.cs" />
     <Compile Include="DirectedAcyclicGraph.cs" />
     <Compile Include="Job.cs" />

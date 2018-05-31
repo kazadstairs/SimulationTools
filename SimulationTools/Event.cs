@@ -24,7 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-           Console.WriteLine(DebugDescription);
+           //Console.WriteLine(DebugDescription);
         }
 
         public int CompareTo(Event other)
@@ -86,7 +86,7 @@ namespace SimulationTools
         public override void Handle()
         {
             // make machine available:
-            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, J.Machine));
+            Sim.EventList.Insert(new EMachineAvailable(Time, Sim, J.Machine));            
             // tell successor jobs this job is finished and check for new available jobs:
             foreach(Job suc in J.Successors)
             {
@@ -142,6 +142,7 @@ namespace SimulationTools
             J.Machine.isAvailable = false;
             Sim.EventList.Insert(new EJobComplete(Time + J.GetProcessingTime(), Sim, J));
             Sim.PerformanceMeasures.AddLinearStartDelay(J.ScheduleStartTime, Time);
+            Sim.PerformanceMeasures.UpdateStartPunctuality(J.ScheduleStartTime, Time);
             base.Handle();
         }
     }
