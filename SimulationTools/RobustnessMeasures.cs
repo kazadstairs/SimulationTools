@@ -14,6 +14,7 @@ namespace SimulationTools
         /// <param name="j">Job j</param>
         /// <param name="S">Schedule s</param>
         /// <returns></returns>
+        /// 
         public static double SlowFreeSlack(Job j, Schedule S)
         {
             //TODO: faster implementations must exist.
@@ -52,6 +53,8 @@ namespace SimulationTools
             }
             return sum;
         }
+
+        public static int RMCount = 1;
 
 
     }

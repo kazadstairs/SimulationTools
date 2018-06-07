@@ -30,9 +30,20 @@ namespace SimulationTools
         {
             OutPutPath = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\OutPut\");
             string InstanceName = Sched.Problem.Description;
-            OutPutPath += string.Format("Instace_{0}_Runs_{1}.txt", InstanceName,NRuns);
+            OutPutPath += string.Format("Instance_{0}_Schedule_{1}_Runs_{2}.txt", InstanceName,Sched.Description,NRuns);
             using (StreamWriter sw = File.CreateText(OutPutPath))
             {
+                
+            }
+            // Write the header info
+            using (StreamWriter sw = File.AppendText(OutPutPath))
+            {
+                sw.WriteLine(InstanceName);
+                sw.WriteLine(Sched.Description);
+                sw.WriteLine(RobustnessMeasures.RMCount);
+                sw.Write(RobustnessMeasures.SumOfFreeSlacks(Sched));
+                sw.Write(Environment.NewLine);
+                sw.WriteLine(NRuns);
             }
         }
 
@@ -41,7 +52,7 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.DAG.N);
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.DAG.N,this);
                 Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();

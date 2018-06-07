@@ -17,6 +17,7 @@ namespace SimulationTools
         public ProblemInstance Problem;
 
         // schedule basics:
+        public string Description;
         private double[] Starttimes;
         private int[] AssignedMachineID; // keeps track of which machine each job is on: MachineId = MachineIdForJobId[j.id]
 
@@ -86,6 +87,7 @@ namespace SimulationTools
         /// </summary>
         public void Build()
         {
+            Description = "Rolling Machine Assignment";
             if (DAG.Jobs.Count <= 1)
             {
                 throw new Exception("No DAG given. Cannot build schedule without problem instance");

@@ -20,8 +20,9 @@ namespace SimulationTools
         public double TotalLinearStartDelay { get; private set; } // actual start - scheduled start
         double delta; // percentage that start or finish can be delayed by to still be called on time
         int StartOnTimeJobs; // Jobs that start before (1+delta) * their start time (i.e., on time)
-        int FinishDelayedJobs; // Jobs that start after (1+delta) * their start time;
+        int FinishOnTimeJobs; // Jobs that complete before (1+delta) * successor start times
         double NJobs;
+        Simulation Sim;
 
 
        // double StartPunctuality; // percentage jobs that start on scheduled time.
@@ -33,15 +34,17 @@ namespace SimulationTools
         //Statistics of each individual job (completion times etc)
         //
 
-        public SimulationPerformanceMeasures(int id, double PunctualityAllowance, int Njobs)
+        public SimulationPerformanceMeasures(int id, double PunctualityAllowance, int Njobs, Simulation sim)
         {
             RunID = id;
             TotalLinearStartDelay = 0;
             delta = PunctualityAllowance;
             StartOnTimeJobs = 0;
-            FinishDelayedJobs = 0;
-            DEBUGMODE = true;
+            FinishOnTimeJobs = 0;
+            DEBUGMODE = false;
             NJobs = (double)Njobs;
+            Sim = sim;
+            
 
         }
 
@@ -49,10 +52,22 @@ namespace SimulationTools
         {
             using (StreamWriter sw = File.AppendText(path))
             {
-                if (DEBUGMODE) { sw.WriteLine("id {0,-6}; Cmax {1,-18}; Delay Sum {2,-18}; Start Pun {3,-18}; Finish Pun {4,-18}", RunID, Cmax, TotalLinearStartDelay, (double)StartOnTimeJobs / NJobs, (double)FinishDelayedJobs / NJobs); }
+                if (DEBUGMODE) { sw.WriteLine("id {0,-6}; Cmax {1,-18}; Delay Sum {2,-18}; Start Pun {3,-18}; Finish Pun {4,-18}; SumOfFreeSlacks: {5, -18}",
+                    RunID,
+                    Cmax,
+                    TotalLinearStartDelay,
+                    (double)StartOnTimeJobs / NJobs,
+                    (double)FinishOnTimeJobs / NJobs,
+                    RobustnessMeasures.SumOfFreeSlacks(Sim.Sched))
+                    ;}
                 else
                 {
-                    sw.WriteLine("{0}; {1}; {2}; {3}; {4}", RunID, Cmax, TotalLinearStartDelay, (double)StartOnTimeJobs / NJobs, (double)FinishDelayedJobs / NJobs);
+                    sw.WriteLine("{0};{1};{2};{3};{4}",
+                    RunID,
+                    Cmax,
+                    TotalLinearStartDelay,
+                    (double)StartOnTimeJobs / NJobs,
+                    (double)FinishOnTimeJobs / NJobs);
                 }
             }
         }
@@ -75,10 +90,23 @@ namespace SimulationTools
         }
 
 
-        public void UpdateFinishPunctuality(double ScheduledFinish, double RealizedFinish)
+        public void UpdateFinishPunctuality(Job finishedJob, Schedule S, double RealizedFinish)
         {
-            throw new System.NotImplementedException("todo: be precice in how you define finish time punctuality");
-            if (RealizedFinish > (1 + delta) * ScheduledFinish) { FinishDelayedJobs++; }
+            foreach (Job suc in finishedJob.Successors) // todo: doets successors include machine successors?
+            {
+                if (RealizedFinish <= (1 + delta) * S.GetStartTimeOfJob(suc))
+                {
+                    // on time
+                    continue;
+                }
+                else
+                {
+                    // job not on time
+                    return;                    
+                }
+            }
+            // all successors not delayed:
+            FinishOnTimeJobs++;
         }
 
     }

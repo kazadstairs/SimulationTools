@@ -34,8 +34,8 @@ namespace SimulationTools
             Sched.MakeHTMLImage("Nonoptimal ESS schedule for Pinedo Instance");
 
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
-            //SchedulesToSimulate.Add(Sched);
-            Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
+            SchedulesToSimulate.Add(Sched);
+            //Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
             
             
             //Sched.SetDeadlines(Sched.EstimatedCmax);
@@ -60,7 +60,7 @@ namespace SimulationTools
 
 
 
-            Console.ReadLine();
+            //Console.ReadLine();
         }
     }
 
