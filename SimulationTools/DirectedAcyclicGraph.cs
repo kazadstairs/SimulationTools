@@ -12,7 +12,7 @@ namespace SimulationTools
         public int M { get; private set; }
 
         public List<Job> Jobs { get; private set; }
-        private List<Arc> Arcs;
+        private List<Arc> MachineArcs;
 
         public DirectedAcyclicGraph()
         {
@@ -134,10 +134,29 @@ namespace SimulationTools
         Job U; // from this vertex
         Job V; // to this vertex
 
+        public Arc()
+        {
+            U = null;
+            V = null;
+        }
         public Arc(Job u, Job v)
         {
             U = u;
             V = v;
+        }
+    }
+
+    class MachineArc : Arc
+    {
+        Job U;
+        Job V;
+        Machine M;
+
+        public MachineArc(Job u, Job v, Machine m)
+        {
+            U = u;
+            V = v;
+            M = m;
         }
     }
 

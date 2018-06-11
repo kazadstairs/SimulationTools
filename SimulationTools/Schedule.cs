@@ -497,7 +497,7 @@ namespace SimulationTools
             {
                 if (m.AssignedJobs.Count > 0)
                 {
-                    DAG.AddArc(m.LastJob(), j);
+                    DAG.AddArc(m.LastJob(), j); // todo: change to add machinearc
                 }
                 m.AssignedJobs.Add(j);
                 m.Load += j.MeanProcessingTime;
