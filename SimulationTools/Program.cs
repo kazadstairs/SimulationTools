@@ -25,7 +25,7 @@ namespace SimulationTools
             Pinedo.InstanciatePinedo();
 
             Schedule Sched = new Schedule(Pinedo);
-            Sched.Build();
+            Sched.AssignByRolling();
             Sched.Print();
             Sched.SetReleaseDates();
             Sched.SetESS();

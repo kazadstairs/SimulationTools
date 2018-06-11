@@ -6,16 +6,21 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-    class Distribution
+    static class Distribution
     {
-        private Random rand;
+        static private Random rand;
 
-        public Distribution()
+        static Distribution()
         {
             rand = new Random();
         }
 
-        public double SampleStandardNormal()
+        static public int UniformIntZeroTo(int upper)
+        {
+            return rand.Next(upper);
+        }
+
+        static public double SampleStandardNormal()
         {
             double u1 = 1.0 - rand.NextDouble();
             double u2 = 1.0 - rand.NextDouble();
@@ -26,7 +31,7 @@ namespace SimulationTools
         /// Uses the Box-Mueller transform to generate a N(0,1) random number, then addapts it to make it N(mu,S2)
         /// </summary>
         /// <returns></returns>
-        public double SampleNormal(double mean, double StdDev)
+        static public double SampleNormal(double mean, double StdDev)
         {            
             return mean + StdDev * SampleStandardNormal();
         }

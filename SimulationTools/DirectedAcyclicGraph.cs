@@ -66,6 +66,10 @@ namespace SimulationTools
             AddArc(GetJobById(uid), GetJobById(vid));
         }
 
+
+        //In O(V + E) return all jobs in precedence order, IGNORING MACHINE Assignments!
+
+
         public bool PathExists(Job u, Job v)
         {
             // idea: set all visited vertices on a stack, when finished, reset them all to unvisited.

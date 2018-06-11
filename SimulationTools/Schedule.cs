@@ -82,10 +82,72 @@ namespace SimulationTools
             Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
         }
 
+        private void AssignJobsBy(Action<Job> AssignmentLogic)
+        {
+            int[] nParentsProcessed = new int[DAG.Jobs.Count];
+
+            Queue<Job> AllPredDone = new Queue<Job>(); // Jobs whose predecessors have been visited           
+            foreach (Job j in DAG.Jobs) //Jobs without predecessors are ready to visit.
+            {
+                if (j.Predecessors.Count == 0)
+                {
+                    AllPredDone.Enqueue(j);
+                }
+            }
+
+            while (AllPredDone.Count > 0)
+            {
+                Job CurrentJob = AllPredDone.Dequeue();
+                // process this job
+                AssignmentLogic(CurrentJob);
+                // tell successors this job is processed
+                foreach (Job Succ in CurrentJob.Successors)
+                {
+                    nParentsProcessed[Succ.ID]++;
+                    if (nParentsProcessed[Succ.ID] == Succ.Predecessors.Count)
+                    {
+                        AllPredDone.Enqueue(Succ);
+                    }
+                }
+
+            }
+            
+        }
+
+        private void GreedyLoadBalancing(Job CurrentJob)
+        {
+            int MinLoadId = -1;
+            double MinLoad = double.MaxValue;
+            Machine candidateMachine;
+            for (int i = 0; i < Machines.Count, i++)
+            {
+                candidateMachine = GetMachineByID(i);
+                if (candidateMachine.Load < MinLoad) { MinLoad = candidateMachine.Load; MinLoadId = candidateMachine.MachineID; }
+            }
+            Machine MinLoadMachine = GetMachineByID(MinLoadId);
+
+            if (!IsFeasibleAssignment(CurrentJob, MinLoadMachine)) { throw new Exception("Unfeasible assignment"); }
+            else
+            {
+                AssignJobToMachine(CurrentJob, MinLoadMachine);
+            }
+        }
+
+        private void RandomMachineAssignment(Job CurrentJob)
+        {
+            
+        }
+
+        public void MakeGreedyLoadAssignment()
+        {
+            Description = "GreedyLoadBalancing";
+            AssignJobsBy(GreedyLoadBalancing);
+        }
+
         /// <summary>
-        /// Given a problem with precedence arcs and jobs in a DAG. Use this function to create a schedule.
+        /// Given a problem with precedence arcs as a DAG. Creates an assignment by iterating jobs over machines. Very naive.
         /// </summary>
-        public void Build()
+        public void AssignByRolling()
         {
             Description = "Rolling Machine Assignment";
             if (DAG.Jobs.Count <= 1)
@@ -107,7 +169,6 @@ namespace SimulationTools
 
             while (AllPredDone.Count > 0)
             {
-                // todo: this is not a good way of doing machine assignment.
                 bool DebugAssignmentSuccess = false;
                 CandidateMachineID++;
                 if (CandidateMachineID >= Machines.Count + 1) { CandidateMachineID = 1; }
@@ -410,12 +471,22 @@ namespace SimulationTools
             return true;
         }
 
+        /// <summary>
+        /// Assigns job j to machine m. Adds a machine arc (m.lastjob, j) to DAG if m has at least one job. Updates the load of machine m.
+        /// </summary>
+        /// <param name="j"></param>
+        /// <param name="m"></param>
         void AssignJobToMachine(Job j, Machine m)
         {
             if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
-            {                
+            {
+                if (m.AssignedJobs.Count > 0)
+                {
+                    DAG.AddArc(m.LastJob(), j);
+                }
                 m.AssignedJobs.Add(j);
+                m.Load += j.MeanProcessingTime;
                 AssignedMachineID[j.ID] = m.MachineID;
             }
         }
