@@ -15,7 +15,7 @@ namespace SimulationTools
             rand = new Random();
         }
 
-        static public int UniformIntZeroTo(int upper)
+        static public int UniformInt(int upper)
         {
             return rand.Next(upper);
         }

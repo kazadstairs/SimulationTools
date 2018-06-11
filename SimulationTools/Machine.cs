@@ -10,7 +10,7 @@ namespace SimulationTools
     {
         public int MachineID;
         public List<Job> AssignedJobs;
-        public double Load
+        public double Load;
         public bool isAvailable;
         public Queue<Job> JobsWaitingToStart;
 

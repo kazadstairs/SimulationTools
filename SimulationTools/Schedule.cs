@@ -119,9 +119,9 @@ namespace SimulationTools
             int MinLoadId = -1;
             double MinLoad = double.MaxValue;
             Machine candidateMachine;
-            for (int i = 0; i < Machines.Count, i++)
+            for (int i = 0; i < Machines.Count; i++)
             {
-                candidateMachine = GetMachineByID(i);
+                candidateMachine = GetMachineByID(i + 1); // + 1 because machine ids are 1 based
                 if (candidateMachine.Load < MinLoad) { MinLoad = candidateMachine.Load; MinLoadId = candidateMachine.MachineID; }
             }
             Machine MinLoadMachine = GetMachineByID(MinLoadId);
@@ -135,13 +135,27 @@ namespace SimulationTools
 
         private void RandomMachineAssignment(Job CurrentJob)
         {
-            
+            int candidateMachineId = Distribution.UniformInt(Machines.Count) + 1; // + 1 because machine ids are 1 based
+            Machine candidateMachine = GetMachineByID(candidateMachineId);
+
+            if (!IsFeasibleAssignment(CurrentJob, candidateMachine)) { throw new Exception("Unfeasible assignment"); }
+            else
+            {
+                AssignJobToMachine(CurrentJob, candidateMachine);
+            }
+
         }
 
         public void MakeGreedyLoadAssignment()
         {
             Description = "GreedyLoadBalancing";
             AssignJobsBy(GreedyLoadBalancing);
+        }
+
+        public void MakeRandomAssignment()
+        {
+            Description = "Random";
+            AssignJobsBy(RandomMachineAssignment);
         }
 
         /// <summary>

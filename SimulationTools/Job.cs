@@ -11,7 +11,7 @@ namespace SimulationTools
         public int ID { get; private set; } // Identifier to recognize the job
         public double EarliestReleaseDate { get; private set; } // earliest start date of the job. Should NEVER be changed
         public double MeanProcessingTime { get; private set; }
-        private Distribution Dist;
+        //private Distribution Dist;
 
         // for graph properties
         public List<Job> Predecessors { get; private set; }
@@ -48,7 +48,7 @@ namespace SimulationTools
             //HasBeenMadeAvailable = false;
             //ScheduleStartTime = -1;
             Predecessors = new List<Job>();
-            Dist = new Distribution();
+            //Dist = new Distribution();
         }
 
         /*
@@ -92,8 +92,7 @@ namespace SimulationTools
         public double SampleProcessingTime()
         {
             //todo: this is arbitrary std dev
-            return Dist.SampleNormal(MeanProcessingTime,1.0);
-            //return ProcessingTime;
+            return Distribution.SampleNormal(MeanProcessingTime,1.0);
         }
 
         /* property of schedule => todo, move to schedule

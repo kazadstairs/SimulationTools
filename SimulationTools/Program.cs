@@ -24,6 +24,7 @@ namespace SimulationTools
             ProblemInstance Pinedo = new ProblemInstance();
             Pinedo.InstanciatePinedo();
 
+            /*
             Schedule Sched = new Schedule(Pinedo);
             Sched.AssignByRolling();
             Sched.Print();
@@ -33,16 +34,24 @@ namespace SimulationTools
             Sched.EstimateCmax();
             Sched.MakeHTMLImage("Nonoptimal ESS schedule for Pinedo Instance");
 
-            List<Schedule> SchedulesToSimulate = new List<Schedule>();
+            
             SchedulesToSimulate.Add(Sched);
+            */
+
+            List<Schedule> SchedulesToSimulate = new List<Schedule>();
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
+
+
             //Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
-            
-            
+
+
             //Sched.SetDeadlines(Sched.EstimatedCmax);
             //Sched.SetLSS();
             //Sched.MakeHTMLImage("Nonoptimal LSS schedule for Pinedo Instance");
             //SchedulesToSimulate.Add(Sched);
-            
+
 
             Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
             {
@@ -61,6 +70,32 @@ namespace SimulationTools
 
 
             //Console.ReadLine();
+        }
+
+        // todo: Expand to allow chooosing of starttime decissions.
+        static Schedule NewSchedule(ProblemInstance Ins,string AssignmentType)
+        {
+            Schedule Sched = new Schedule(Ins);
+            switch (AssignmentType)
+            {
+                case "Random":
+                    Sched.MakeRandomAssignment();
+                    break;
+                case "RMA":
+                    Sched.AssignByRolling();
+                    break;
+                case "GLB":
+                    Sched.MakeGreedyLoadAssignment();
+                    break;
+                default:
+                    throw new Exception("AssignmentType string not one of allowed strings");
+            }
+            Sched.Print();
+            Sched.SetReleaseDates();
+            Sched.SetESS();
+            Sched.EstimateCmax();
+            Sched.MakeHTMLImage(string.Format("ESS {0} schedule for Pinedo Instance",Sched.Description) );
+            return Sched;
         }
     }
 
