@@ -14,8 +14,8 @@ namespace SimulationTools
         //private Distribution Dist;
 
         // for graph properties
-        public List<Job> Predecessors { get; private set; }
-        public List<Job> Successors { get; private set; }
+        public List<Job> Predecessors { get; private set; } // NOT INCLUDING MACHINE PREDECESSOR
+        public List<Job> Successors { get; private set; } // NOT INCLUDING MACHINE SUCCESSOR
         public bool IsBFSVisited;
 
 

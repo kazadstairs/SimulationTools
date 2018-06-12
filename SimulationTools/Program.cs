@@ -15,7 +15,7 @@ namespace SimulationTools
             //
             // SETUP
             //
-            int Nruns = 10;
+            int Nruns = 1000;
             //
             // End of Setup
             //
@@ -59,7 +59,7 @@ namespace SimulationTools
             });
 
 
-            
+
 
 
             //PinedoSched.SetReleaseDates();
@@ -68,8 +68,8 @@ namespace SimulationTools
 
 
 
-
-            //Console.ReadLine();
+           // Console.WriteLine("All operations complete.");
+           // Console.ReadLine();
         }
 
         // todo: Expand to allow chooosing of starttime decissions.
@@ -91,7 +91,7 @@ namespace SimulationTools
                     throw new Exception("AssignmentType string not one of allowed strings");
             }
             Sched.Print();
-            Sched.SetReleaseDates();
+            Sched.CalcESS();
             Sched.SetESS();
             Sched.EstimateCmax();
             Sched.MakeHTMLImage(string.Format("ESS {0} schedule for Pinedo Instance",Sched.Description) );

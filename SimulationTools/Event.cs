@@ -24,7 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-           Console.WriteLine(DebugDescription);
+           //Console.WriteLine(DebugDescription);
         }
 
         public int CompareTo(Event other)

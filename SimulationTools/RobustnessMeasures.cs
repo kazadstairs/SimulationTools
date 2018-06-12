@@ -47,7 +47,7 @@ namespace SimulationTools
         public static double SumOfFreeSlacks(Schedule S)
         {
             double sum = 0.0;
-            foreach (Job j in S.DAG.Jobs)
+            foreach (Job j in S.PrecedenceDAG.Jobs)
             {
                 sum += SlowFreeSlack(j, S);
             }

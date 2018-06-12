@@ -12,7 +12,8 @@ namespace SimulationTools
         // Machine[] Machines;
         // List<Tuple<Job, Machine, double>> Assignments;
 
-        public DirectedAcyclicGraph DAG;
+        public DirectedAcyclicGraph PrecedenceDAG;
+        private MachineArcPointer []  MachineArcPointers; // Maps Job Id to machine it is assigned to.
         public List<Machine> Machines; 
         public ProblemInstance Problem;
 
@@ -29,25 +30,62 @@ namespace SimulationTools
         public Schedule(ProblemInstance prob)
         {
             Problem = prob;
-            DAG = Problem.DAG;
+            PrecedenceDAG = Problem.DAG;
             Machines = new List<Machine>(prob.NMachines); 
             for (int i = 0; i < prob.NMachines; i++)
             {
                 Machines.Add(new Machine(i + 1));
             }
 
-            Starttimes = new double[DAG.N];
+            Starttimes = new double[PrecedenceDAG.N];
             for (int i = 0; i < Starttimes.Length; i++)
             {
                 Starttimes[i] = -1;
             }
 
-            AssignedMachineID = new int[DAG.N];
-            DynamicDueDate = new double[DAG.N];
-            ESS = new double[DAG.N];
+            AssignedMachineID = new int[PrecedenceDAG.N];
+            DynamicDueDate = new double[PrecedenceDAG.N];
+            ESS = new double[PrecedenceDAG.N];
+            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
         }
 
-        
+        private MachineArcPointer GetMachineArcPointer(Job j)
+        {
+            return MachineArcPointers[j.ID];
+        }
+        public Job GetMachineSuccessor(Job i)
+        {
+            if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
+            else
+            {
+                if (MachineArcPointers[i.ID].ArrayIndex < GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs.Count - 1) // successor exists
+                {
+                    return GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs[MachineArcPointers[i.ID].ArrayIndex + 1];
+                }
+                else // Last job on the machine
+                {
+                    return null;
+                }
+            }
+
+        }
+
+        public Job GetMachinePredecessor(Job i)
+        {            
+            if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
+            else
+            {
+                if (MachineArcPointers[i.ID].ArrayIndex > 0) // predecessor exists
+                {
+                    return GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs[MachineArcPointers[i.ID].ArrayIndex - 1];
+                }
+                else // First job on the machine
+                {
+                    return null;
+                }
+            }                
+
+        }
 
         public double GetStartTimeOfJob(Job j)
         {
@@ -78,16 +116,16 @@ namespace SimulationTools
                 if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
                 if(Starttimes[i] > Maximum) { Maximum = Starttimes[i]; MaxID = i; }
             }
-            EstimatedCmax = Maximum + DAG.GetJobById(MaxID).MeanProcessingTime;
+            EstimatedCmax = Maximum + PrecedenceDAG.GetJobById(MaxID).MeanProcessingTime;
             Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
         }
 
         private void AssignJobsBy(Action<Job> AssignmentLogic)
         {
-            int[] nParentsProcessed = new int[DAG.Jobs.Count];
+            int[] nParentsProcessed = new int[PrecedenceDAG.N];
 
             Queue<Job> AllPredDone = new Queue<Job>(); // Jobs whose predecessors have been visited           
-            foreach (Job j in DAG.Jobs) //Jobs without predecessors are ready to visit.
+            foreach (Job j in PrecedenceDAG.Jobs) //Jobs without prec constraints and without machine parents are ready to visit.
             {
                 if (j.Predecessors.Count == 0)
                 {
@@ -164,14 +202,14 @@ namespace SimulationTools
         public void AssignByRolling()
         {
             Description = "Rolling Machine Assignment";
-            if (DAG.Jobs.Count <= 1)
+            if (PrecedenceDAG.N <= 1)
             {
                 throw new Exception("No DAG given. Cannot build schedule without problem instance");
             }
             int NJobsAssigned = 0;
-            int[] nParentsProcessed = new int[DAG.N + 1];
+            int[] nParentsProcessed = new int[PrecedenceDAG.N + 1];
             Queue<Job> AllPredDone = new Queue<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
-            foreach (Job j in DAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
+            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
             {
                 if (j.Predecessors.Count == 0)
                 {
@@ -213,7 +251,7 @@ namespace SimulationTools
                         // if it is the first job on the machine, no precedence arc is needed:
                         if (GetMachineByID(CandidateMachineID).AssignedJobs.Count > 0)
                         {
-                            DAG.AddArc(GetMachineByID(CandidateMachineID).LastJob(), CurrentJob);
+                            PrecedenceDAG.AddArc(GetMachineByID(CandidateMachineID).LastJob(), CurrentJob);
                         }
                         //IMPORTANT: Only do this after the queue has been updated and after machine arcs have been updated                         
                         AssignJobToMachine(CurrentJob, GetMachineByID(CandidateMachineID));
@@ -225,7 +263,7 @@ namespace SimulationTools
                 if (!DebugAssignmentSuccess) { throw new Exception("Schedulde.Build was unable to create a feasible schedule: the algorithm is bugged."); }
                 NJobsAssigned++;                
             }
-            if (NJobsAssigned < DAG.Jobs.Count)
+            if (NJobsAssigned < PrecedenceDAG.N)
             {
                 throw new Exception("Not all jobs assigned");
             }
@@ -248,7 +286,7 @@ namespace SimulationTools
                 Console.Write(Environment.NewLine);
             }
             Console.WriteLine("Job info:");
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Console.WriteLine("  Job {0} is on M {1}. OutArcs:", j.ID, GetMachineByJobID(j.ID).MachineID);
                 foreach(Job succ in j.Successors)
@@ -265,6 +303,10 @@ namespace SimulationTools
             }
 
         }
+        private void DebugPrintJobId(Job j)
+        {
+            Console.WriteLine(j.ID);
+        }
 
         public void MakeHTMLImage(string title)
         {
@@ -278,7 +320,7 @@ namespace SimulationTools
                 // css part:
                 int scale = 20;
                 double top, left, width;                
-                foreach (Job j in DAG.Jobs)
+                foreach (Job j in PrecedenceDAG.Jobs)
                 {
                     top = 50 + 50 * GetMachineByJobID(j.ID).MachineID;
                     left =  Starttimes[j.ID] * scale;
@@ -292,7 +334,7 @@ namespace SimulationTools
                 file.WriteLine(@"<div>");
                 file.WriteLine(title);
                 file.WriteLine(@"</div>");
-                foreach (Job j in DAG.Jobs)
+                foreach (Job j in PrecedenceDAG.Jobs)
                 {
                     file.WriteLine("<div class=\"j{0}\"> J{0}; </div>",j.ID);
                 }
@@ -316,7 +358,7 @@ namespace SimulationTools
 
         public void SetESS()
         {
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Starttimes[j.ID] = ESS[j.ID];
             }
@@ -324,7 +366,7 @@ namespace SimulationTools
 
         public void SetLSS()
         {
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Starttimes[j.ID] = DynamicDueDate[j.ID] - j.MeanProcessingTime;
             }
@@ -336,9 +378,10 @@ namespace SimulationTools
         public void SetReleaseDates()
         {
             //init
-            int[] nParentsProcessed = new int[DAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
+            throw new Exception("Deprecated code");
+            int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
             Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
-            foreach (Job j in DAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
+            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
             {
                 if (j.Predecessors.Count == 0)
                 {
@@ -371,7 +414,81 @@ namespace SimulationTools
             //debug:
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing earliest release dates:");
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
+            {
+                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
+            }
+
+        }
+
+        private void UpdateReleaseDateFor(Job j)
+        {
+            foreach (Job Parent in j.Predecessors)
+            {
+                if (ESS[j.ID] < ESS[Parent.ID] + Parent.MeanProcessingTime)
+                {
+                    ESS[j.ID] = ESS[Parent.ID] + Parent.MeanProcessingTime;
+                }
+            }
+            if (GetMachinePredecessor(j) != null && ESS[j.ID] < ESS[GetMachinePredecessor(j).ID] + GetMachinePredecessor(j).MeanProcessingTime)
+            {
+                ESS[j.ID] = ESS[GetMachinePredecessor(j).ID] + GetMachinePredecessor(j).MeanProcessingTime;
+            }
+        }
+
+        public void CalcESS()
+        {
+            ForeachJobInPrecOrderDo(UpdateReleaseDateFor);
+        }
+
+
+
+        public void ForeachJobInPrecOrderDo(Action<Job> PerFormAction)
+        {
+            int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
+            Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
+            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
+            {
+                if (j.Predecessors.Count == 0 && GetMachinePredecessor(j) == null)
+                {
+                    AllPredDone.Push(j);
+                    ESS[j.ID] = j.EarliestReleaseDate;
+                }
+            }
+            Job CurrentJob = null;
+            bool[] IsVisited = new bool[PrecedenceDAG.N + 1];
+            bool[] IsPushed = new bool[PrecedenceDAG.N + 1];
+            //algo
+            while (AllPredDone.Count > 0)
+            {
+                CurrentJob = AllPredDone.Pop();
+
+                PerFormAction(CurrentJob);
+
+                IsVisited[CurrentJob.ID] = true;
+                Job MachineSucc = GetMachineSuccessor(CurrentJob);
+                if (MachineSucc != null && nParentsProcessed[MachineSucc.ID] == MachineSucc.Predecessors.Count)
+                {
+                    if(!IsPushed[MachineSucc.ID]) AllPredDone.Push(MachineSucc);
+                }
+                foreach (Job Child in CurrentJob.Successors)
+                {
+                    nParentsProcessed[Child.ID]++;
+                    // if all prec predecessors are processed and either there is no machine parent or that has been processed aswell
+                    if (nParentsProcessed[Child.ID] == Child.Predecessors.Count && (GetMachinePredecessor(Child) == null || IsVisited[GetMachinePredecessor(Child).ID]))
+                    {
+                        if (!IsPushed[Child.ID]) AllPredDone.Push(Child);
+                    }
+                }
+                // also check the machine arc: // Todo, check we are not adding jobs twice!
+                
+
+            }
+
+            //debug:
+            Console.WriteLine("*************************************************");
+            Console.WriteLine("Printing earliest release dates:");
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
             }
@@ -385,9 +502,9 @@ namespace SimulationTools
         public void SetDeadlines(double Cmax)
         {
             //init
-            int[] nChildrenProcessed = new int[DAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
+            int[] nChildrenProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
             Stack<Job> AllSuccDone = new Stack<Job>(); // The jobs that will no longer change due date are those for which all Parents have been considered.           
-            foreach (Job j in DAG.Jobs)  //All jobs without successor can know their final duedate (it is equal to Cmax).
+            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without successor can know their final duedate (it is equal to Cmax).
             {
                 if (j.Successors.Count == 0)
                 {
@@ -424,21 +541,21 @@ namespace SimulationTools
             //debug:
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing latest due dates:");
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Console.WriteLine("Job with ID {0} has Dj {1}", j.ID, DynamicDueDate[j.ID]);
             }
 
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing Latest Start times:");
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Console.WriteLine("Job with ID {0} has LSS {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime());
             }
 
             Console.WriteLine("*************************************************");
             Console.WriteLine("Printing Slack:");
-            foreach (Job j in DAG.Jobs)
+            foreach (Job j in PrecedenceDAG.Jobs)
             {
                 Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - ESS[j.ID]); //LSS - ESS
             }
@@ -473,10 +590,11 @@ namespace SimulationTools
 
         bool IsFeasibleAssignment(Job j, Machine m)
         {
+            Console.Error.WriteLine("Waring: TODO: Update IsFeasibleAssignment");
             if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {
-                if (DAG.PathExists(j, m.LastJob()))
+                if (PrecedenceDAG.PathExists(j, m.LastJob()))
                 {
                     //then adding j to m will create a cycle
                     return false;
@@ -490,16 +608,29 @@ namespace SimulationTools
         /// </summary>
         /// <param name="j"></param>
         /// <param name="m"></param>
+        /*
         void AssignJobToMachine(Job j, Machine m)
         {
-            if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
+            if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
             else
             {
                 if (m.AssignedJobs.Count > 0)
                 {
-                    DAG.AddArc(m.LastJob(), j); // todo: change to add machinearc
+                    PrecedenceDAG.AddArc(m.LastJob(), j); // todo: change to add machinearc
                 }
                 m.AssignedJobs.Add(j);
+                m.Load += j.MeanProcessingTime;
+                AssignedMachineID[j.ID] = m.MachineID;
+            }
+        }
+       */
+        void AssignJobToMachine(Job j, Machine m)
+        {
+            if (GetMachineArcPointer(j) != null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
+            else
+            {
+                m.AssignedJobs.Add(j);
+                MachineArcPointers[j.ID] = new MachineArcPointer(m.MachineID, m.AssignedJobs.Count - 1);
                 m.Load += j.MeanProcessingTime;
                 AssignedMachineID[j.ID] = m.MachineID;
             }
@@ -512,7 +643,7 @@ namespace SimulationTools
 
         void AssignJobToMachineById(int Jid, int Mid)
         {
-            AssignJobToMachine(DAG.GetJobById(Jid), GetMachineByID(Mid));
+            AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
         private Machine GetMachineByID(int MachineID)

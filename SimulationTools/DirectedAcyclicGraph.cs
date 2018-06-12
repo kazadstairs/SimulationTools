@@ -12,14 +12,16 @@ namespace SimulationTools
         public int M { get; private set; }
 
         public List<Job> Jobs { get; private set; }
-        private List<Arc> MachineArcs;
+        private List<Arc> PrecedenceArcs;
+        // MACHINE ARCS ARE PART OF THE SCHEDULE private List<MachineArc> MachineArcs;
 
         public DirectedAcyclicGraph()
         {
             N = 0;
             M = 0;
             Jobs = new List<Job>();
-            Arcs = new List<Arc>();
+            PrecedenceArcs = new List<Arc>();
+            
         }
 
         public DirectedAcyclicGraph(int Nvertices, int Medges)
@@ -27,7 +29,7 @@ namespace SimulationTools
             N = Nvertices;
             M = Medges;
             Jobs = new List<Job>(N);
-            Arcs = new List<Arc>(M);
+            PrecedenceArcs = new List<Arc>(M);
         }
 
         public void AddJob(Job j)
@@ -47,7 +49,7 @@ namespace SimulationTools
             { //Arc already present, no need to add it again 
                 return;
             }
-            Arcs.Add(new Arc(u, v));
+            PrecedenceArcs.Add(new Arc(u, v));
             u.Successors.Add(v);
             v.Predecessors.Add(u);
         }

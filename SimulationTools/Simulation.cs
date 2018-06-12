@@ -24,7 +24,7 @@ namespace SimulationTools
             NRuns = _Nruns;
             Sched = _sched;
             BuildPath();
-            HasBeenMadeAvailable = new bool[Sched.DAG.N];
+            HasBeenMadeAvailable = new bool[Sched.PrecedenceDAG.N];
 
         }
 
@@ -56,7 +56,7 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.DAG.N,this);
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.PrecedenceDAG.N,this);
                 Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();
@@ -72,7 +72,7 @@ namespace SimulationTools
             EventList = new PriorityQueue<Event>();
             //Problem = new ProblemInstance();
 
-            foreach(Job J in Sched.DAG.Jobs)
+            foreach(Job J in Sched.PrecedenceDAG.Jobs)
             {
                 EventList.Insert(new EJobRelease(J.EarliestReleaseDate, this, J));
                 EventList.Insert(new EJobScheduledStart(Sched.GetStartTimeOfJob(J), this, J));
@@ -108,7 +108,7 @@ namespace SimulationTools
 
         private void CleanJobs()
         {
-            foreach (Job j in Sched.DAG.Jobs)
+            foreach (Job j in Sched.PrecedenceDAG.Jobs)
             {
                 j.ResetSimulationVars();
                 HasBeenMadeAvailable[j.ID] = false;
