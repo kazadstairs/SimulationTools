@@ -674,13 +674,22 @@ namespace SimulationTools
 
                 }
                 // same logic as the foreach above. Note that a successor will only be visited once, independent of how many in arcs it has.
-                 MSucc = GetMachineSuccessor(CurrentJob);
-                 if(ApplyLogic(MSucc) == true) { return true; }
-                 else if (!BFSVisited[MSucc.ID])
-                 {
-                     BFSVisited[MSucc.ID] = true;
-                     BFSQueue.Enqueue(MSucc);
-                 }
+                // ONLY check for successors if this job is assigned
+                if (AssignedMachineID[CurrentJob.ID] == 0)
+                {
+                    //Job not yet assigned, no successor arcs will exits.
+                }
+                else
+                {
+                    MSucc = GetMachineSuccessor(CurrentJob);
+                    if (ApplyLogic(MSucc) == true) { return true; }
+                    else if (!BFSVisited[MSucc.ID])
+                    {
+                        BFSVisited[MSucc.ID] = true;
+                        BFSQueue.Enqueue(MSucc);
+                    }
+                }
+                   
 
             }
             return false;
@@ -721,6 +730,7 @@ namespace SimulationTools
                 MachineArcPointers[j.ID] = new MachineArcPointer(m.MachineID, m.AssignedJobs.Count - 1);
                 m.Load += j.MeanProcessingTime;
                 AssignedMachineID[j.ID] = m.MachineID;
+                Console.WriteLine("DEBUG LOG: Job {0} assigned to machine {1}", j.ID, m.MachineID);
             }
         }
 
