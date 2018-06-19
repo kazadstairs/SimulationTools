@@ -55,17 +55,18 @@ namespace SimulationTools
 
     class SimulationJob
     {
-        static Job JobParams;
+        public Job JobParams;
         
         public int nPredComplete { get; private set; }
         public Schedule Sched;
         public List<SimulationJob> Predecessors;
         public List<SimulationJob> Successors;
 
+        public bool HasBeenMadeAvailable;
+
         public SimulationJob(Job OriginalJob, Simulation Sim)
         {
             JobParams = OriginalJob;
-            Sched = S;
             Predecessors = new List<SimulationJob>(JobParams.Predecessors.Count + 1);
             Successors = new List<SimulationJob>(JobParams.Successors.Count + 1);
 
@@ -82,7 +83,53 @@ namespace SimulationTools
             {
                 if (succ != MSucc) { Successors.Add(Sim.SimulationJobs[succ.ID]); }
             }
+
+            
         }
+
+        public void PredComplete()
+        {
+            nPredComplete++;
+        }
+
+        public bool IsAvailableAt(double time)
+        {
+            if (HasBeenMadeAvailable) { return false; } // throw new Exception("Job Available for a second time!"); }
+            if ((JobParams.EarliestReleaseDate <= time)
+                    && (AllPredComplete()) //|| Predecessors.Count == 0
+                    && (Sched.GetStartTimeOfJob(JobParams) <= time)
+                    )
+            {
+                HasBeenMadeAvailable = true;
+                return true;
+            }
+            return false;
+        }
+
+        public bool AllPredComplete() // todo, just return comparison
+        {
+            if (nPredComplete >= Predecessors.Count)
+            {
+                Console.WriteLine("ALL PREDECESSORS COMPLETE FOR JOB {0}",JobParams.ID);
+                return true;
+            }
+            return false;
+        }
+
+        public double SampleProcessingTime()
+        {
+            //todo: this is arbitrary std dev
+            return Distribution.SampleNormal(JobParams.MeanProcessingTime, 1.0);
+        }
+
+
+
+        public void ResetSimulationVars()
+        {
+            throw new System.NotImplementedException();
+        }
+
+
     }
         /*
         public Job(int _id, double pj, double rj, Job predecessor)
@@ -117,16 +164,9 @@ namespace SimulationTools
         /// <summary>
         /// Use this function to tell a job that its predecessor has been completed. Will update number of completed predecessors
         /// </summary>
-        public void PredComplete()
-        {
-            nPredComplete++;
-        }
+        
 
-        public double SampleProcessingTime()
-        {
-            //todo: this is arbitrary std dev
-            return Distribution.SampleNormal(MeanProcessingTime,1.0);
-        }
+ 
 /*
         public void AssignToMachine(Machine M)
         {
@@ -134,22 +174,10 @@ namespace SimulationTools
             IsAssigned = true;
         
 
-        public bool AllPredComplete() // todo, just return comparison
-        {
-            if (nPredComplete >= Predecessors.Count)
-            {
-                //Console.WriteLine("ALL PREDECESSORS COMPLETE FOR JOB {0}", ID);
-                return true;
-            }
-            return false;
-        }
 
 
-        public void ResetSimulationVars()
-        {
-            nPredComplete = 0;
-            //HasBeenMadeAvailable = false;
-        }
+
+
 
     */
 

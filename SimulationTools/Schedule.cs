@@ -532,6 +532,8 @@ namespace SimulationTools
         /// <param name="Cmax"></param>
         public void SetDeadlines(double Cmax)
         {
+            throw new System.NotImplementedException("SetDeadlines is depricated");
+            /*
             //init
             int[] nChildrenProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
             Stack<Job> AllSuccDone = new Stack<Job>(); // The jobs that will no longer change due date are those for which all Parents have been considered.           
@@ -590,7 +592,7 @@ namespace SimulationTools
             {
                 Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - ESS[j.ID]); //LSS - ESS
             }
-
+            */
 
         }
 
@@ -619,13 +621,24 @@ namespace SimulationTools
 
         // todo, algorithm to make feasible schedules.
 
+        /// <summary>
+        /// Checks the feasibility of a machine assignment for both machine and prec arcs.
+        /// </summary>
+        /// <param name="j"></param>
+        /// <param name="m"></param>
+        /// <returns></returns>
         bool IsFeasibleAssignment(Job j, Machine m)
         {
             Console.Error.WriteLine("Waring: TODO: Update IsFeasibleAssignment");
             if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {
-                if (PathExists(j, m.LastJob()))
+                if (m.LastJob() == null)
+                {
+                    // then the machine is empty and the assignment is always feasible.
+                    return true;
+                }
+                else if (PathExists(j, m.LastJob()))
                 {
                     //then adding j to m will create a cycle
                     return false;

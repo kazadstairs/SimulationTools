@@ -28,11 +28,11 @@ namespace SimulationTools
             SimulationJobs = new SimulationJob[Sched.PrecedenceDAG.N];
             for (int i = 0; i < Sched.PrecedenceDAG.N; i++)
             {
-                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i],Sched);
+                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i],this);
             }
             for (int i = 0; i < Sched.PrecedenceDAG.N; i++)
             {
-                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i], Sched);
+                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i], this);
             }
             HasBeenMadeAvailable = new bool[Sched.PrecedenceDAG.N];
 
@@ -82,10 +82,10 @@ namespace SimulationTools
             EventList = new PriorityQueue<Event>();
             //Problem = new ProblemInstance();
 
-            foreach(Job J in Sched.PrecedenceDAG.Jobs)
+            foreach(SimulationJob J in SimulationJobs)
             {
-                EventList.Insert(new EJobRelease(J.EarliestReleaseDate, this, J));
-                EventList.Insert(new EJobScheduledStart(Sched.GetStartTimeOfJob(J), this, J));
+                EventList.Insert(new EJobRelease(J.JobParams.EarliestReleaseDate, this, J));
+                EventList.Insert(new EJobScheduledStart(Sched.GetStartTimeOfJob(J.JobParams), this, J));
             }
             // at the beginning, all machines are available
             foreach(Machine M in Sched.Machines)
@@ -118,14 +118,14 @@ namespace SimulationTools
 
         private void CleanJobs()
         {
-            foreach (Job j in Sched.PrecedenceDAG.Jobs)
+            foreach (SimulationJob j in SimulationJobs)
             {
                 j.ResetSimulationVars();
-                HasBeenMadeAvailable[j.ID] = false;
+                j.HasBeenMadeAvailable = false; // todo put this in reset simulationvars
             }
         }
 
-        public bool IsAvailableAt(Job j, double time)
+        /*public bool IsAvailableAt(SimulationJob j, double time)
         {
             if (HasBeenMadeAvailable[j.ID]) { return false; } // throw new Exception("Job Available for a second time!"); }
             if ((j.EarliestReleaseDate <= time)
@@ -139,5 +139,6 @@ namespace SimulationTools
             return false;
 
         }
+        */
     }
 }
