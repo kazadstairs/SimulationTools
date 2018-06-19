@@ -16,7 +16,7 @@ namespace SimulationTools
         // for graph properties
         public List<Job> Predecessors { get; private set; } // NOT INCLUDING MACHINE PREDECESSOR
         public List<Job> Successors { get; private set; } // NOT INCLUDING MACHINE SUCCESSOR
-        public bool IsBFSVisited;
+        //public bool IsBFSVisited;
 
 
         // for simulation
@@ -43,7 +43,7 @@ namespace SimulationTools
             MeanProcessingTime = pj;
             EarliestReleaseDate = rj;
             Successors = new List<Job>();
-            IsBFSVisited = false;
+            //IsBFSVisited = false;
             //IsAssigned = false;
             //HasBeenMadeAvailable = false;
             //ScheduleStartTime = -1;

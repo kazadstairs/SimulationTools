@@ -40,7 +40,7 @@ namespace SimulationTools
 
         public void AddArc(Job u, Job v)
         {
-            if (PathExists(v, u))
+            if (PrecPathExists(v, u))
             {
                 throw new Exception(string.Format("Adding arc from vertex {0} to vertex {1} would create a cycle in DAG", u.ID, v.ID));
             }
@@ -71,63 +71,42 @@ namespace SimulationTools
 
         //In O(V + E) return all jobs in precedence order, IGNORING MACHINE Assignments!
 
-
-        public bool PathExists(Job u, Job v)
+            /// <summary>
+            /// Perform BFS on the Precedence graph from OriginJob. Logic should return true when search is successfull and false if the search is exhaustive and unsuccessfull.
+            /// </summary>
+            /// <param name="OriginJob"></param>
+            /// <param name="ApplyLogic"></param>
+            /// <returns></returns>
+        private bool PrecBFS(Job OriginJob, Func<Job, bool> ApplyLogic)
         {
-            // idea: set all visited vertices on a stack, when finished, reset them all to unvisited.
-            // so ensure that this is always true after the algorithm:
-
-            foreach (Job w in Jobs)
-            {
-                w.IsBFSVisited = false;
-            }
-
-            Stack<Job> VisitedVertices = new Stack<Job>();
-
+            bool[] BFSVisited = new bool[N];
             Queue<Job> BFSQueue = new Queue<Job>();
-            Job CurrentVertex = null;
-            BFSQueue.Enqueue(u);
+            BFSQueue.Enqueue(OriginJob);
+            Job CurrentJob;
             while (BFSQueue.Count > 0)
             {
-                CurrentVertex = BFSQueue.Dequeue();
-                if (CurrentVertex == v)
+                CurrentJob = BFSQueue.Dequeue();
+                foreach (Job Succ in CurrentJob.Successors)
                 {
-                    while (VisitedVertices.Count > 0)
+                    if (ApplyLogic(Succ) == true) { return true; }
+                    else if (!BFSVisited[Succ.ID])
                     {
-                        VisitedVertices.Pop().IsBFSVisited = false;
-                    }
-                    return true; // path exists from u to v
-                }
-                else
-                {
-                    foreach (Job w in CurrentVertex.Successors)
-                    {
-                        if (!CurrentVertex.IsBFSVisited)
-                        {
-                            // add to explore list
-                            BFSQueue.Enqueue(w);
-                            w.IsBFSVisited = true;
-                            VisitedVertices.Push(w);
-                        }
-                        //otherwise it is already explored, do nothing
+                        BFSVisited[Succ.ID] = true;
+                        BFSQueue.Enqueue(Succ);
                     }
 
                 }
-
-            }
-            while (VisitedVertices.Count > 0)
-            {
-                VisitedVertices.Pop().IsBFSVisited = false;
             }
             return false;
+        }
 
-            
+        public bool PrecPathExists(Job u, Job v)
+        {
+            return PrecBFS(u, (Job Curr) => Curr == v);
 
         }
 
-        
 
-        
 
     }
 

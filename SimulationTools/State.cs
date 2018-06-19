@@ -11,3 +11,4 @@ namespace SimulationTools
         double CurrentTime;
     }
 }
+

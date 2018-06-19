@@ -436,13 +436,19 @@ namespace SimulationTools
             }
         }
 
+        /// <summary>
+        /// Given a schedule with machine assignments, estimate the earliest start schedule based on mean processing times.
+        /// </summary>
         public void CalcESS()
         {
             ForeachJobInPrecOrderDo(UpdateReleaseDateFor);
         }
 
 
-
+        /// <summary>
+        /// Performs the Action (Job ==> Void) on each Job in Precedence order (topological order). Considers Machine Predecessors.
+        /// </summary>
+        /// <param name="PerFormAction"></param>
         public void ForeachJobInPrecOrderDo(Action<Job> PerFormAction)
         {
             int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
@@ -594,13 +600,57 @@ namespace SimulationTools
             if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {
-                if (PrecedenceDAG.PathExists(j, m.LastJob()))
+                if (PathExists(j, m.LastJob()))
                 {
                     //then adding j to m will create a cycle
                     return false;
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Perform a breadth first search from OriginJob. Apply the Applylogic. Applylogic should return true in the case of early stopping and false if the search fails.
+        /// </summary>
+        /// <param name="OriginJob">The Job from which BFS is performed</param>
+        /// <param name="ApplyLogic">Job ==> Bool, returns true in the case of early stopping. False in the case of exhaustive unsuccessful search</param>
+        /// <returns></returns>
+        private bool BFSfrom(Job OriginJob, Func<Job,bool> ApplyLogic)
+        {
+            bool[] BFSVisited = new bool[this.PrecedenceDAG.N];
+            Queue<Job> BFSQueue = new Queue<Job>();
+            BFSQueue.Enqueue(OriginJob);
+            Job CurrentJob;
+            Job MSucc;
+            while (BFSQueue.Count > 0)
+            {
+                CurrentJob = BFSQueue.Dequeue();
+                foreach (Job Succ in CurrentJob.Successors)
+                {
+                    if (ApplyLogic(Succ) == true) { return true; }
+                    else if (!BFSVisited[Succ.ID])
+                    {
+                        BFSVisited[Succ.ID] = true;
+                        BFSQueue.Enqueue(Succ);
+                    }
+
+                }
+                // same logic as the foreach above. Note that a successor will only be visited once, independent of how many in arcs it has.
+                 MSucc = GetMachineSuccessor(CurrentJob);
+                 if(ApplyLogic(MSucc) == true) { return true; }
+                 else if (!BFSVisited[MSucc.ID])
+                 {
+                     BFSVisited[MSucc.ID] = true;
+                     BFSQueue.Enqueue(MSucc);
+                 }
+
+            }
+            return false;
+        }
+
+        public bool PathExists(Job OriginJob, Job TargetJob)
+        {
+            return BFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
         }
 
         /// <summary>
