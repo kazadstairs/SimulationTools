@@ -94,7 +94,7 @@ namespace SimulationTools
             // make machine available:
             Sim.EventList.Insert(new EMachineAvailable(Time, Sim, GetMachineForJob(J)));
             Sim.PerformanceMeasures.UpdateFinishPunctuality(J, Sim.Sched, Time);
-            // tell successor jobs this job is finished and check for new available jobs:
+            // tell successor jobs this job is finished and check for new available jobs
             foreach(Job suc in J.Successors)
             {
                 suc.PredComplete();

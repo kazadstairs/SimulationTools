@@ -12,6 +12,7 @@ namespace SimulationTools
         public PriorityQueue<Event> EventList;
         public Schedule Sched;
         public SimulationPerformanceMeasures PerformanceMeasures;
+        public SimulationJob [] SimulationJobs;
         int NRuns;
         private string OutPutPath; // { get; private set; }
         public string SimulationSettingsOutPutPath { get; private set; }
@@ -24,6 +25,15 @@ namespace SimulationTools
             NRuns = _Nruns;
             Sched = _sched;
             BuildPath();
+            SimulationJobs = new SimulationJob[Sched.PrecedenceDAG.N];
+            for (int i = 0; i < Sched.PrecedenceDAG.N; i++)
+            {
+                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i],Sched);
+            }
+            for (int i = 0; i < Sched.PrecedenceDAG.N; i++)
+            {
+                SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i], Sched);
+            }
             HasBeenMadeAvailable = new bool[Sched.PrecedenceDAG.N];
 
         }

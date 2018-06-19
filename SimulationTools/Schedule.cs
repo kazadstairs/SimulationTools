@@ -436,6 +436,31 @@ namespace SimulationTools
             }
         }
 
+
+        public void ForEachSuccDo(Job j, Action<Job> ApplyAction)
+        {
+            Job MSucc = GetMachineSuccessor(j);
+            ApplyAction(MSucc);
+            foreach (Job v in j.Successors)
+            {
+                if (v != MSucc) { ApplyAction(v); }
+            }
+        }
+
+        private List<Job> BuildSuccessorIDList(Job j)
+        {
+            Console.WriteLine("WARNING: BuildSuccessorIDList is slow. Are you sure you need it?");
+            List<Job> Succs = new List<Job>(j.Successors.Count + 1);
+            Job MSucc = GetMachineSuccessor(j);
+            Succs.Add(MSucc);
+            foreach (Job v in j.Successors)
+            {
+                if (v != MSucc) { Succs.Add(v);}
+            }
+            return Succs;
+        }
+
+
         /// <summary>
         /// Given a schedule with machine assignments, estimate the earliest start schedule based on mean processing times.
         /// </summary>

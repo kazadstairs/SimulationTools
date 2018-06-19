@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
+    /// <summary>
+    /// Fixed job, part of problem instance. Not to be updated during schedule building or simulation
+    /// </summary>
     class Job
     {
         public int ID { get; private set; } // Identifier to recognize the job
@@ -20,7 +23,7 @@ namespace SimulationTools
 
 
         // for simulation
-        public int nPredComplete { get; private set; }
+        
         //public bool HasBeenMadeAvailable;
 
         /*
@@ -31,8 +34,6 @@ namespace SimulationTools
         public double DynamicDueDate; // earliest start date of the job in a schedule
         // double ScheduleStartTime; //sj: The start time of the job in the schedule
         */
-
-
         public Job(int _id, double pj, double rj)
         {
             Init(_id, pj, rj);
@@ -50,7 +51,39 @@ namespace SimulationTools
             Predecessors = new List<Job>();
             //Dist = new Distribution();
         }
+    }
 
+    class SimulationJob
+    {
+        static Job JobParams;
+        
+        public int nPredComplete { get; private set; }
+        public Schedule Sched;
+        public List<SimulationJob> Predecessors;
+        public List<SimulationJob> Successors;
+
+        public SimulationJob(Job OriginalJob, Simulation Sim)
+        {
+            JobParams = OriginalJob;
+            Sched = S;
+            Predecessors = new List<SimulationJob>(JobParams.Predecessors.Count + 1);
+            Successors = new List<SimulationJob>(JobParams.Successors.Count + 1);
+
+            Job Mpred = Sched.GetMachinePredecessor(OriginalJob);
+            Predecessors.Add(Sim.SimulationJobs[Mpred.ID]);
+            foreach (Job p in OriginalJob.Predecessors)
+            {
+                if (p != Mpred) { Predecessors.Add(Sim.SimulationJobs[p.ID]); }
+            }
+
+            Job MSucc = Sched.GetMachineSuccessor(OriginalJob);
+            Successors.Add(Sim.SimulationJobs[MSucc.ID]);
+            foreach (Job succ in OriginalJob.Successors)
+            {
+                if (succ != MSucc) { Successors.Add(Sim.SimulationJobs[succ.ID]); }
+            }
+        }
+    }
         /*
         public Job(int _id, double pj, double rj, Job predecessor)
         {
@@ -80,7 +113,7 @@ namespace SimulationTools
         }
         */
 
-
+        /* TODO MOVE THESE TO SIMJOB 
         /// <summary>
         /// Use this function to tell a job that its predecessor has been completed. Will update number of completed predecessors
         /// </summary>
@@ -94,23 +127,6 @@ namespace SimulationTools
             //todo: this is arbitrary std dev
             return Distribution.SampleNormal(MeanProcessingTime,1.0);
         }
-
-        /* property of schedule => todo, move to schedule
-        public bool IsAvailableAt(double time)
-        {
-            if (HasBeenMadeAvailable) { return false; } // throw new Exception("Job Available for a second time!"); }
-            else if ((EarliestReleaseDate <= time)
-                    && (AllPredComplete()) //|| Predecessors.Count == 0
-                    && (ScheduleStartTime <= time)
-                    )
-            {
-                HasBeenMadeAvailable = true;
-                return true;
-            }
-            return false;
-            
-        }
-        */
 /*
         public void AssignToMachine(Machine M)
         {
@@ -118,12 +134,6 @@ namespace SimulationTools
             IsAssigned = true;
         
 
-        public void SetStartTime(double starttime)
-        {
-            if (!IsAssigned) { throw new Exception("Cannot set start time for a job that is not yet assigned to a machine"); }
-            ScheduleStartTime = starttime;
-        }
-*/
         public bool AllPredComplete() // todo, just return comparison
         {
             if (nPredComplete >= Predecessors.Count)
@@ -141,5 +151,6 @@ namespace SimulationTools
             //HasBeenMadeAvailable = false;
         }
 
-    }
+    */
+
 }
