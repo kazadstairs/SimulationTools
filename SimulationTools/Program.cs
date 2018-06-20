@@ -40,8 +40,8 @@ namespace SimulationTools
             */
 
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
+            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
+            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
 
 
@@ -69,8 +69,8 @@ namespace SimulationTools
 
 
 
-           // Console.WriteLine("All operations complete.");
-           // Console.ReadLine();
+            //Console.WriteLine("All operations complete.");
+            //Console.ReadLine();
         }
 
         // todo: Expand to allow chooosing of starttime decissions.

@@ -505,25 +505,12 @@ namespace SimulationTools
                 foreach (Job Child in CurrentJob.Successors)
                 {
                     nParentsProcessed[Child.ID]++;
-                    // if all prec predecessors are processed and either there is no machine parent or that has been processed aswell
                     if (nParentsProcessed[Child.ID] == Child.Predecessors.Count && (GetMachinePredecessor(Child) == null || IsVisited[GetMachinePredecessor(Child).ID]))
                     {
                         if (!IsPushed[Child.ID]) AllPredDone.Push(Child);
                     }
                 }
-                // also check the machine arc: // Todo, check we are not adding jobs twice!
-                
-
             }
-
-            //debug:
-            Console.WriteLine("*************************************************");
-            Console.WriteLine("Printing earliest release dates:");
-            foreach (Job j in PrecedenceDAG.Jobs)
-            {
-                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
-            }
-
         }
 
         /// <summary>

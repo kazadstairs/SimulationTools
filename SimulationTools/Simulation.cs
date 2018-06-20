@@ -80,6 +80,7 @@ namespace SimulationTools
         {
             Console.WriteLine("***** Setting Up Simulation...");
             EventList = new PriorityQueue<Event>();
+            CreateSimulationJobDAG();
             //Problem = new ProblemInstance();
 
             foreach(SimulationJob J in SimulationJobs)
@@ -92,6 +93,12 @@ namespace SimulationTools
             {
                 EventList.Insert(new EMachineAvailable(0, this, M));
             }
+        }
+
+        private void CreateSimulationJobDAG()
+        {
+            Sched.ForeachJobInPrecOrderDo((Job j) => SimulationJobs[j.ID] = new SimulationJob(j, this));
+            Sched.ForeachJobInPrecOrderDo((Job j) => SimulationJobs[j.ID].SetPredAndSucc());
         }
 
         private void PerformSimulation()

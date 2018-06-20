@@ -55,6 +55,7 @@
     <Compile Include="RobustnessMeasures.cs" />
     <Compile Include="Schedule.cs" />
     <Compile Include="ScheduleDAG.cs" />
+    <Compile Include="SimulationJob.cs" />
     <Compile Include="SimulationPerformanceMeasures.cs" />
     <Compile Include="Simulation.cs" />
     <Compile Include="State.cs" />
