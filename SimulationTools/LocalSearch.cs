@@ -91,7 +91,8 @@ namespace SimulationTools
         static private void SameMachineSwap(Job J1, Job J2, Machine M, Schedule Sched)
         {
             Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
-            if (Sched.Problem.DAG.PrecPathExists(J2, J1)) { Console.WriteLine("Infeasible Swap"); }
+            Console.WriteLine("Warning TODO: Check feasibility of the swaps");
+            //todo: Check feasibility of the swaps. Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
             int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
             int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
             //update the position of the jobs in the list.
