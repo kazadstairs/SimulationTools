@@ -57,5 +57,20 @@ namespace SimulationTools
         public static int RMCount = 1;
 
 
+        public static double DebugNumberOfJobsInIndexOrder(Schedule Sched)
+        {
+            double NGoodPairs = 0;
+            foreach (Machine M in Sched.Machines)
+            {
+                foreach (Job J in M.AssignedJobs)
+                {
+                    if (Sched.GetMachineSuccessor(J) == null) { NGoodPairs += 1;}
+                    else if(J.ID < Sched.GetMachineSuccessor(J).ID) { NGoodPairs += 1; }
+                }
+            }
+            return NGoodPairs;
+
+        }
+
     }
 }

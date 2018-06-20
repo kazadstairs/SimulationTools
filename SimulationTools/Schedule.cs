@@ -13,7 +13,7 @@ namespace SimulationTools
         // List<Tuple<Job, Machine, double>> Assignments;
 
         public DirectedAcyclicGraph PrecedenceDAG;
-        private MachineArcPointer []  MachineArcPointers; // Maps Job Id to machine it is assigned to.
+        public MachineArcPointer[] MachineArcPointers { get; private set; } // Maps Job Id to machine it is assigned to and its position in the list.
         public List<Machine> Machines; 
         public ProblemInstance Problem;
 
@@ -285,6 +285,7 @@ namespace SimulationTools
                 }
                 Console.Write(Environment.NewLine);
             }
+            /*
             Console.WriteLine("Job info:");
             foreach (Job j in PrecedenceDAG.Jobs)
             {
@@ -301,6 +302,7 @@ namespace SimulationTools
                     }
                 }
             }
+            */
 
         }
         private void DebugPrintJobId(Job j)
@@ -605,8 +607,7 @@ namespace SimulationTools
 
         }
         */
-
-        // todo, algorithm to make feasible schedules.
+        
 
         /// <summary>
         /// Checks the feasibility of a machine assignment for both machine and prec arcs.
@@ -616,7 +617,6 @@ namespace SimulationTools
         /// <returns></returns>
         bool IsFeasibleAssignment(Job j, Machine m)
         {
-            Console.Error.WriteLine("Waring: TODO: Update IsFeasibleAssignment");
             if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned!"); }
             else
             {
@@ -717,7 +717,6 @@ namespace SimulationTools
                 MachineArcPointers[j.ID] = new MachineArcPointer(m.MachineID, m.AssignedJobs.Count - 1);
                 m.Load += j.MeanProcessingTime;
                 AssignedMachineID[j.ID] = m.MachineID;
-                Console.WriteLine("DEBUG LOG: Job {0} assigned to machine {1}", j.ID, m.MachineID);
             }
         }
 

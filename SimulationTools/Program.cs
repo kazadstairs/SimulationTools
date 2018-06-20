@@ -38,11 +38,15 @@ namespace SimulationTools
             
             SchedulesToSimulate.Add(Sched);
             */
-
-            List<Schedule> SchedulesToSimulate = new List<Schedule>();
+            for (int i = 0; i < 10; i++)
+            {
+                Schedule LSSched = NewSchedule(Pinedo, "Random");
+                LocalSearch.SwapHillClimb(ref LSSched, RobustnessMeasures.DebugNumberOfJobsInIndexOrder);
+            }
+            //List<Schedule> SchedulesToSimulate = new List<Schedule>();
             //SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
             //SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
+            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
 
 
             //Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
@@ -54,10 +58,10 @@ namespace SimulationTools
             //SchedulesToSimulate.Add(Sched);
 
 
-            Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
-            {
-                new Simulation(Nruns, currentSched).Perform();
-            });
+            //Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
+            //{
+            //   new Simulation(Nruns, currentSched).Perform();
+            //});
 
 
 

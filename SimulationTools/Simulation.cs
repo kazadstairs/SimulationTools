@@ -55,6 +55,7 @@ namespace SimulationTools
                 swRMs.WriteLine(InstanceName);
                 swRMs.WriteLine(Sched.Description);
                 swRMs.WriteLine(RobustnessMeasures.RMCount);
+                swRMs.WriteLine("Sum Of Free Slacks");
                 swRMs.Write(RobustnessMeasures.SumOfFreeSlacks(Sched));
                 swRMs.Write(Environment.NewLine);
                 swRMs.WriteLine(NRuns);
@@ -131,21 +132,6 @@ namespace SimulationTools
                 j.HasBeenMadeAvailable = false; // todo put this in reset simulationvars
             }
         }
-
-        /*public bool IsAvailableAt(SimulationJob j, double time)
-        {
-            if (HasBeenMadeAvailable[j.ID]) { return false; } // throw new Exception("Job Available for a second time!"); }
-            if ((j.EarliestReleaseDate <= time)
-                    && (j.AllPredComplete()) //|| Predecessors.Count == 0
-                    && (Sched.GetStartTimeOfJob(j) <= time)
-                    )
-            {
-                HasBeenMadeAvailable[j.ID] = true;
-                return true;
-            }
-            return false;
-
-        }
-        */
+        
     }
 }

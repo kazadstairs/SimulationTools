@@ -6,22 +6,6 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-   /* class ScheduleDAG : DirectedAcyclicGraph
-    {
-        DirectedAcyclicGraph PrecedenceDAG;
-        public ScheduleDAG(DirectedAcyclicGraph _PrecedenceDAG)
-        {
-            PrecedenceDAG = _PrecedenceDAG;
-            MachineArcPointers = new List<MachineArcPointer>(PrecedenceDAG.Jobs.Count);
-        }
-
-        public 
-
-        public void VisitJobsInPrecOrder()
-        {
-
-        }
-    }*/
 
     class MachineArcPointer
     {
