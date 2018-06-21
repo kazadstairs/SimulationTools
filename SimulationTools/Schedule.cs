@@ -720,6 +720,29 @@ namespace SimulationTools
             }
         }
 
+        public void DeleteJobFromMachine(Job J)
+        {
+            Machine M = Machines[MachineArcPointers[J.ID].MachineId];
+            for(int i = MachineArcPointers[J.ID].ArrayIndex + 1; i < M.AssignedJobs.Count; i++)
+            {
+                MachineArcPointers[M.AssignedJobs[i].ID].ArrayIndex = i - 1;
+            }
+            M.AssignedJobs.RemoveAt(MachineArcPointers[J.ID].ArrayIndex);
+            MachineArcPointers[J.ID].ArrayIndex = -1;
+            MachineArcPointers[J.ID].MachineId = -1;            
+        }
+
+        public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
+        {
+            M.AssignedJobs.Insert(Index, J);
+            MachineArcPointers[J.ID].MachineId = M.MachineID;
+            MachineArcPointers[J.ID].ArrayIndex = Index;
+            for (int i = Index + 1; i < M.AssignedJobs.Count; i++)
+            {
+                MachineArcPointers[M.AssignedJobs[i].ID].ArrayIndex = i;
+            }
+        }
+
         public Machine GetMachineByJobID(int jobID)
         {
             return GetMachineByID(AssignedMachineID[jobID]);

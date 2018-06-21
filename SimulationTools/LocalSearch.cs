@@ -125,6 +125,21 @@ namespace SimulationTools
             return true;
         }
 
+        static private bool ToMachineAt(Job J, Machine NewM, int JindexOnM, Schedule Sched)
+        {
+            // check feasibility:
+            for (int i = JindexOnM; i < NewM.AssignedJobs.Count; i++)
+            {
+                if (Sched.PrecedenceDAG.PrecPathExists(Sched.PrecedenceDAG.GetJobById(i), J)) { return false; }
+            }
+
+            Sched.DeleteJobFromMachine(J);
+            Sched.InsertJobOnMachineAtIndex(J, NewM, JindexOnM);
+
+            return true;
+
+        }
+
     }
 
 
