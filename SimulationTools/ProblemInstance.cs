@@ -51,10 +51,12 @@ namespace SimulationTools
             // machine arcs all match prec arcs in this instance
             NMachines = 2;
 
-            Description = "Pinedo";
+            DAG.FillSuccessorDictionaries();
 
-            
+            Description = "Pinedo";            
         }
+
+
     }
     
 }

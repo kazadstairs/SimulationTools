@@ -13,6 +13,8 @@ namespace SimulationTools
 
         public List<Job> Jobs { get; private set; }
         private List<Arc> PrecedenceArcs;
+
+        public HashSet<int>[] TransitiveSuccessorsOf;
         // MACHINE ARCS ARE PART OF THE SCHEDULE private List<MachineArc> MachineArcs;
 
         public DirectedAcyclicGraph()
@@ -40,7 +42,7 @@ namespace SimulationTools
 
         public void AddArc(Job u, Job v)
         {
-            if (PrecPathExists(v, u))
+            if (SlowPrecPathExists(v, u))
             {
                 throw new Exception(string.Format("Adding arc from vertex {0} to vertex {1} would create a cycle in DAG", u.ID, v.ID));
             }
@@ -100,10 +102,32 @@ namespace SimulationTools
             return false;
         }
 
-        public bool PrecPathExists(Job u, Job v)
+        private bool SlowPrecPathExists(Job u, Job v)
         {
             return PrecBFS(u, (Job Curr) => Curr == v);
 
+        }
+
+        public bool PrecPathExists(Job u, Job v)
+        {
+            return TransitiveSuccessorsOf[u.ID].Contains(v.ID);
+
+        }
+
+        public void FillSuccessorDictionaries()
+        {
+            TransitiveSuccessorsOf = new HashSet<int>[N];
+            for (int i = 0; i < N; i++)
+            {
+                TransitiveSuccessorsOf[i] = new HashSet<int>();
+                for (int j = 0; j < N; j++)
+                {
+                    if (SlowPrecPathExists(GetJobById(i), GetJobById(j))) // slow but only once per problem instance.
+                    {
+                        TransitiveSuccessorsOf[i].Add(j); // hashset automatically adds each element only once.
+                    }
+                }
+            }
         }
 
 

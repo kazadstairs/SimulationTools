@@ -45,27 +45,26 @@ namespace SimulationTools
                                 J2 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J2index];
                                 // try the swap
                                 double OriginalFitness = FitnessFunction(CurrentSchedule);
-                                SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
-                                double NewFitness = FitnessFunction(CurrentSchedule);
-                                if (NewFitness > OriginalFitness)
+                                if (SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule))
                                 {
-                                    improvementFound = true;
-                                    Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
-                                    CurrentSchedule.Print();
+                                    double NewFitness = FitnessFunction(CurrentSchedule);
+                                    if (NewFitness > OriginalFitness)
+                                    {
+                                        improvementFound = true;
+                                        Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
+                                        CurrentSchedule.Print();
 
-                                    break;
-                                    // keep it
+                                        break;
+                                        // keep it
+                                    }
+                                    else
+                                    {
+                                        // undo swap
+                                        Console.WriteLine("No improvement, undoing..");
+                                        SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
+                                        //undoing should always be feasible
+                                    }
                                 }
-                                else
-                                {
-                                    // undo swap
-                                    Console.WriteLine("No improvement, undoing..");
-                                    SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
-                                }
-
-                                // if it improves keep it
-
-                                // if it does not, reset it
                             }
                         }
                     }
@@ -87,20 +86,43 @@ namespace SimulationTools
             return CurrentSchedule;
         }
 
-
-        static private void SameMachineSwap(Job J1, Job J2, Machine M, Schedule Sched)
+        /// <summary>
+        /// If feasible, will perform a swap and return true. If not feasible will not perform sawp. Does not consider fitness.
+        /// </summary>
+        /// <param name="J1">Left Job to be swapped</param>
+        /// <param name="J2">Right Job to be swapped</param>
+        /// <param name="M">Machine to swap on</param>
+        /// <param name="Sched">Schedule that is being updated</param>
+        /// <returns></returns>
+        static private bool SameMachineSwap(Job J1, Job J2, Machine M, Schedule Sched)
         {
-            Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
-            Console.WriteLine("Warning TODO: Check feasibility of the swaps");
+            
             //todo: Check feasibility of the swaps. Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
             int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
             int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
+            int LeftIndex = OldJ1Index;
+            int RightIndex = OldJ2Index;
+            if (OldJ2Index < OldJ1Index) { LeftIndex = OldJ2Index; RightIndex = OldJ1Index; }
+            // check feasibility of the swap, Assuming an already feasible setup.
+            for (int i = LeftIndex; i <= RightIndex - 1; i++)
+            {
+                
+                for (int j = i+1; j <= RightIndex; j++)
+                {
+                    // Between [J1 and J2] (inlusive) the arcs get reversed. Check all combos.
+                    if (Sched.PrecedenceDAG.PrecPathExists(M.AssignedJobs[i],M.AssignedJobs[j])) { return false; } // infeasible.
+                }
+            }
+            Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
+
             //update the position of the jobs in the list.
             M.AssignedJobs[OldJ1Index] = J2;
             M.AssignedJobs[OldJ2Index] = J1;
             //update the pointers:
             Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
             Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
+
+            return true;
         }
 
     }

@@ -449,9 +449,9 @@ namespace SimulationTools
             }
         }
 
-        private List<Job> BuildSuccessorIDList(Job j)
+        private List<Job> BuildSuccessorList(Job j)
         {
-            Console.WriteLine("WARNING: BuildSuccessorIDList is slow. Are you sure you need it?");
+            Console.WriteLine("WARNING: BuildSuccessorList is slow. Are you sure you need it?");
             List<Job> Succs = new List<Job>(j.Successors.Count + 1);
             Job MSucc = GetMachineSuccessor(j);
             Succs.Add(MSucc);
