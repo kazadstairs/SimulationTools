@@ -56,6 +56,38 @@ namespace SimulationTools
             Description = "Pinedo";            
         }
 
+        public void ReadFromFile(string FileName)
+        {
+            string[] lines = System.IO.File.ReadAllLines(FileName);
+            int Machines = int.Parse(lines[0]);
+            int Njobs = int.Parse(lines[1]);
+            // create jobs
+            string[] jobs = lines[2].Split();
+            string[] jobtemp;
+            int jobID = 1;
+            foreach (string job in jobs)
+            {
+                jobtemp = job.Split(',');
+                DAG.AddJob(new Job(jobID, int.Parse(jobtemp[0]), int.Parse(jobtemp[1]))); // job id, pj, rj
+                jobID++;
+            }
+
+            // create prec relations
+            string [] splitline;
+            for (int rowid = 0; rowid < Njobs; rowid++)
+            {
+                splitline = lines[3 + rowid].Split();
+                for (int colid = 0; colid < Njobs; colid++)
+                {
+                    if (splitline[colid] != "-")
+                    {
+                        DAG.AddArcById(rowid + 1, colid + 1);
+                    }
+                }
+            }
+            
+        }
+
 
     }
     

@@ -17,6 +17,7 @@ namespace SimulationTools
             // SETUP
             //
             int Nruns = 1000;
+            string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances");
             //
             // End of Setup
             //
@@ -25,17 +26,21 @@ namespace SimulationTools
             ProblemInstance Pinedo = new ProblemInstance();
             Pinedo.InstanciatePinedo();
 
-            /*
-            Schedule Sched = new Schedule(Pinedo);
+            ProblemInstance ProbIns = new ProblemInstance();
+            string instancename = "30j-15r-4m.ms";
+            ProbIns.ReadFromFile(INSTANCEFOLDER+instancename);
+
+            
+            Schedule Sched = new Schedule(ProbIns);
             Sched.AssignByRolling();
             Sched.Print();
             Sched.SetReleaseDates();
             Sched.SetESS();
 
             Sched.EstimateCmax();
-            Sched.MakeHTMLImage("Nonoptimal ESS schedule for Pinedo Instance");
+            Sched.MakeHTMLImage(string.Format("Nonoptimal ESS schedule for {0} Instance",instancename));
 
-            
+            /*
             SchedulesToSimulate.Add(Sched);
             */
             for (int i = 0; i < 10; i++)

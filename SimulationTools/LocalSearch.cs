@@ -86,6 +86,88 @@ namespace SimulationTools
             return CurrentSchedule;
         }
 
+
+        static public Schedule ReassignHillClimb(ref Schedule Original, Func<Schedule, double> FitnessFunction)
+        {
+            throw new System.NotImplementedException("WORK In PROGRESS");
+            Schedule CurrentSchedule = Original;
+            bool LocalOptimum = false;
+
+            Console.WriteLine("DEBUG: Starting LS *********************");
+            Console.WriteLine("Original Schedule with fitness {0}", FitnessFunction(CurrentSchedule));
+            CurrentSchedule.Print();
+
+            while (!LocalOptimum)
+            {
+                Job MoveJob = CurrentSchedule.PrecedenceDAG.GetJobById(Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N));
+                int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines);
+                int CurrentMachineId = StartMachineId;
+                int NMachinesTried = 0;
+                bool improvementFound = false;
+                while (!improvementFound && NMachinesTried < CurrentSchedule.Problem.NMachines)
+                {
+                    int JobsOnMachine = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs.Count;
+                    if (JobsOnMachine <= 1)
+                    {
+                        // swap no good, proceed to update counters
+                    }
+                    else
+                    {
+                        // try all potential swaps
+                        Job J1 = null, J2 = null;
+                        for (int J1index = 0; J1index < JobsOnMachine - 1; J1index++)
+                        {
+                            if (improvementFound) break;
+
+                            J1 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J1index];
+
+                            for (int J2index = J1index + 1; J2index < JobsOnMachine; J2index++)
+                            {
+                                J2 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J2index];
+                                // try the swap
+                                double OriginalFitness = FitnessFunction(CurrentSchedule);
+                                if (SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule))
+                                {
+                                    double NewFitness = FitnessFunction(CurrentSchedule);
+                                    if (NewFitness > OriginalFitness)
+                                    {
+                                        improvementFound = true;
+                                        Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
+                                        CurrentSchedule.Print();
+
+                                        break;
+                                        // keep it
+                                    }
+                                    else
+                                    {
+                                        // undo swap
+                                        Console.WriteLine("No improvement, undoing..");
+                                        SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
+                                        //undoing should always be feasible
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    NMachinesTried++;
+                    CurrentMachineId++;
+                    if (CurrentMachineId == CurrentSchedule.Problem.NMachines) { CurrentMachineId = 0; }
+
+
+                }// end of While over machines
+                // all possible swaps tried on all possible machines, no improvement found.
+                LocalOptimum = true;
+
+
+                // update the number of tries and move to next machine, which may require resetting index to 0 if it goes out of bounds
+
+            }
+
+            return CurrentSchedule;
+        }
+
+    
         /// <summary>
         /// If feasible, will perform a swap and return true. If not feasible will not perform sawp. Does not consider fitness.
         /// </summary>
