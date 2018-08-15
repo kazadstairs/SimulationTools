@@ -64,9 +64,10 @@ namespace SimulationTools
             // create jobs
             string[] jobs = lines[2].Split();
             string[] jobtemp;
-            int jobID = 1;
+            int jobID = 0;
             foreach (string job in jobs)
             {
+                if (job == "") continue;
                 jobtemp = job.Split(',');
                 DAG.AddJob(new Job(jobID, int.Parse(jobtemp[0]), int.Parse(jobtemp[1]))); // job id, pj, rj
                 jobID++;
@@ -81,7 +82,7 @@ namespace SimulationTools
                 {
                     if (splitline[colid] != "-")
                     {
-                        DAG.AddArcById(rowid + 1, colid + 1);
+                        DAG.AddArcById(rowid, colid);
                     }
                 }
             }

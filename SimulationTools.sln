@@ -7,8 +7,22 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulationTools", "Simulati
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7058D5D7-7467-410F-8723-D9C1E9406551}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\probleminstances\100j-100r-12m.ms = ..\..\probleminstances\100j-100r-12m.ms
+		..\..\probleminstances\100j-100r-6m.ms = ..\..\probleminstances\100j-100r-6m.ms
+		..\..\probleminstances\100j-250r-12m.ms = ..\..\probleminstances\100j-250r-12m.ms
+		..\..\probleminstances\100j-250r-6m.ms = ..\..\probleminstances\100j-250r-6m.ms
+		..\..\probleminstances\100j-50r-12m.ms = ..\..\probleminstances\100j-50r-12m.ms
+		..\..\probleminstances\100j-50r-6m.ms = ..\..\probleminstances\100j-50r-6m.ms
+		..\..\probleminstances\30j-15r-4m.ms = ..\..\probleminstances\30j-15r-4m.ms
+		..\..\probleminstances\30j-15r-8m.ms = ..\..\probleminstances\30j-15r-8m.ms
+		..\..\probleminstances\30j-30r-4m.ms = ..\..\probleminstances\30j-30r-4m.ms
+		..\..\probleminstances\30j-30r-8m.ms = ..\..\probleminstances\30j-30r-8m.ms
+		..\..\probleminstances\30j-75r-4m.ms = ..\..\probleminstances\30j-75r-4m.ms
+		..\..\probleminstances\30j-75r-8m.ms = ..\..\probleminstances\30j-75r-8m.ms
 		..\..\OutPut\QMvsRM.R = ..\..\OutPut\QMvsRM.R
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateDotFile", "CreateDotFile\CreateDotFile.csproj", "{24DE91EA-9C46-461E-9359-62AF5F3163A4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +34,10 @@ Global
 		{A3570D84-4EFF-46B0-AC35-FDCBBCA89B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3570D84-4EFF-46B0-AC35-FDCBBCA89B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3570D84-4EFF-46B0-AC35-FDCBBCA89B4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24DE91EA-9C46-461E-9359-62AF5F3163A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24DE91EA-9C46-461E-9359-62AF5F3163A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24DE91EA-9C46-461E-9359-62AF5F3163A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24DE91EA-9C46-461E-9359-62AF5F3163A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
