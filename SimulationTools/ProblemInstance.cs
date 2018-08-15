@@ -58,27 +58,26 @@ namespace SimulationTools
 
         public void ReadFromFile(string FileName)
         {
+            DAG.AddJob(new Job(0, 0, 0)); // dummy job
+
             string[] lines = System.IO.File.ReadAllLines(FileName);
-            int Machines = int.Parse(lines[0]);
+            this.NMachines = int.Parse(lines[0]);
             int Njobs = int.Parse(lines[1]);
             // create jobs
             string[] jobs = lines[2].Split();
             string[] jobtemp;
-            int jobID = 0;
-            foreach (string job in jobs)
-            {
-                if (job == "") continue;
-                jobtemp = job.Split(',');
+            for (int jobID = 1; jobID < Njobs + 1; jobID++)
+            { 
+                jobtemp = jobs[jobID].Split(',');                
                 DAG.AddJob(new Job(jobID, int.Parse(jobtemp[0]), int.Parse(jobtemp[1]))); // job id, pj, rj
-                jobID++;
             }
 
             // create prec relations
             string [] splitline;
-            for (int rowid = 0; rowid < Njobs; rowid++)
+            for (int rowid = 1; rowid < Njobs+1; rowid++)
             {
-                splitline = lines[3 + rowid].Split();
-                for (int colid = 0; colid < Njobs; colid++)
+                splitline = lines[2 + rowid].Split();
+                for (int colid = 1; colid < Njobs+1; colid++)
                 {
                     if (splitline[colid] != "-")
                     {
