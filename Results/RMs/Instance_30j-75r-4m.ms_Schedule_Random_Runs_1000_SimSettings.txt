@@ -2,5 +2,5 @@
 Random
 1
 Sum Of Free Slacks
-321
+196
 1000

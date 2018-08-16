@@ -2,5 +2,5 @@ Pinedo
 Random
 1
 Sum Of Free Slacks
-27
+23
 1000

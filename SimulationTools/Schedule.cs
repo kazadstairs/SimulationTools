@@ -321,7 +321,7 @@ namespace SimulationTools
                 file.WriteLine(@"<style>");
 
                 // css part:
-                int scale = 20;
+                int scale = 5;
                 double top, left, width;                
                 foreach (Job j in PrecedenceDAG.Jobs)
                 {
