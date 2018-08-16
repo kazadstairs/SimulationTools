@@ -8,6 +8,9 @@ namespace SimulationTools
 {
     class Program
     {
+        static public string INSTANCEFOLDER;
+        static public string BASEPATH;
+        static public string [] INSTANCENAMES;
         static void Main(string[] args)
         {
             
@@ -18,43 +21,54 @@ namespace SimulationTools
             //
             int Nruns = 1000;
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
-            string INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
+            INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
+            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+
             //
             // End of Setup
             //
 
+            INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
+            for (int i = 0; i < INSTANCENAMES.Length; i++)
+            {
+                string[] temp = INSTANCENAMES[i].Split('\\');
+                INSTANCENAMES[i] = temp[temp.Length-1];
+            }
+
             Simulation [] Sims = new Simulation[Nruns];
+
+            //For each instance, for each schedule generation heuristic, perform a simulation.
+            List<Schedule> SchedulesToSimulate = new List<Schedule>();
+
+            ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length+1];
+            for (int i = 0; i < INSTANCENAMES.Length; i++)
+            {
+                Instances[i] = new ProblemInstance();
+                Instances[i].ReadFromFile(INSTANCEFOLDER+INSTANCENAMES[i],INSTANCENAMES[i]);
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random"));
+            }
+
             ProblemInstance Pinedo = new ProblemInstance();
             Pinedo.InstanciatePinedo();
-
-            ProblemInstance ProbIns = new ProblemInstance();
-            string instancename = "30j-15r-4m.ms";
-            ProbIns.ReadFromFile(INSTANCEFOLDER+instancename);
+            Instances[INSTANCENAMES.Length] = Pinedo;
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
 
             
-            Schedule Sched = new Schedule(ProbIns);
-            Sched.AssignByRolling();
-            Sched.Print();
-            Sched.SetReleaseDates();
-            Sched.SetESS();
-
-            Sched.EstimateCmax();
-            Sched.MakeHTMLImage(string.Format("Nonoptimal ESS schedule for {0} Instance",instancename));
-
+          
             /*
             SchedulesToSimulate.Add(Sched);
             */
+            /*
             for (int i = 0; i < 10; i++)
             {
                 Schedule LSSched = NewSchedule(Pinedo, "Random");
                 LocalSearch.SwapHillClimb(ref LSSched, RobustnessMeasures.DebugNumberOfJobsInIndexOrder);
             }
-            //List<Schedule> SchedulesToSimulate = new List<Schedule>();
-            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
-            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
-            //SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
-
-
+            */
             //Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
 
 
@@ -64,10 +78,10 @@ namespace SimulationTools
             //SchedulesToSimulate.Add(Sched);
 
 
-            //Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
-            //{
-            //   new Simulation(Nruns, currentSched).Perform();
-            //});
+            Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
+            {
+               new Simulation(Nruns, currentSched).Perform();
+            });
 
 
 
@@ -105,7 +119,7 @@ namespace SimulationTools
             Sched.CalcESS();
             Sched.SetESS();
             Sched.EstimateCmax();
-            Sched.MakeHTMLImage(string.Format("ESS {0} schedule for Pinedo Instance",Sched.Description) );
+            Sched.MakeHTMLImage(string.Format("ESS {0} schedule for {1}",Sched.Description,Ins.Description) );
             return Sched;
         }
     }

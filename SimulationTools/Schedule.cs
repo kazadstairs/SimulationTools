@@ -312,8 +312,9 @@ namespace SimulationTools
 
         public void MakeHTMLImage(string title)
         {
+            System.IO.Directory.CreateDirectory(string.Format(@"{0}Results\Schedules\", Program.BASEPATH));
             using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\SchedulePDFs\InstanceName_{0}.html",title) ))
+            new System.IO.StreamWriter(string.Format(@"{0}Results\Schedules\InstanceName_{1}.html",Program.BASEPATH,title) ))
             {
                 file.WriteLine(@"<!DOCTYPE html>");
                 file.WriteLine(@"<head>");
@@ -377,10 +378,10 @@ namespace SimulationTools
         /// <summary>
         /// In O(|Vertices| + |Arcs|), determine the earliest Rj based on Mean Processing time for all jobs
         /// </summary>
-        public void SetReleaseDates()
+        /*public void SetReleaseDates()
         {
             //init
-            throw new Exception("Deprecated code");
+            throw new Exception("Deprecated code, use CalcESS");
             int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
             Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
             foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
@@ -421,7 +422,7 @@ namespace SimulationTools
                 Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
             }
 
-        }
+        }*/
 
         private void UpdateReleaseDateFor(Job j)
         {

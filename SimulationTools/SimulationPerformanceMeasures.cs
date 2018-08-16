@@ -85,7 +85,7 @@ namespace SimulationTools
                 StartOnTimeJobs++;
                 //Console.WriteLine("On time");
             }
-            else { Console.WriteLine("Delayed"); }
+            //else { Console.WriteLine("Delayed"); }
 
         }
 

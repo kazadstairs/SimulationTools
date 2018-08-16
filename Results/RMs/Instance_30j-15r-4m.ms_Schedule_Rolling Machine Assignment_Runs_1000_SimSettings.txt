@@ -1,0 +1,6 @@
+30j-15r-4m.ms
+Rolling Machine Assignment
+1
+Sum Of Free Slacks
+72
+1000

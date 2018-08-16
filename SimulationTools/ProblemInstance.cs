@@ -56,9 +56,11 @@ namespace SimulationTools
             Description = "Pinedo";            
         }
 
-        public void ReadFromFile(string FileName)
+        public void ReadFromFile(string FileName, string descr)
         {
+            Description = descr;
             DAG.AddJob(new Job(0, 0, 0)); // dummy job
+            
 
             string[] lines = System.IO.File.ReadAllLines(FileName);
             this.NMachines = int.Parse(lines[0]);

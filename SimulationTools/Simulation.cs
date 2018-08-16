@@ -40,7 +40,7 @@ namespace SimulationTools
 
         private void BuildPath()
         {
-            OutPutPath = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\OutPut\");
+            OutPutPath = string.Format(@"{0}Results\RMs\",Program.BASEPATH);
             string InstanceName = Sched.Problem.Description;
             SimulationSettingsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_SimSettings.txt", InstanceName, Sched.Description, NRuns);
             SimulationResultsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_QMs.txt", InstanceName, Sched.Description, NRuns);
@@ -68,18 +68,19 @@ namespace SimulationTools
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
                 PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.PrecedenceDAG.N,this);
-                Console.WriteLine("***** Performing Simulation {0}...", runnr);
+             //   Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();
                 PerformanceMeasures.WriteToFile(SimulationResultsOutPutPath);
                 CleanJobs();
             }
+            Console.WriteLine("Simulation completed");
 
         }
 
         private void SetupSimulation()
         {
-            Console.WriteLine("***** Setting Up Simulation...");
+         //   Console.WriteLine("***** Setting Up Simulation...");
             EventList = new PriorityQueue<Event>();
             CreateSimulationJobDAG();
             //Problem = new ProblemInstance();
@@ -115,12 +116,12 @@ namespace SimulationTools
                     eventcounter++;
                     if (eventcounter % 10 == 0)
                     {
-                        Console.WriteLine("{0} events processed", eventcounter);
+                        //Console.WriteLine("{0} events processed", eventcounter);
                     }
                     PerformanceMeasures.Cmax = NextEvent.Time;
                 }
                 
-                Console.WriteLine("***** Simluation Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
+               // Console.WriteLine("***** Run Complete. In total {0} events were processed in {1} ms", eventcounter, watch.ElapsedMilliseconds);
                            
         }
 
