@@ -1,5 +1,17 @@
 SCHEDNAMES <- c("Rolling Machine Assignment", "Random", "GreedyLoadBalancing")
-INSTANCE <- "Pinedo"
+INSTANCES <- c("Pinedo",
+               "30j-15r-4m.ms",
+               "30j-15r-8m.ms",
+               "30j-30r-4m.ms",
+               "30j-30r-4m.ms",
+               "30j-75r-4m.ms",
+               "30j-75r-4m.ms",
+               "100j-50r-6m.ms",
+               "100j-50r-12m.ms",
+               "100j-100r-6m.ms",
+               "100j-100r-12m.ms",
+               "100j-250r-6m.ms",
+               "100j-250r-12m.ms")
 NRUNS <- "1000"
 
 RM.ID <- 1
@@ -121,6 +133,12 @@ errorBarWidth <- max(plot.df$RM) / (4 * length(unique(plot.df$RM)))
 p <- ggplot(plot.df, aes(x = RM, y = ymean, label= PointLabel)) + geom_point(size = 2) + geom_errorbar(aes(ymin = ymin, ymax = ymax, width = errorBarWidth))+geom_text(aes(label=PointLabel),hjust=0, vjust=0)
 p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
 
+########### plot from one big data file ############
+myDF.plot <- myDF %>% 
+                  group_by(ins,scheds) %>% 
+                  summarize(RM1 = mean(RM1),QM1sd = sd(QM1),QM1=mean(QM1))
 
-
+ggplot(myDF.plot,aes(x=RM1,y=QM1,colour=scheds,shape=scheds))
+  +geom_point(size=4)
+  +geom_errorbar(aes(ymin=QM1-QM1sd,ymax=QM1+QM1sd))
 
