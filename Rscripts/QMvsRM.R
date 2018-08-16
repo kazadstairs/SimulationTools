@@ -15,8 +15,9 @@ library(dplyr)
 ###
 ########################## FUNCTIONS #########################################
 ###
-GetPath <- function(InstanceName,ScheduleName,Nruns,FileType){
-	BasePath <- "C:\\Users\\Gebruiker\\Documents\\UU\\MSc Thesis\\Code\\OutPut\\"
+GetPathToOutput <- function(InstanceName,ScheduleName,Nruns,FileType){
+	# BasePath <- "C:\\Users\\Gebruiker\\Documents\\UU\\MSc Thesis\\Code\\OutPut\\" #laptop
+  BasePath <- "C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\" #UU pc
 	PathComponents <- c(BasePath,
 				  "Instance_", InstanceName,
 				  "_Schedule_", ScheduleName,
@@ -29,11 +30,11 @@ GetPath <- function(InstanceName,ScheduleName,Nruns,FileType){
 
 
 GetSimSettings <- function(InstanceName,ScheduleName,Nruns){
-	path <- GetPath(InstanceName,ScheduleName,Nruns,"SimSettings")
+	path <- GetPathToOutput(InstanceName,ScheduleName,Nruns,"SimSettings")
 	return(read.csv2(file = path,header = FALSE))
 }
 GetQMs <- function(InstanceName,ScheduleName,Nruns){
-	path <- GetPath(InstanceName,ScheduleName,Nruns,"QMs")
+	path <- GetPathToOutput(InstanceName,ScheduleName,Nruns,"QMs")
 	return(read.csv2(file = path, header = FALSE))
 }
 
