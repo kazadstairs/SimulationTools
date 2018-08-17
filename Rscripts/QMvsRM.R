@@ -134,15 +134,17 @@ p <- ggplot(plot.df, aes(x = RM, y = ymean, label= PointLabel)) + geom_point(siz
 p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
 
 ########### plot from one big data file ############
-myDF.plot <- myDF %>% 
-                  group_by(ins,scheds) %>% 
-                  summarize(RM1 = mean(RM1),QM1sd = sd(QM1),QM1=mean(QM1))
+myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
 
-p <- ggplot(myDF.plot,aes(x=RM1,y=QM1,colour=scheds,shape=scheds)) 
+myDF.plot <- myDF %>% 
+                  group_by(Instance.Name,Schedule.Type) %>% 
+                  summarize(SoFS = mean(SoFS),Cmaxsd = sd(Cmax),Cmax=mean(Cmax))
+
+p <- ggplot(myDF.plot,aes(x=SoFS,y=Cmax,colour=Schedule.Type,shape=Schedule.Type)) 
 p <- p + geom_point() 
-p <- p + geom_errorbar(aes(ymin=QM1-QM1sd,ymax=QM1+QM1sd))
-p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,100)) 
-p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,100))
+p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
+p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
+p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
 
 p
 

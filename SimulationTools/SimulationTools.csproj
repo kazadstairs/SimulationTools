@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RM.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Distribution.cs" />
     <Compile Include="Event.cs" />

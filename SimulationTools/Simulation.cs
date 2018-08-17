@@ -15,8 +15,8 @@ namespace SimulationTools
         public SimulationJob [] SimulationJobs;
         int NRuns;
         private string OutPutPath; // { get; private set; }
-        public string SimulationSettingsOutPutPath { get; private set; }
-        public string SimulationResultsOutPutPath { get; private set; }
+       // public string SimulationSettingsOutPutPath { get; private set; }
+       // public string SimulationResultsOutPutPath { get; private set; }
         bool[] HasBeenMadeAvailable;
         //public State CurrentState; // not used
 
@@ -40,26 +40,23 @@ namespace SimulationTools
 
         private void BuildPath()
         {
-            OutPutPath = string.Format(@"{0}Results\RMs\",Program.BASEPATH);
+            OutPutPath = string.Format(@"{0}Results\RMs\allresults.txt",Program.BASEPATH);
             string InstanceName = Sched.Problem.Description;
-            SimulationSettingsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_SimSettings.txt", InstanceName, Sched.Description, NRuns);
-            SimulationResultsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_QMs.txt", InstanceName, Sched.Description, NRuns);
+         //   SimulationSettingsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_SimSettings.txt", InstanceName, Sched.Description, NRuns);
+         //   SimulationResultsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_QMs.txt", InstanceName, Sched.Description, NRuns);
             //OutPutPath += string.Format("Instance_{0}_Schedule_{1}_Runs_{2}.txt", InstanceName,Sched.Description,NRuns);
-            using (StreamWriter swQMs = File.CreateText(SimulationResultsOutPutPath))
-            {
-                
-            }
+         
             // Write the header info
-            using (StreamWriter swRMs = File.CreateText(SimulationSettingsOutPutPath))
-            {
-                swRMs.WriteLine(InstanceName);
-                swRMs.WriteLine(Sched.Description);
-                swRMs.WriteLine(RobustnessMeasures.RMCount);
-                swRMs.WriteLine("Sum Of Free Slacks");
-                swRMs.Write(RobustnessMeasures.SumOfFreeSlacks(Sched));
-                swRMs.Write(Environment.NewLine);
-                swRMs.WriteLine(NRuns);
-            }
+       //     using (StreamWriter swRMs = File.CreateText(OutPutPath))
+        //    {
+        //        swRMs.WriteLine(InstanceName);
+         //       swRMs.WriteLine(Sched.Description);
+         //       swRMs.WriteLine(RobustnessMeasures.RMCount);
+         //       swRMs.WriteLine("Sum Of Free Slacks");
+         //       swRMs.Write(RobustnessMeasures.SumOfFreeSlacks(Sched));
+         //       swRMs.Write(Environment.NewLine);
+         //       swRMs.WriteLine(NRuns);
+         //   }
         }
 
 
@@ -71,7 +68,7 @@ namespace SimulationTools
              //   Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();
-                PerformanceMeasures.WriteToFile(SimulationResultsOutPutPath);
+                PerformanceMeasures.WriteToFile(OutPutPath);
                 CleanJobs();
             }
             Console.WriteLine("Simulation completed");

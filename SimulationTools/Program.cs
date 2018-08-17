@@ -15,11 +15,11 @@ namespace SimulationTools
         {
             
             Console.WriteLine("Welcome to this Super Sweet Simulation Software");
-
+            string[] output = new string [] { "hello", "world" };
             //
             // SETUP
             //
-            int Nruns = 1000;
+            int Nruns = 10;
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
             BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
@@ -77,11 +77,18 @@ namespace SimulationTools
             //Sched.MakeHTMLImage("Nonoptimal LSS schedule for Pinedo Instance");
             //SchedulesToSimulate.Add(Sched);
 
-
+/*
             Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
             {
                new Simulation(Nruns, currentSched).Perform();
             });
+            */
+            foreach (Schedule currentSched in SchedulesToSimulate)
+            {
+                new Simulation(Nruns, currentSched).Perform();
+            }
+
+
 
 
 
@@ -119,6 +126,7 @@ namespace SimulationTools
             Sched.CalcESS();
             Sched.SetESS();
             Sched.EstimateCmax();
+            Sched.CalcRMs();
             Sched.MakeHTMLImage(string.Format("ESS {0} schedule for {1}",Sched.Description,Ins.Description) );
             return Sched;
         }

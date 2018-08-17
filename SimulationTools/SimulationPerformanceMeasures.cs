@@ -52,6 +52,7 @@ namespace SimulationTools
         {
             using (StreamWriter sw = File.AppendText(path))
             {
+                //ins name, sched type, RM1,...RMn,Run nr, QM1,... QMn
                 if (DEBUGMODE) { sw.WriteLine("id {0,-6}; Cmax {1,-18}; Delay Sum {2,-18}; Start Pun {3,-18}; Finish Pun {4,-18}; SumOfFreeSlacks: {5, -18}",
                     RunID,
                     Cmax,
@@ -62,12 +63,35 @@ namespace SimulationTools
                     ;}
                 else
                 {
-                    sw.WriteLine("{0};{1};{2};{3};{4}",
-                    RunID,
-                    Cmax,
-                    TotalLinearStartDelay,
-                    (double)StartOnTimeJobs / NJobs,
-                    (double)FinishOnTimeJobs / NJobs);
+                    if (new FileInfo(path).Length == 0)
+                    {
+                        sw.Write("Instance Name; Schedule Type;");
+                        foreach (RM rm in Sim.Sched.RMs)
+                        {
+                            sw.Write("{0};", rm.Name);
+                        }
+                        sw.Write("Run nr");
+                        foreach (string qmname in Constants.QMNames)
+                        {
+                            sw.Write(";{0}", qmname);
+                        }
+                        sw.Write(Environment.NewLine);
+                    }
+                    else
+                    {
+                        sw.Write("{0};{1};", Sim.Sched.Problem.Description, Sim.Sched.Description);
+                        foreach (RM rm in Sim.Sched.RMs)
+                        {
+                            sw.Write("{0};", rm.Value);
+                        }
+                        sw.WriteLine("{0};{1};{2};{3};{4}",
+                        RunID,
+                        Cmax,
+                        TotalLinearStartDelay,
+                        (double)StartOnTimeJobs / NJobs,
+                        (double)FinishOnTimeJobs / NJobs);
+                    }
+                   
                 }
             }
         }

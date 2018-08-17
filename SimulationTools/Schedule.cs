@@ -16,7 +16,6 @@ namespace SimulationTools
         public MachineArcPointer[] MachineArcPointers { get; private set; } // Maps Job Id to machine it is assigned to and its position in the list.
         public List<Machine> Machines; 
         public ProblemInstance Problem;
-
         // schedule basics:
         public string Description;
         private double[] Starttimes;
@@ -26,6 +25,9 @@ namespace SimulationTools
         public double EstimatedCmax;
         public double[] ESS; 
         public double[] DynamicDueDate;
+
+        // RMs
+        public List<RM> RMs;
 
         public Schedule(ProblemInstance prob)
         {
@@ -46,7 +48,19 @@ namespace SimulationTools
             AssignedMachineID = new int[PrecedenceDAG.N];
             DynamicDueDate = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
-            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];         
+
+
+        }
+
+        public void CalcRMs()
+        {
+            RMs = new List<RM>();
+            foreach (string name in Constants.RMNames)
+            {
+                RMs.Add(new RM(name));
+                RMs[RMs.Count - 1].Calculate(this);
+            }
         }
 
         private MachineArcPointer GetMachineArcPointer(Job j)
@@ -345,19 +359,6 @@ namespace SimulationTools
             }
         }
 
-        public void MakeTikzImage()
-        {
-            throw new System.NotImplementedException();
-            using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\SchedulePDFs\InstanceName_ScheduleId.txt"))
-            {
-                file.WriteLine(@"\begin{tikzpicture}");
-
-
-                file.WriteLine(@"\end{tikzpicture}");
-            }
-
-        }
 
         public void SetESS()
         {
@@ -375,54 +376,6 @@ namespace SimulationTools
             }
         }
 
-        /// <summary>
-        /// In O(|Vertices| + |Arcs|), determine the earliest Rj based on Mean Processing time for all jobs
-        /// </summary>
-        /*public void SetReleaseDates()
-        {
-            //init
-            throw new Exception("Deprecated code, use CalcESS");
-            int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
-            Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
-            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
-            {
-                if (j.Predecessors.Count == 0)
-                {
-                    AllPredDone.Push(j);
-                    ESS[j.ID] = j.EarliestReleaseDate;
-                }
-            }
-            Job CurrentJob = null;
-            double CandidateRj = -1;
-
-            //algo
-            while (AllPredDone.Count > 0)
-            {
-                CurrentJob = AllPredDone.Pop();
-                foreach (Job Child in CurrentJob.Successors)
-                {
-                    CandidateRj = ESS[CurrentJob.ID] + CurrentJob.MeanProcessingTime;
-                    if (CandidateRj > ESS[Child.ID]) // if new Rj is larger, update Rj
-                    {
-                        ESS[Child.ID] = CandidateRj;
-                    }
-                    nParentsProcessed[Child.ID]++;
-                    if (nParentsProcessed[Child.ID] == Child.Predecessors.Count)
-                    {
-                        AllPredDone.Push(Child);
-                    }
-                }
-            }
-
-            //debug:
-            Console.WriteLine("*************************************************");
-            Console.WriteLine("Printing earliest release dates:");
-            foreach (Job j in PrecedenceDAG.Jobs)
-            {
-                Console.WriteLine("Job with ID {0} has Rj {1}", j.ID, ESS[j.ID]);
-            }
-
-        }*/
 
         private void UpdateReleaseDateFor(Job j)
         {
@@ -516,99 +469,7 @@ namespace SimulationTools
             }
         }
 
-        /// <summary>
-        /// For now, it is the Latest Feasible completion time Based on mean processing times. TODO: Decide what this means exactly. 
-        /// </summary>
-        /// <param name="Cmax"></param>
-        public void SetDeadlines(double Cmax)
-        {
-            throw new System.NotImplementedException("SetDeadlines is depricated");
-            /*
-            //init
-            int[] nChildrenProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
-            Stack<Job> AllSuccDone = new Stack<Job>(); // The jobs that will no longer change due date are those for which all Parents have been considered.           
-            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without successor can know their final duedate (it is equal to Cmax).
-            {
-                if (j.Successors.Count == 0)
-                {
-                    AllSuccDone.Push(j);
-                    DynamicDueDate[j.ID] = Cmax;
-                }
-                else
-                {
-                    DynamicDueDate[j.ID] = double.MaxValue;
-                }
-            }
-            Job CurrentJob = null;
-            double CandidateDj = -1;
-
-            //algo
-            while (AllSuccDone.Count > 0)
-            {
-                CurrentJob = AllSuccDone.Pop();
-                foreach (Job Parent in CurrentJob.Predecessors)
-                {
-                    CandidateDj = DynamicDueDate[CurrentJob.ID] - CurrentJob.MeanProcessingTime;
-                    if (CandidateDj < DynamicDueDate[Parent.ID]) // if new Dj is smaller, update Dj
-                    {
-                        DynamicDueDate[Parent.ID] = CandidateDj;
-                    }
-                    nChildrenProcessed[Parent.ID]++;
-                    if (nChildrenProcessed[Parent.ID] == Parent.Successors.Count)
-                    {
-                        AllSuccDone.Push(Parent);
-                    }
-                }
-            }
-
-            //debug:
-            Console.WriteLine("*************************************************");
-            Console.WriteLine("Printing latest due dates:");
-            foreach (Job j in PrecedenceDAG.Jobs)
-            {
-                Console.WriteLine("Job with ID {0} has Dj {1}", j.ID, DynamicDueDate[j.ID]);
-            }
-
-            Console.WriteLine("*************************************************");
-            Console.WriteLine("Printing Latest Start times:");
-            foreach (Job j in PrecedenceDAG.Jobs)
-            {
-                Console.WriteLine("Job with ID {0} has LSS {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime());
-            }
-
-            Console.WriteLine("*************************************************");
-            Console.WriteLine("Printing Slack:");
-            foreach (Job j in PrecedenceDAG.Jobs)
-            {
-                Console.WriteLine("Job with ID {0} has Slack {1}", j.ID, DynamicDueDate[j.ID] - j.SampleProcessingTime() - ESS[j.ID]); //LSS - ESS
-            }
-            */
-
-        }
-
-
-
-        /*
-        public void PinedoInstanceSchedule(ProblemInstance Problem)
-        {
-            
-            AssignJobToMachine(Problem.JobsList[0], Problem.Machines[0]); //Dummy job
-
-            AssignJobToMachine(Problem.JobsList[1], Problem.Machines[0]);
-            AssignJobToMachine(Problem.JobsList[2], Problem.Machines[0]);
-            AssignJobToMachine(Problem.JobsList[6], Problem.Machines[0]);
-            AssignJobToMachine(Problem.JobsList[8], Problem.Machines[0]);
-
-            AssignJobToMachine(Problem.JobsList[3], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[4], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[5], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[7], Problem.Machines[1]);
-            AssignJobToMachine(Problem.JobsList[9], Problem.Machines[1]);
-
-
-        }
-        */
-        
+   
 
         /// <summary>
         /// Checks the feasibility of a machine assignment for both machine and prec arcs.
@@ -688,27 +549,7 @@ namespace SimulationTools
             return BFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
         }
 
-        /// <summary>
-        /// Assigns job j to machine m. Adds a machine arc (m.lastjob, j) to DAG if m has at least one job. Updates the load of machine m.
-        /// </summary>
-        /// <param name="j"></param>
-        /// <param name="m"></param>
-        /*
-        void AssignJobToMachine(Job j, Machine m)
-        {
-            if (AssignedMachineID[j.ID] > 0) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
-            else
-            {
-                if (m.AssignedJobs.Count > 0)
-                {
-                    PrecedenceDAG.AddArc(m.LastJob(), j); // todo: change to add machinearc
-                }
-                m.AssignedJobs.Add(j);
-                m.Load += j.MeanProcessingTime;
-                AssignedMachineID[j.ID] = m.MachineID;
-            }
-        }
-       */
+     
         void AssignJobToMachine(Job j, Machine m)
         {
             if (GetMachineArcPointer(j) != null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
