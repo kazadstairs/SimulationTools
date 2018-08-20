@@ -26,8 +26,14 @@ namespace SimulationTools
         {
             switch (Name)
             {
-                case "SoFS":
+                case "FS":
                     Value = RobustnessMeasures.SumOfFreeSlacks(S);
+                    break;
+                case "BFS":
+                    Value = RobustnessMeasures.BinaryFreeSlack(0.25, S);
+                    break;
+                case "UFS":
+                    Value = RobustnessMeasures.UpperboundFreeSlack(0.25, S);
                     break;
                 default:
                     throw new Exception("RM name not recognized");

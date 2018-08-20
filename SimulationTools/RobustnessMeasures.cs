@@ -56,6 +56,30 @@ namespace SimulationTools
 
         public static int RMCount = 1;
 
+        public static double BinaryFreeSlack(double fraction, Schedule S)
+        {
+            double total = 0.0;
+            foreach (Job j in S.PrecedenceDAG.Jobs)
+            {
+                if (SlowFreeSlack(j, S) >= fraction * j.MeanProcessingTime)
+                {
+                    total += 1;
+                }
+            }
+            return total;
+        }
+
+        public static double UpperboundFreeSlack(double fraction, Schedule S)
+        {
+            double total = 0.0;
+            foreach (Job j in S.PrecedenceDAG.Jobs)
+            {
+                total += Math.Min(fraction * j.MeanProcessingTime, SlowFreeSlack(j, S));
+            }
+
+            return total;
+        }
+
 
         public static double DebugNumberOfJobsInIndexOrder(Schedule Sched)
         {

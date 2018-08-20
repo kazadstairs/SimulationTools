@@ -9,7 +9,9 @@ namespace SimulationTools
     {
         public static int NumberOfEvents = 1000;
         public static double DEFAULT_RM = 0.0;
-        public static string[] RMNames = { "SoFS" // Sum of free slacks
+        public static string[] RMNames = { "FS", // Sum of free slacks
+                                           "BFS", // Binary free slack
+                                           "UFS" // Upperbound free slack
         };
         public static string[] QMNames = { "Cmax",
                                            "LinearStartDelay",

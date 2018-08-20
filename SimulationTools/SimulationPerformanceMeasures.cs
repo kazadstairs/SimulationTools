@@ -52,18 +52,7 @@ namespace SimulationTools
         {
             using (StreamWriter sw = File.AppendText(path))
             {
-                //ins name, sched type, RM1,...RMn,Run nr, QM1,... QMn
-                if (DEBUGMODE) { sw.WriteLine("id {0,-6}; Cmax {1,-18}; Delay Sum {2,-18}; Start Pun {3,-18}; Finish Pun {4,-18}; SumOfFreeSlacks: {5, -18}",
-                    RunID,
-                    Cmax,
-                    TotalLinearStartDelay,
-                    (double)StartOnTimeJobs / NJobs,
-                    (double)FinishOnTimeJobs / NJobs,
-                    RobustnessMeasures.SumOfFreeSlacks(Sim.Sched))
-                    ;}
-                else
-                {
-                    if (new FileInfo(path).Length == 0)
+                 if (new FileInfo(path).Length == 0)
                     {
                         sw.Write("Instance Name; Schedule Type;");
                         foreach (RM rm in Sim.Sched.RMs)
@@ -91,8 +80,6 @@ namespace SimulationTools
                         (double)StartOnTimeJobs / NJobs,
                         (double)FinishOnTimeJobs / NJobs);
                     }
-                   
-                }
             }
         }
 
