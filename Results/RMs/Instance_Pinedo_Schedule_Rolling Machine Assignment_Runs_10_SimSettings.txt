@@ -1,6 +1,0 @@
-Pinedo
-Rolling Machine Assignment
-1
-Sum Of Free Slacks
-13
-10
