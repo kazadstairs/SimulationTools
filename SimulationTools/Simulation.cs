@@ -64,7 +64,7 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,100,Sched.PrecedenceDAG.N,this);
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,Constants.PermittedIncreaseForPunctuality,Sched.PrecedenceDAG.N,this);
              //   Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();

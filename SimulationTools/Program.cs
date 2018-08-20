@@ -19,7 +19,6 @@ namespace SimulationTools
             //
             // SETUP
             //
-            int Nruns = 10;
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
             BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
@@ -27,7 +26,7 @@ namespace SimulationTools
             //
             // End of Setup
             //
-
+            System.IO.File.Delete(@"C:\Users\3496724\Source\Repos\SimulationTools\Results\RMs\allresults.txt");
             INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
             for (int i = 0; i < INSTANCENAMES.Length; i++)
             {
@@ -35,7 +34,7 @@ namespace SimulationTools
                 INSTANCENAMES[i] = temp[temp.Length-1];
             }
 
-            Simulation [] Sims = new Simulation[Nruns];
+            Simulation [] Sims = new Simulation[Constants.NRuns];
 
             //For each instance, for each schedule generation heuristic, perform a simulation.
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
@@ -72,7 +71,7 @@ namespace SimulationTools
                         */
             foreach (Schedule currentSched in SchedulesToSimulate)
             {
-                new Simulation(Nruns, currentSched).Perform();
+                new Simulation(Constants.NRuns, currentSched).Perform();
             }
             
 

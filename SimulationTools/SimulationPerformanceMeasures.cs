@@ -39,6 +39,14 @@ namespace SimulationTools
             RunID = id;
             TotalLinearStartDelay = 0;
             delta = PunctualityAllowance;
+            if (delta < 0 || delta > 1)
+            {
+                throw new Exception("Delta too large. Delta is the permitted relative increase. Reasonable numbers are probably in [0,0.1] range");
+            }
+            else if(delta > 0.1)
+            {
+                    Console.WriteLine("WARNING, Delta very large. Delta is the permitted relative increase. Reasonable numbers are probably in [0,0.1] range");
+            }
             StartOnTimeJobs = 0;
             FinishOnTimeJobs = 0;
             DEBUGMODE = false;
