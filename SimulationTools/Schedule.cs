@@ -379,6 +379,7 @@ namespace SimulationTools
 
         private void UpdateReleaseDateFor(Job j)
         {
+            ESS[j.ID] = j.EarliestReleaseDate;
             foreach (Job Parent in j.Predecessors)
             {
                 if (ESS[j.ID] < ESS[Parent.ID] + Parent.MeanProcessingTime)
@@ -439,7 +440,7 @@ namespace SimulationTools
                 if (j.Predecessors.Count == 0 && GetMachinePredecessor(j) == null)
                 {
                     AllPredDone.Push(j);
-                    ESS[j.ID] = j.EarliestReleaseDate;
+                    // ESS[j.ID] = j.EarliestReleaseDate; Do this as part of the action!
                 }
             }
             Job CurrentJob = null;
@@ -469,8 +470,46 @@ namespace SimulationTools
             }
         }
 
-   
 
+
+
+        public void ForeachJobInReversePrecOrderDo(Action<Job> PerFormAction)
+        {
+            int[] nChildrenProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of children of Job with ID i that have been fully updated.
+            Stack<Job> AllSuccDone = new Stack<Job>(); // The jobs that will no longer change LSS are those for which all Parents have been considered.           
+            foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without successors can know their final sjLSS (it is equal to Cmax - pj).
+            {
+                if (j.Successors.Count == 0 && GetMachineSuccessor(j) == null)
+                {
+                    AllSuccDone.Push(j);
+                }
+            }
+            Job CurrentJob = null;
+            bool[] IsVisited = new bool[PrecedenceDAG.N + 1];
+            bool[] IsPushed = new bool[PrecedenceDAG.N + 1];
+            //algo
+            while (AllSuccDone.Count > 0)
+            {
+                CurrentJob = AllSuccDone.Pop();
+
+                PerFormAction(CurrentJob);
+
+                IsVisited[CurrentJob.ID] = true;
+                Job MachinePred = GetMachinePredecessor(CurrentJob);
+                if (MachinePred != null && nChildrenProcessed[MachinePred.ID] == MachinePred.Successors.Count)
+                {
+                    if (!IsPushed[MachinePred.ID]) AllSuccDone.Push(MachinePred);
+                }
+                foreach (Job Parent in CurrentJob.Predecessors)
+                {
+                    nChildrenProcessed[Parent.ID]++;
+                    if (nChildrenProcessed[Parent.ID] == Parent.Successors.Count && (GetMachineSuccessor(Parent) == null || IsVisited[GetMachineSuccessor(Parent).ID]))
+                    {
+                        if (!IsPushed[Parent.ID]) AllSuccDone.Push(Parent);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Checks the feasibility of a machine assignment for both machine and prec arcs.
         /// </summary>
