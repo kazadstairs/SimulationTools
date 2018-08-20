@@ -45,67 +45,44 @@ namespace SimulationTools
             {
                 Instances[i] = new ProblemInstance();
                 Instances[i].ReadFromFile(INSTANCEFOLDER+INSTANCENAMES[i],INSTANCENAMES[i]);
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA","ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB","ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random","ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
+                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
             }
 
             ProblemInstance Pinedo = new ProblemInstance();
             Pinedo.InstanciatePinedo();
             Instances[INSTANCENAMES.Length] = Pinedo;
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "ESS"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "ESS"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "ESS"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
+            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
 
-            
-          
+
             /*
-            SchedulesToSimulate.Add(Sched);
-            */
-            /*
-            for (int i = 0; i < 10; i++)
-            {
-                Schedule LSSched = NewSchedule(Pinedo, "Random");
-                LocalSearch.SwapHillClimb(ref LSSched, RobustnessMeasures.DebugNumberOfJobsInIndexOrder);
-            }
-            */
-            //Console.WriteLine(RobustnessMeasures.SumOfFreeSlacks(Sched));
-
-
-            //Sched.SetDeadlines(Sched.EstimatedCmax);
-            //Sched.SetLSS();
-            //Sched.MakeHTMLImage("Nonoptimal LSS schedule for Pinedo Instance");
-            //SchedulesToSimulate.Add(Sched);
-
-/*
-            Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
-            {
-               new Simulation(Nruns, currentSched).Perform();
-            });
-            */
+                        Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
+                        {
+                           new Simulation(Nruns, currentSched).Perform();
+                        });
+                        */
             foreach (Schedule currentSched in SchedulesToSimulate)
             {
                 new Simulation(Nruns, currentSched).Perform();
             }
+            
 
 
-
-
-
-
-
-            //PinedoSched.SetReleaseDates();
-            //PinedoSched.SetDeadlines(32);
-
-
-
-
-            //Console.WriteLine("All operations complete.");
-            //Console.ReadLine();
+            Console.WriteLine("All operations complete.");
+            Console.ReadLine();
         }
 
         // todo: Expand to allow chooosing of starttime decissions.
-        static Schedule NewSchedule(ProblemInstance Ins,string AssignmentType)
+        static Schedule NewSchedule(ProblemInstance Ins,string AssignmentType,string StartTimeType)
         {
             Schedule Sched = new Schedule(Ins);
             switch (AssignmentType)
@@ -122,12 +99,28 @@ namespace SimulationTools
                 default:
                     throw new Exception("AssignmentType string not one of allowed strings");
             }
-            Sched.Print();
-            Sched.CalcESS();
-            Sched.SetESS();
+            Sched.StartTimeDescription = StartTimeType;
+            switch (StartTimeType)
+            {
+                case "ESS":
+                    Sched.CalcESS();
+                    Sched.SetESS();
+                    Sched.MakeHTMLImage(string.Format("ESS {0} schedule for {1}", Sched.AssignmentDescription, Ins.Description));
+                    break;
+                case "LSS":
+                    Sched.CalcLSS();
+                    Sched.SetLSS();
+                    Sched.MakeHTMLImage(string.Format("LSS {0} schedule for {1}", Sched.AssignmentDescription, Ins.Description));
+                    break;
+                default:
+                    throw new Exception("StartTimeType string not one of the allowed strings");
+
+
+
+            }
+            Console.WriteLine("*** RMS CALCULATED BASED ON {0} SCHED! ***",StartTimeType);
             Sched.EstimateCmax();
             Sched.CalcRMs();
-            Sched.MakeHTMLImage(string.Format("ESS {0} schedule for {1}",Sched.Description,Ins.Description) );
             return Sched;
         }
     }

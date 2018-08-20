@@ -54,7 +54,7 @@ namespace SimulationTools
             {
                  if (new FileInfo(path).Length == 0)
                     {
-                        sw.Write("Instance Name; Schedule Type;");
+                        sw.Write("Instance Name; Schedule AssignType; Schedule StartTimeType;");
                         foreach (RM rm in Sim.Sched.RMs)
                         {
                             sw.Write("{0};", rm.Name);
@@ -68,7 +68,7 @@ namespace SimulationTools
                     }
                     else
                     {
-                        sw.Write("{0};{1};", Sim.Sched.Problem.Description, Sim.Sched.Description);
+                        sw.Write("{0};{1};{2};", Sim.Sched.Problem.Description, Sim.Sched.AssignmentDescription,Sim.Sched.StartTimeDescription);
                         foreach (RM rm in Sim.Sched.RMs)
                         {
                             sw.Write("{0};", rm.Value);

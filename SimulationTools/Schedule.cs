@@ -17,14 +17,16 @@ namespace SimulationTools
         public List<Machine> Machines; 
         public ProblemInstance Problem;
         // schedule basics:
-        public string Description;
+        public string AssignmentDescription;
+        public string StartTimeDescription;
         private double[] Starttimes;
         private int[] AssignedMachineID; // keeps track of which machine each job is on: MachineId = MachineIdForJobId[j.id]
 
         // useful vars:
         public double EstimatedCmax;
-        public double[] ESS; 
-        public double[] DynamicDueDate;
+        public double[] ESS;
+        public double[] LSS;
+        //public double[] DynamicDueDate;
 
         // RMs
         public List<RM> RMs;
@@ -46,7 +48,7 @@ namespace SimulationTools
             }
 
             AssignedMachineID = new int[PrecedenceDAG.N];
-            DynamicDueDate = new double[PrecedenceDAG.N];
+            LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
             MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];         
 
@@ -128,9 +130,9 @@ namespace SimulationTools
             for (int i = 1; i < Starttimes.Length; i++)
             {
                 if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
-                if(Starttimes[i] > Maximum) { Maximum = Starttimes[i]; MaxID = i; }
+                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum) { Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime; MaxID = i; }
             }
-            EstimatedCmax = Maximum + PrecedenceDAG.GetJobById(MaxID).MeanProcessingTime;
+            EstimatedCmax = Maximum;
             Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
         }
 
@@ -200,13 +202,13 @@ namespace SimulationTools
 
         public void MakeGreedyLoadAssignment()
         {
-            Description = "GreedyLoadBalancing";
+            AssignmentDescription = "GreedyLoadBalancing";
             AssignJobsBy(GreedyLoadBalancing);
         }
 
         public void MakeRandomAssignment()
         {
-            Description = "Random";
+            AssignmentDescription = "Random";
             AssignJobsBy(RandomMachineAssignment);
         }
 
@@ -215,7 +217,7 @@ namespace SimulationTools
         /// </summary>
         public void AssignByRolling()
         {
-            Description = "Rolling Machine Assignment";
+            AssignmentDescription = "Rolling Machine Assignment";
             if (PrecedenceDAG.N <= 1)
             {
                 throw new Exception("No DAG given. Cannot build schedule without problem instance");
@@ -328,7 +330,7 @@ namespace SimulationTools
         {
             System.IO.Directory.CreateDirectory(string.Format(@"{0}Results\Schedules\", Program.BASEPATH));
             using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(string.Format(@"{0}Results\Schedules\InstanceName_{1}.html",Program.BASEPATH,title) ))
+            new System.IO.StreamWriter(string.Format(@"{0}Results\Schedules\{1}.html",Program.BASEPATH,title) ))
             {
                 file.WriteLine(@"<!DOCTYPE html>");
                 file.WriteLine(@"<head>");
@@ -364,6 +366,7 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
+                if (ESS[j.ID] == 0) { Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID); }
                 Starttimes[j.ID] = ESS[j.ID];
             }
         }
@@ -372,7 +375,8 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
-                Starttimes[j.ID] = DynamicDueDate[j.ID] - j.MeanProcessingTime;
+                if (LSS[j.ID] == 0) { Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID); }
+                Starttimes[j.ID] = LSS[j.ID];
             }
         }
 
@@ -390,6 +394,22 @@ namespace SimulationTools
             if (GetMachinePredecessor(j) != null && ESS[j.ID] < ESS[GetMachinePredecessor(j).ID] + GetMachinePredecessor(j).MeanProcessingTime)
             {
                 ESS[j.ID] = ESS[GetMachinePredecessor(j).ID] + GetMachinePredecessor(j).MeanProcessingTime;
+            }
+        }
+
+        private void Update_LSS_StartDateFor(Job j)
+        {
+            LSS[j.ID] = this.EstimatedCmax - j.MeanProcessingTime;
+            foreach (Job Child in j.Successors)
+            {
+                if (LSS[j.ID] > LSS[Child.ID] - j.MeanProcessingTime) // if j is set to start at an impossible time, set it earlier.
+                {
+                    LSS[j.ID] = LSS[Child.ID] - j.MeanProcessingTime;
+                }
+            }
+            if (GetMachineSuccessor(j) != null && LSS[j.ID] > LSS[GetMachineSuccessor(j).ID] - j.MeanProcessingTime)
+            {
+                LSS[j.ID] = LSS[GetMachineSuccessor(j).ID] - j.MeanProcessingTime;
             }
         }
 
@@ -424,6 +444,18 @@ namespace SimulationTools
         public void CalcESS()
         {
             ForeachJobInPrecOrderDo(UpdateReleaseDateFor);
+        }
+
+        public void CalcLSS()
+        {
+            if (Starttimes[1] < 0)
+            {
+                // start times not calculated yet. ESS needed to estimate Cmax.
+                CalcESS();
+                SetESS();
+            }
+            EstimateCmax();
+            ForeachJobInReversePrecOrderDo(Update_LSS_StartDateFor);
         }
 
 
@@ -472,7 +504,10 @@ namespace SimulationTools
 
 
 
-
+        /// <summary>
+        /// Perfors the Action (Job ==> Void) on each Job in reverse precedence order (inverted topological order). Considers Machine Arcs
+        /// </summary>
+        /// <param name="PerFormAction"></param>
         public void ForeachJobInReversePrecOrderDo(Action<Job> PerFormAction)
         {
             int[] nChildrenProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of children of Job with ID i that have been fully updated.

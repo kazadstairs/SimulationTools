@@ -31,10 +31,18 @@ namespace SimulationTools
                         freeSlack = candidate;
                     }
                 }
+                if (freeSlack < 0)
+                {
+                    throw new Exception("WTF!");
+                }
                 return freeSlack;
             }
             else
             {
+                if (S.EstimatedCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j) < 0)
+                {
+                    throw new Exception(string.Format("{0}",S.GetStartTimeOfJob(j)));
+                }
                 return S.EstimatedCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j);
             }
         }
