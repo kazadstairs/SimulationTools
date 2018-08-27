@@ -20,7 +20,7 @@ namespace SimulationTools
             return rand.Next(upper);
         }
 
-        static public double SampleStandardNormal()
+        static private double SampleStandardNormal()
         {
             double u1 = 1.0 - rand.NextDouble();
             double u2 = 1.0 - rand.NextDouble();
@@ -78,7 +78,7 @@ namespace SimulationTools
 
             if (ans < 0)
             {
-                Console.WriteLine("Normal distribution N({0},{1}) sampled with value < 0, returning 0 instead.",mean,StdDev);
+               // Console.Error.WriteLine("WARNING: Normal distribution N({0},{1}) sampled with value < 0, returning 0 instead.",mean,StdDev);
                 return 0;
             }
             else { return ans; }

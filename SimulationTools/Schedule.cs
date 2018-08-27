@@ -465,7 +465,6 @@ namespace SimulationTools
         /// <param name="PerFormAction"></param>
         public void ForeachJobInPrecOrderDo(Action<Job> PerFormAction)
         {
-            int DebugNJobsHandled = 0;
             int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
             Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
             foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
@@ -485,7 +484,6 @@ namespace SimulationTools
                 CurrentJob = AllPredDone.Pop();
 
                 PerFormAction(CurrentJob);
-                DebugNJobsHandled++;
 
                 IsVisited[CurrentJob.ID] = true;
                 Job MachineSucc = GetMachineSuccessor(CurrentJob);
@@ -502,7 +500,6 @@ namespace SimulationTools
                     }
                 }
             }
-            Console.WriteLine("DEBUG: Number of jobs handled is {0}", DebugNJobsHandled);
         }
 
 

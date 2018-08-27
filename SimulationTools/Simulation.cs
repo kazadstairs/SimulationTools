@@ -9,7 +9,7 @@ namespace SimulationTools
 {
     class Simulation
     {
-        public int DEBUGJobsStarted = 0; // todo delete
+       // public int DEBUGJobsStarted = 0; // todo delete
 
 
         public PriorityQueue<Event> EventList;
@@ -73,7 +73,7 @@ namespace SimulationTools
                 SetupSimulation();
                 PerformSimulation();
                 PerformanceMeasures.WriteToFile(Constants.OUTPATH);
-                Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
+      //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }
             Console.WriteLine("Simulation completed");

@@ -151,9 +151,15 @@ MakePlot <- function(string.RM, string.QM)
   
 }
 
+Plot.SchedStart.vs.RealisedStart <- function()
+{
+  
+  
+}
+
 MakeAllPlots <- function()
 {
-  RMs <- c("FS","BFS","UFS","WFS")
+  RMs <- c("FS","BFS","UFS","wFS")
   QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality")
   
   for(Rm in RMs)
@@ -181,14 +187,40 @@ MakeAllPlots <- function()
 
 ########### plot from one big data file ############
 myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+
 MakeAllPlots()
 
 
 ############################
 #For debugging
-#myDF.plot <- myDF %>% 
-#  group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-#  summarize(FS = mean(FS),Cmaxsd = sd(Cmax),Cmax=mean(Cmax))
+myDF.plot <- myDF %>% 
+  group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+  summarize(SS1=mean(ScheduledStartTime1),Delay=mean(RealisedStartTime1-ScheduledStartTime1))
+
+PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
+{
+  myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+  
+  melted.myDF <- melt(myDF,id=names(myDF)[1:12])
+  my.melted.DF.plot <- melted.myDF %>% 
+    group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType,variable) %>% 
+    summarize(mval = mean(value),sdval = sd(value))
+  
+}
+   melted2.df.plot <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))
+  xval <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))$mval
+  yval <- subset(my.melted.DF.plot,grepl("RealisedStartTime", variable, fixed=TRUE))$mval - xval
+  yvalsd <- subset(my.melted.DF.plot,grepl("RealisedStartTime", variable, fixed=TRUE))$sdval
+  df.plot <- data.frame(melted2.df.plot,yval,yvalsd)
+  p <- ggplot(df.plot,aes(x=mval,y=yval,group=interaction(Schedule.AssignType,Instance.Name),colour=Schedule.AssignType,shape=Instance.Name))
+  p + geom_point()
+
+
+
+starttimes <- subset(my.melted.DF.plot,grepl("Scheduled",variable,fixed = TRUE))$mval
+cbind(my.melted.DF.plot,starttimes)
+
+ggplot(myDF.plot,aes(x=SS1,y=Delay,colour = Schedule.AssignType,shape=Schedule.AssignType)) + geom_point()
 
 #p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
 #p <- p + geom_point() 

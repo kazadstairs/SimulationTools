@@ -151,7 +151,7 @@ namespace SimulationTools
             Sim.PerformanceMeasures.AddLinearStartDelay(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
             Sim.PerformanceMeasures.UpdateStartPunctuality(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
 
-            J.Sim.DEBUGJobsStarted++;
+        //    J.Sim.DEBUGJobsStarted++;
             J.Sim.Sched.GetStartTimeOfJob(J.JobParams);
             J.RealisedStartTime = Time;
            // Console.WriteLine(DebugDescription);
