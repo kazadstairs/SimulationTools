@@ -135,6 +135,7 @@ BuildPlot <- function(cScheduleNames,InstanceName,Nruns)
 
 ########### plot from one big data file ############
 myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+MakeAllPlots()
 myDF.plot <- myDF %>% 
   group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
   summarize(FS = mean(FS),Cmaxsd = sd(Cmax),Cmax=mean(Cmax))
