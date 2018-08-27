@@ -60,34 +60,48 @@ namespace SimulationTools
         {
             using (StreamWriter sw = File.AppendText(path))
             {
-                 if (new FileInfo(path).Length == 0)
+                if (new FileInfo(path).Length == 0)
+                {
+                    sw.Write("Instance Name; Schedule AssignType; Schedule StartTimeType;");
+                    foreach (RM rm in Sim.Sched.RMs)
                     {
-                        sw.Write("Instance Name; Schedule AssignType; Schedule StartTimeType;");
-                        foreach (RM rm in Sim.Sched.RMs)
-                        {
-                            sw.Write("{0};", rm.Name);
-                        }
-                        sw.Write("Run nr");
-                        foreach (string qmname in Constants.QMNames)
-                        {
-                            sw.Write(";{0}", qmname);
-                        }
-                        sw.Write(Environment.NewLine);
+                        sw.Write("{0};", rm.Name);
                     }
-                    else
+                    sw.Write("Run nr");
+                    foreach (string qmname in Constants.QMNames)
                     {
-                        sw.Write("{0};{1};{2};", Sim.Sched.Problem.Description, Sim.Sched.AssignmentDescription,Sim.Sched.StartTimeDescription);
-                        foreach (RM rm in Sim.Sched.RMs)
-                        {
-                            sw.Write("{0};", rm.Value);
-                        }
-                        sw.WriteLine("{0};{1};{2};{3};{4}",
-                        RunID,
-                        Cmax,
-                        TotalLinearStartDelay,
-                        (double)StartOnTimeJobs / NJobs,
-                        (double)FinishOnTimeJobs / NJobs);
+                        sw.Write(";{0}", qmname);
                     }
+                    foreach (SimulationJob j in Sim.SimulationJobs)
+                    {
+                        sw.Write(";ScheduledStartTime{0};RealisedStartTime{0};RealisedProcessingTime{0};Machine{0}", j.JobParams.ID);
+                    }
+                    sw.Write(Environment.NewLine);
+                }
+
+                sw.Write("{0};{1};{2};", Sim.Sched.Problem.Description, Sim.Sched.AssignmentDescription,Sim.Sched.StartTimeDescription);
+                //RMs:
+                foreach (RM rm in Sim.Sched.RMs)
+                {
+                    sw.Write("{0};", rm.Value);
+                }
+                //QMs:
+                sw.Write("{0};{1};{2};{3};{4}",
+                RunID,
+                Cmax,
+                TotalLinearStartDelay,
+                (double)StartOnTimeJobs / NJobs,
+                (double)FinishOnTimeJobs / NJobs);
+                //Jobinfo:
+                foreach (SimulationJob j in Sim.SimulationJobs)
+                {
+                    sw.Write(";{0};{1};{2};{3}", j.Sim.Sched.GetStartTimeOfJob(j.JobParams),j.RealisedStartTime,j.RealisedProcessingTime,j.Sim.Sched.GetMachineByJobID(j.JobParams.ID).MachineID);
+                    if (j.Sim.Sched.GetStartTimeOfJob(j.JobParams) > j.RealisedStartTime)
+                    {
+                        //throw new Exception("Job started early");
+                    }
+                }
+                sw.Write(Environment.NewLine);
             }
         }
 

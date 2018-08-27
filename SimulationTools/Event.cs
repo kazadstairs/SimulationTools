@@ -24,7 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-           //Console.WriteLine(DebugDescription);
+          // Console.WriteLine(DebugDescription);
         }
 
         public int CompareTo(Event other)
@@ -147,9 +147,14 @@ namespace SimulationTools
         public override void Handle()
         {
             GetMachineForJob(J.JobParams).isAvailable = false;
-            Sim.EventList.Insert(new EJobComplete(Time + J.SampleProcessingTime(), Sim, J));
+            J.RealisedProcessingTime = J.SampleProcessingTime();
+            Sim.EventList.Insert(new EJobComplete(Time + J.RealisedProcessingTime, Sim, J));
             Sim.PerformanceMeasures.AddLinearStartDelay(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
             Sim.PerformanceMeasures.UpdateStartPunctuality(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
+
+            J.Sim.Sched.GetStartTimeOfJob(J.JobParams);
+            J.RealisedStartTime = Time;
+            Console.WriteLine(DebugDescription);
             base.Handle();
         }
     }

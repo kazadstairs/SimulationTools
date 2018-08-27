@@ -26,6 +26,7 @@ namespace SimulationTools
             Sched = _sched;
             BuildPath();
             SimulationJobs = new SimulationJob[Sched.PrecedenceDAG.N];
+            double[] RealisedStartTime = new double[Sched.PrecedenceDAG.N+1];
             for (int i = 0; i < Sched.PrecedenceDAG.N; i++)
             {
                 SimulationJobs[i] = new SimulationJob(Sched.PrecedenceDAG.Jobs[i],this);
@@ -103,18 +104,18 @@ namespace SimulationTools
         private void PerformSimulation()
         {
              
-                int eventcounter = 0;
+              //  int eventcounter = 0;
                 //todo remove eventcounter
-                Stopwatch watch = Stopwatch.StartNew();
-                while (EventList.Count > 0 && eventcounter < 1000)
+               // Stopwatch watch = Stopwatch.StartNew();
+                while (EventList.Count > 0)
                 {
                     Event NextEvent = EventList.ExtractMin();
                     NextEvent.Handle();
-                    eventcounter++;
-                    if (eventcounter % 10 == 0)
-                    {
+                   // eventcounter++;
+                  //  if (eventcounter % 10 == 0)
+                  //  {
                         //Console.WriteLine("{0} events processed", eventcounter);
-                    }
+                 //   }
                     PerformanceMeasures.Cmax = NextEvent.Time;
                 }
                 

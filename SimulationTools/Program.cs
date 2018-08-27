@@ -40,7 +40,7 @@ namespace SimulationTools
 
             //For each instance, for each schedule generation heuristic, perform a simulation.
             List<Schedule> SchedulesToSimulate = new List<Schedule>();
-
+            /*
             ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length+1];
             for (int i = 0; i < INSTANCENAMES.Length; i++)
             {
@@ -63,7 +63,7 @@ namespace SimulationTools
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
-
+            */
 
             /*
                         Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
@@ -71,11 +71,15 @@ namespace SimulationTools
                            new Simulation(Nruns, currentSched).Perform();
                         });
                         */
+            ProblemInstance Ptest = new ProblemInstance();
+            Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
+            new Simulation(1, NewSchedule(Ptest, "GLB", "LSS")).Perform();
+            /*
             foreach (Schedule currentSched in SchedulesToSimulate)
             {
                 new Simulation(Constants.NRuns, currentSched).Perform();
             }
-            
+            */
 
 
             Console.WriteLine("All operations complete. Output written to: {0}",Constants.OUTPATH);
@@ -123,6 +127,7 @@ namespace SimulationTools
 
             }
             Console.WriteLine("*** RMS CALCULATED BASED ON {0} SCHED! ***",StartTimeType);
+            Sched.Print();
             Sched.EstimateCmax();
             Sched.CalcRMs();
             return Sched;

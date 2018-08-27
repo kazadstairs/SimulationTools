@@ -14,6 +14,9 @@ namespace SimulationTools
         public List<SimulationJob> Successors;
         public Simulation Sim;
 
+        public double RealisedStartTime;
+        public double RealisedProcessingTime;
+
         // simulation vars (these all need reset in ResetSimulation):
         public int nPredComplete { get; private set; }
         public bool HasBeenMadeAvailable;

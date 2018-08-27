@@ -121,51 +121,6 @@ BuildPlot <- function(cScheduleNames,InstanceName,Nruns)
 	return (dfplotinfo)
 }
 
-#
-#
-######## ACTUAL WORK ##########################################
-#
-#
-
-
-#plot.df <- BuildPlot(SCHEDNAMES,INSTANCE,NRUNS)
-#errorBarWidth <- max(plot.df$RM) / (4 * length(unique(plot.df$RM)))
-#p <- ggplot(plot.df, aes(x = RM, y = ymean, label= PointLabel)) + geom_point(size = 2) + geom_errorbar(aes(ymin = ymin, ymax = ymax, width = errorBarWidth))+geom_text(aes(label=PointLabel),hjust=0, vjust=0)
-#p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
-
-########### plot from one big data file ############
-myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
-MakeAllPlots()
-myDF.plot <- myDF %>% 
-  group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-  summarize(FS = mean(FS),Cmaxsd = sd(Cmax),Cmax=mean(Cmax))
-
-p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
-p <- p + geom_point() 
-p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
-p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
-p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
-
-p
-
-
-MakeAllPlots <- function()
-{
-  RMs <- c("FS","BFS","UFS")
-  QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality")
-  
-  for(Rm in RMs)
-  {
-    for(Qm in QMs)
-    {
-      MakePlot(Rm,Qm)
-    }
-    
-  }
-  
-}
-MakeAllPlots()
-
 MakePlot <- function(string.RM, string.QM)
 {
   RMsym <- sym(string.RM)
@@ -177,9 +132,9 @@ MakePlot <- function(string.RM, string.QM)
     group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
     summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
   
- # names(myDF.plot)[3] <- string.RM
-#  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
-#  names(myDF.plot)[5] <- string.QM
+  # names(myDF.plot)[3] <- string.RM
+  #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
+  #  names(myDF.plot)[5] <- string.QM
   
   p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
   p <- p + geom_point() 
@@ -195,5 +150,58 @@ MakePlot <- function(string.RM, string.QM)
   print(p)
   
 }
+
+MakeAllPlots <- function()
+{
+  RMs <- c("FS","BFS","UFS","WFS")
+  QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality")
+  
+  for(Rm in RMs)
+  {
+    for(Qm in QMs)
+    {
+      MakePlot(Rm,Qm)
+    }
+    
+  }
+  
+}
+
+#
+#
+######## ACTUAL WORK ##########################################
+#
+#
+
+
+#plot.df <- BuildPlot(SCHEDNAMES,INSTANCE,NRUNS)
+#errorBarWidth <- max(plot.df$RM) / (4 * length(unique(plot.df$RM)))
+#p <- ggplot(plot.df, aes(x = RM, y = ymean, label= PointLabel)) + geom_point(size = 2) + geom_errorbar(aes(ymin = ymin, ymax = ymax, width = errorBarWidth))+geom_text(aes(label=PointLabel),hjust=0, vjust=0)
+#p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
+
+########### plot from one big data file ############
+myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+MakeAllPlots()
+
+
+############################
+#For debugging
+#myDF.plot <- myDF %>% 
+#  group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+#  summarize(FS = mean(FS),Cmaxsd = sd(Cmax),Cmax=mean(Cmax))
+
+#p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
+#p <- p + geom_point() 
+#p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
+#p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
+#p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
+
+#p
+
+
+
+#MakeAllPlots()
+
+
 
 
