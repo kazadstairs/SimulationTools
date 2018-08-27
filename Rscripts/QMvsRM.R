@@ -200,21 +200,22 @@ myDF.plot <- myDF %>%
 PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
 {
   myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
-  
+  myDF <- subset(myDF,grepl(string.Instance,Instance.Name))
+  myDF <- subset(myDF,grepl(string.AssignType,Schedule.AssignType))
   melted.myDF <- melt(myDF,id=names(myDF)[1:12])
   my.melted.DF.plot <- melted.myDF %>% 
     group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType,variable) %>% 
     summarize(mval = mean(value),sdval = sd(value))
-  
-}
-   melted2.df.plot <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))
+  melted2.df.plot <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))
   xval <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))$mval
   yval <- subset(my.melted.DF.plot,grepl("RealisedStartTime", variable, fixed=TRUE))$mval - xval
   yvalsd <- subset(my.melted.DF.plot,grepl("RealisedStartTime", variable, fixed=TRUE))$sdval
   df.plot <- data.frame(melted2.df.plot,yval,yvalsd)
   p <- ggplot(df.plot,aes(x=mval,y=yval,group=interaction(Schedule.AssignType,Instance.Name),colour=Schedule.AssignType,shape=Instance.Name))
   p + geom_point()
-
+  
+}
+   
 
 
 starttimes <- subset(my.melted.DF.plot,grepl("Scheduled",variable,fixed = TRUE))$mval
