@@ -73,7 +73,7 @@ namespace SimulationTools
                         */
             ProblemInstance Ptest = new ProblemInstance();
             Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
-            new Simulation(1, NewSchedule(Ptest, "GLB", "LSS")).Perform();
+            new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
             /*
             foreach (Schedule currentSched in SchedulesToSimulate)
             {

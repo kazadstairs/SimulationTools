@@ -24,7 +24,7 @@ namespace SimulationTools
         {
             double u1 = 1.0 - rand.NextDouble();
             double u2 = 1.0 - rand.NextDouble();
-            return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);            
+            return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);       
         }
 
         /// <summary>
@@ -74,7 +74,14 @@ namespace SimulationTools
         /// <returns></returns>
         static public double SampleNormal(double mean, double StdDev)
         {            
-            return mean + StdDev * SampleStandardNormal();
+            double ans = mean + StdDev * SampleStandardNormal();
+
+            if (ans < 0)
+            {
+                Console.WriteLine("Normal distribution N({0},{1}) sampled with value < 0, returning 0 instead.",mean,StdDev);
+                return 0;
+            }
+            else { return ans; }
         }
     }
 }

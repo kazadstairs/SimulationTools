@@ -24,7 +24,7 @@ namespace SimulationTools
 
         virtual public void Handle()
         {
-          // Console.WriteLine(DebugDescription);
+        //   Console.WriteLine(DebugDescription);
         }
 
         public int CompareTo(Event other)
@@ -118,7 +118,6 @@ namespace SimulationTools
 
         public override void Handle()
         {
-            // todo: check elsewhere if (!J.IsAssigned) { throw new Exception("Unassigned job became available"); }
             if (GetMachineForJob(J.JobParams).isAvailable) // if the machine for the job is available, then start the job on that machine
             {
                 //start job j on the machine it is assigned to:
@@ -152,9 +151,10 @@ namespace SimulationTools
             Sim.PerformanceMeasures.AddLinearStartDelay(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
             Sim.PerformanceMeasures.UpdateStartPunctuality(Sim.Sched.GetStartTimeOfJob(J.JobParams), Time);
 
+            J.Sim.DEBUGJobsStarted++;
             J.Sim.Sched.GetStartTimeOfJob(J.JobParams);
             J.RealisedStartTime = Time;
-            Console.WriteLine(DebugDescription);
+           // Console.WriteLine(DebugDescription);
             base.Handle();
         }
     }
