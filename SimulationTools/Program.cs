@@ -22,11 +22,13 @@ namespace SimulationTools
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
             BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
 
             //
             // End of Setup
             //
-            System.IO.File.Delete(@"C:\Users\3496724\Source\Repos\SimulationTools\Results\RMs\allresults.txt");
+            Console.WriteLine("REMOVING OLD DATA...");
+            System.IO.File.Delete(Constants.OUTPATH);
             INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
             for (int i = 0; i < INSTANCENAMES.Length; i++)
             {
@@ -76,9 +78,12 @@ namespace SimulationTools
             
 
 
-            Console.WriteLine("All operations complete.");
+            Console.WriteLine("All operations complete. Output written to: {0}",Constants.OUTPATH);
             Console.ReadLine();
         }
+
+        //************************ END OF MAIN *******************************************************************//
+
 
         // todo: Expand to allow chooosing of starttime decissions.
         static Schedule NewSchedule(ProblemInstance Ins,string AssignmentType,string StartTimeType)

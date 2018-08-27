@@ -47,6 +47,20 @@ namespace SimulationTools
             }
         }
 
+        public static double WeightedSlowFreeSlack(Job j, Schedule S)
+        {
+            double FSj = SlowFreeSlack(j, S);
+            double weight = j.Successors.Count;
+            if (! j.Successors.Contains(S.GetMachineSuccessor(j)))
+            {
+                // Machine Successor is seperate.
+                weight += 1;
+            }
+
+            return FSj * weight;
+
+        }
+
         /// <summary>
         /// Calculate and return the sum of all free slacks. The free slack of job j in schedule S is the amount of time j can slip without delaying the start of the very next activity.
         /// </summary>
@@ -62,7 +76,24 @@ namespace SimulationTools
             return sum;
         }
 
-        public static int RMCount = 1;
+        /// <summary>
+        /// Weighted sum of free slacks
+        /// </summary>
+        /// <param name="S"></param>
+        /// <returns></returns>
+        public static double WSoFS(Schedule S)
+        {
+            double sum = 0.0;
+            foreach (Job j in S.PrecedenceDAG.Jobs)
+            {
+                sum += WeightedSlowFreeSlack(j, S);
+            }
+            return sum;
+        }
+
+
+
+       // public static int RMCount = 1;
 
         public static double BinaryFreeSlack(double fraction, Schedule S)
         {
@@ -76,6 +107,8 @@ namespace SimulationTools
             }
             return total;
         }
+
+       
 
         public static double UpperboundFreeSlack(double fraction, Schedule S)
         {

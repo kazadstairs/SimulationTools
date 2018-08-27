@@ -14,7 +14,7 @@ namespace SimulationTools
         public SimulationPerformanceMeasures PerformanceMeasures;
         public SimulationJob [] SimulationJobs;
         int NRuns;
-        private string OutPutPath; // { get; private set; }
+        //private string OutPutPath; // { get; private set; }
        // public string SimulationSettingsOutPutPath { get; private set; }
        // public string SimulationResultsOutPutPath { get; private set; }
         bool[] HasBeenMadeAvailable;
@@ -40,7 +40,7 @@ namespace SimulationTools
 
         private void BuildPath()
         {
-            OutPutPath = string.Format(@"{0}Results\RMs\allresults.txt",Program.BASEPATH);
+           // OutPutPath = string.Format(@"{0}Results\RMs\allresults.txt",Program.BASEPATH);
             string InstanceName = Sched.Problem.Description;
          //   SimulationSettingsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_SimSettings.txt", InstanceName, Sched.Description, NRuns);
          //   SimulationResultsOutPutPath = OutPutPath + string.Format("Instance_{0}_Schedule_{1}_Runs_{2}_QMs.txt", InstanceName, Sched.Description, NRuns);
@@ -68,7 +68,7 @@ namespace SimulationTools
              //   Console.WriteLine("***** Performing Simulation {0}...", runnr);
                 SetupSimulation();
                 PerformSimulation();
-                PerformanceMeasures.WriteToFile(OutPutPath);
+                PerformanceMeasures.WriteToFile(Constants.OUTPATH);
                 CleanJobs();
             }
             Console.WriteLine("Simulation completed");

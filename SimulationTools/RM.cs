@@ -35,6 +35,9 @@ namespace SimulationTools
                 case "UFS":
                     Value = RobustnessMeasures.UpperboundFreeSlack(0.25, S);
                     break;
+                case "wFS":
+                    Value = RobustnessMeasures.WSoFS(S);
+                    break;
                 default:
                     throw new Exception("RM name not recognized");
                     break;
