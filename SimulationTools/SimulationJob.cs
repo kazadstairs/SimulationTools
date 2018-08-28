@@ -100,9 +100,28 @@ namespace SimulationTools
             return nPredComplete >= Predecessors.Count;
         }
 
+        /// <summary>
+        /// Samples from a distribution, according to the type determined in the simulation.
+        /// </summary>
+        /// <returns></returns>
         public double SampleProcessingTime()
         {
-            return Distribution.SampleNormal(JobParams.MeanProcessingTime, 1.0);
+            switch (Sim.DistributionType)
+            {
+                case "N(p,1)":
+                    return Distribution.SampleNormal(JobParams.MeanProcessingTime, 1.0);
+                case "N(p,0.01p)":
+                    return Distribution.SampleNormal(JobParams.MeanProcessingTime, 0.01 * JobParams.MeanProcessingTime);
+                case "N(p,0.1p)":
+                    return Distribution.SampleNormal(JobParams.MeanProcessingTime, 0.1 * JobParams.MeanProcessingTime);
+                case "N(p,0.25p)":
+                    return Distribution.SampleNormal(JobParams.MeanProcessingTime, 0.25 * JobParams.MeanProcessingTime);
+
+                default:
+                    throw new Exception("Distribution not recognized");
+
+            }
+            
         }
 
         public void ResetSimulationVars()

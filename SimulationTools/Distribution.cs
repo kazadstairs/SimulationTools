@@ -28,6 +28,24 @@ namespace SimulationTools
         }
 
         /// <summary>
+        /// Uses the Box-Mueller transform to generate a N(0,1) random number, then addapts it to make it N(mu,S2)
+        /// </summary>
+        /// <returns></returns>
+        static public double SampleNormal(double mean, double StdDev)
+        {            
+            double ans = mean + StdDev * SampleStandardNormal();
+
+            if (ans < 0)
+            {
+               // Console.Error.WriteLine("WARNING: Normal distribution N({0},{1}) sampled with value < 0, returning 0 instead.",mean,StdDev);
+                return 0;
+            }
+            else { return ans; }
+        }
+
+
+
+        /// <summary>
         /// Returns the probability that a sample from N(mu,StdDev) is leq upto
         /// </summary>
         /// <param name="mean">mean</param>
@@ -66,22 +84,6 @@ namespace SimulationTools
             double y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.Exp(-x * x);
 
             return 0.5 * (1.0 + sign * y);
-        }
-
-        /// <summary>
-        /// Uses the Box-Mueller transform to generate a N(0,1) random number, then addapts it to make it N(mu,S2)
-        /// </summary>
-        /// <returns></returns>
-        static public double SampleNormal(double mean, double StdDev)
-        {            
-            double ans = mean + StdDev * SampleStandardNormal();
-
-            if (ans < 0)
-            {
-               // Console.Error.WriteLine("WARNING: Normal distribution N({0},{1}) sampled with value < 0, returning 0 instead.",mean,StdDev);
-                return 0;
-            }
-            else { return ans; }
         }
     }
 }

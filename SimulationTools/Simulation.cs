@@ -9,8 +9,8 @@ namespace SimulationTools
 {
     class Simulation
     {
-       // public int DEBUGJobsStarted = 0; // todo delete
-
+        // public int DEBUGJobsStarted = 0; // todo delete
+        public string DistributionType;
 
         public PriorityQueue<Event> EventList;
         public Schedule Sched;
@@ -23,8 +23,9 @@ namespace SimulationTools
         bool[] HasBeenMadeAvailable;
         //public State CurrentState; // not used
 
-        public Simulation(int _Nruns, Schedule _sched)
+        public Simulation(int _Nruns, Schedule _sched, string _DistrType)
         {
+            DistributionType = _DistrType;
             NRuns = _Nruns;
             Sched = _sched;
             BuildPath();

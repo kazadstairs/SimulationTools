@@ -62,6 +62,7 @@ namespace SimulationTools
             {
                 if (new FileInfo(path).Length == 0)
                 {
+                    sw.Write("Distribution Type;");
                     sw.Write("Instance Name; Schedule AssignType; Schedule StartTimeType;");
                     foreach (RM rm in Sim.Sched.RMs)
                     {
@@ -79,6 +80,7 @@ namespace SimulationTools
                     sw.Write(Environment.NewLine);
                 }
 
+                sw.Write("{0}", Sim.DistributionType);
                 sw.Write("{0};{1};{2};", Sim.Sched.Problem.Description, Sim.Sched.AssignmentDescription,Sim.Sched.StartTimeDescription);
                 //RMs:
                 foreach (RM rm in Sim.Sched.RMs)

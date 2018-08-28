@@ -15,7 +15,6 @@ namespace SimulationTools
         {
             
             Console.WriteLine("Welcome to this Super Sweet Simulation Software");
-            string[] output = new string [] { "hello", "world" };
             //
             // SETUP
             //
@@ -63,7 +62,7 @@ namespace SimulationTools
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
             SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
-           
+
 
             /*
                         Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
@@ -71,13 +70,16 @@ namespace SimulationTools
                            new Simulation(Nruns, currentSched).Perform();
                         });
                         */
-       //     ProblemInstance Ptest = new ProblemInstance();
-        //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
-         //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
-           
-            foreach (Schedule currentSched in SchedulesToSimulate)
+            //     ProblemInstance Ptest = new ProblemInstance();
+            //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
+            //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
+            foreach (string distribution in Constants.DISTRIBUTION)
             {
-                new Simulation(Constants.NRuns, currentSched).Perform();
+                foreach (Schedule currentSched in SchedulesToSimulate)
+                {
+                    new Simulation(Constants.NRuns, currentSched,distribution).Perform();
+                }
+                Console.WriteLine("Finished simulations for {0} distribution", distribution);
             }
            
 
