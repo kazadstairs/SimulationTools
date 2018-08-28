@@ -125,22 +125,55 @@ MakePlot <- function(string.RM, string.QM)
 {
   RMsym <- sym(string.RM)
   QMsym <- sym(string.QM)
+  #RMsym <- sym("FS")
+  #QMsym <- sym("Cmax")
   library(ggplot2)
   #library(tidyverse)
   
   myDF.plot <- myDF %>% 
-    group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+    group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
     summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
   
   # names(myDF.plot)[3] <- string.RM
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
   
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
+  p <- p + xlab(string.RM) + ylab(string.QM)
+  p <- p + theme(legend.position = "top")
+  
+  fileName <- paste("C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\",string.RM,"_vs_",string.QM,".pdf",sep="")
+  ggsave(filename = fileName,plot = p)
+  
+  print(p)
+  
+}
+MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
+{
+  RMsym <- sym(string.RM)
+  QMsym <- sym(string.QM)
+  #RMsym <- sym("FS")
+  #QMsym <- sym("Cmax")
+  library(ggplot2)
+  #library(tidyverse)
+  
+  myDF.plot <- myDF %>% 
+    group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+    summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
+  
+  # names(myDF.plot)[3] <- string.RM
+  #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
+  #  names(myDF.plot)[5] <- string.QM
+  
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  p <- p + geom_point() 
+  p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
+  p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,xRange)) 
+  p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,yRange))
   p <- p + xlab(string.RM) + ylab(string.QM)
   p <- p + theme(legend.position = "top")
   
@@ -187,14 +220,14 @@ MakeAllPlots <- function()
 
 ########### plot from one big data file ############
 myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
-
+MakePlot.WithRange("FS","Cmax",1000,1000)
 MakeAllPlots()
 
 
 ############################
 #For debugging
 myDF.plot <- myDF %>% 
-  group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+  group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
   summarize(SS1=mean(ScheduledStartTime1),Delay=mean(RealisedStartTime1-ScheduledStartTime1))
 
 PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
@@ -231,10 +264,19 @@ ggplot(myDF.plot,aes(x=SS1,y=Delay,colour = Schedule.AssignType,shape=Schedule.A
 
 #p
 
+############ Sampling tests
 
+Zs <- rnorm(10000)
+mean(Zs)
+LNmean <- 5
+LNvar <- 10^2
+mu <- log(LNmean^2 / sqrt(LNvar + LNmean^2))
+sigma <- sqrt(log(1+LNvar/LNmean^2))
+Xs <- exp(mu + sigma*Zs)
+mean(Xs)
+sd(Xs)
 
 #MakeAllPlots()
-
 
 
 
