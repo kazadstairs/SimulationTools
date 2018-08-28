@@ -97,10 +97,13 @@ namespace SimulationTools
             return -mean * Math.Log(1 - u); //Inverse of CDF. Use: P(X<= x) = P(Finv(u) <= x) = P(u<= F(x)) = F(x) (u is uniform).
         }
 
-        static public double SampleLogNormal(double mean, double StdDev) //always positive
+        static public double SampleLogNormal(double LNmean, double LNvar) //always positive
         {
+            double LNm2 = LNmean * LNmean;
+            double mu = Math.Log(LNm2 / Math.Sqrt(LNvar + LNm2));
+            double sigma = Math.Sqrt(Math.Log(1.0 + LNvar / LNm2));
             double Z = SampleStandardNormal();
-            return Math.Exp(mean + StdDev * Z);
+            return Math.Exp(mu + sigma * Z);
         }
 
     }

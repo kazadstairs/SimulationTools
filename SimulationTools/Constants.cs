@@ -23,7 +23,7 @@ namespace SimulationTools
                                                    "Exp(p)", //Exponential with mean p
                                                    "LN(p,0.01p)", //LogNormal distribution, sigma is 0.01p
                                                    "LN(p,0.1p)", //LogNormal distribution, sigma is 0.1p
-                                                   "LN(p,0.25p)" //LogNormal distribution, sigma is 0.25p
+   //                                                "LN(p,0.25p)" //LogNormal distribution, sigma is 0.25p Variation is HUUGE. Don't use this.
         };
 
 
