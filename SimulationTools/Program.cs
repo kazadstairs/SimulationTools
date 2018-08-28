@@ -19,9 +19,11 @@ namespace SimulationTools
             // SETUP
             //
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
-            INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
-            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            
+           // BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
+            INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
             //
             // End of Setup

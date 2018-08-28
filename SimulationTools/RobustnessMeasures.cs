@@ -8,6 +8,53 @@ namespace SimulationTools
 {
     static class RobustnessMeasures
     {
+        public static double FS(Schedule S)
+        {
+            return RM(Unweighted, FreeSlackOf, Unmodified,S,0);
+        }
+
+        public static double BFS(Schedule S,double fraction)
+        {
+            return RM(Unweighted, FreeSlackOf, Binary, S, fraction);
+        }
+
+        public static double UFS(Schedule S,double fraction)
+        {
+            return RM(Unweighted, FreeSlackOf, Upperbound, S, fraction);
+        }
+
+        public static double wFS(Schedule S)
+        {
+            return RM(NSucc, FreeSlackOf, Unmodified, S, 0);
+        }
+
+        public static double TS(Schedule S)
+        {
+            return RM(Unweighted, TotalSlackOf, Unmodified, S, 0);
+        }
+
+        public static double BTS(Schedule S,double fraction)
+        {
+            return RM(Unweighted, TotalSlackOf, Binary, S, fraction);
+        }
+
+        public static double UTS(Schedule S, double fraction)
+        {
+            return RM(Unweighted, TotalSlackOf, Upperbound, S, fraction);
+        }
+
+        public static double wTS(Schedule S)
+        {
+            return RM(NSucc, TotalSlackOf, Unmodified, S, 0);
+        }
+
+        public static double SDR(Schedule S)
+        {
+            return RM(Unweighted, SDROf, Unmodified, S, 0);
+        }
+
+
+        // Slack Measures: *********************************
         /// <summary>
         /// The free slack of job j in schedule S is the amount of time j can slip without delaying the start of the very next activity.
         /// </summary>
@@ -15,7 +62,7 @@ namespace SimulationTools
         /// <param name="S">Schedule s</param>
         /// <returns></returns>
         /// 
-        public static double SlowFreeSlack(Job j, Schedule S)
+        private static double FreeSlackOf(Job j, Schedule S)
         {
             //TODO: faster implementations must exist.
             if(j.Successors.Count > 0)
@@ -47,83 +94,98 @@ namespace SimulationTools
             }
         }
 
-        public static double WeightedSlowFreeSlack(Job j, Schedule S)
+
+        private static double TotalSlackOf(Job j, Schedule S)
         {
-            double FSj = SlowFreeSlack(j, S);
+            return S.LSS[j.ID] - S.ESS[j.ID];
+        }
+
+        private static double SDROf(Job j, Schedule S)
+        {
+            return TotalSlackOf(j, S) / j.MeanProcessingTime;
+        }
+        //*******************************************
+
+
+        /// <summary>
+        /// Wrapper to build functions that calculate RMs., 
+        /// </summary>
+        /// <param name="Weight">Weight is some weighting function </param>
+        /// <param name="SlackMeasure">  SlackMeasure is TS or FS</param>
+        /// <param name="Modifier">Modifier is None, Binary or Upperbound</param>
+        /// <param name="S">The schedule</param>
+        /// <returns></returns>
+        private static double RM(Func<Job, Schedule, double> Weight, Func<Job, Schedule, double> SlackMeasure, Func<Func<Job,Schedule,double>,Job,Schedule,double,double> Modifier, Schedule S,double fraction)
+        {
+            double total = 0.0;
+            foreach (Job j in S.PrecedenceDAG.Jobs)
+            {
+                total += Weight(j, S) * Modifier(SlackMeasure,j,S,fraction);
+            }
+            return total;
+        }
+
+        // weights:
+        private static double Unweighted(Job j, Schedule S)
+        {
+            return 1;
+        }
+
+        private static double NSucc(Job j, Schedule S)
+        {
             double weight = j.Successors.Count;
-            if (! j.Successors.Contains(S.GetMachineSuccessor(j)))
+            if (!j.Successors.Contains(S.GetMachineSuccessor(j)))
             {
                 // Machine Successor is seperate.
                 weight += 1;
             }
+            return weight;
+        }
+        //
 
-            return FSj * weight;
+        //Modifiers:
 
+        private static double Unmodified(Func<Job, Schedule, double> RM, Job j, Schedule S, double fraction)
+        {
+            return RM(j, S);
         }
 
-        /// <summary>
-        /// Calculate and return the sum of all free slacks. The free slack of job j in schedule S is the amount of time j can slip without delaying the start of the very next activity.
-        /// </summary>
-        /// <param name="S"></param>
-        /// <returns></returns>
-        public static double SumOfFreeSlacks(Schedule S)
+        private static double Binary(Func<Job, Schedule, double> RM, Job j, Schedule S, double fraction)
         {
-            double sum = 0.0;
-            foreach (Job j in S.PrecedenceDAG.Jobs)
+            if (RM(j, S) >= fraction * j.MeanProcessingTime)
             {
-                sum += SlowFreeSlack(j, S);
+                return 1;
             }
-            return sum;
-        }
-
-        /// <summary>
-        /// Weighted sum of free slacks
-        /// </summary>
-        /// <param name="S"></param>
-        /// <returns></returns>
-        public static double WSoFS(Schedule S)
-        {
-            double sum = 0.0;
-            foreach (Job j in S.PrecedenceDAG.Jobs)
+            else
             {
-                sum += WeightedSlowFreeSlack(j, S);
+                return 0;
             }
-            return sum;
         }
 
-
-
-       // public static int RMCount = 1;
-
-        public static double BinaryFreeSlack(double fraction, Schedule S)
+        private static double Upperbound(Func<Job, Schedule, double> RM, Job j, Schedule S, double fraction)
         {
-            double total = 0.0;
-            foreach (Job j in S.PrecedenceDAG.Jobs)
+            if (RM(j, S) >= fraction * j.MeanProcessingTime)
             {
-                if (SlowFreeSlack(j, S) >= fraction * j.MeanProcessingTime)
-                {
-                    total += 1;
-                }
+                return fraction * j.MeanProcessingTime;
             }
-            return total;
-        }
-
-       
-
-        public static double UpperboundFreeSlack(double fraction, Schedule S)
-        {
-            double total = 0.0;
-            foreach (Job j in S.PrecedenceDAG.Jobs)
+            else
             {
-                total += Math.Min(fraction * j.MeanProcessingTime, SlowFreeSlack(j, S));
+                return 0;
             }
-
-            return total;
         }
 
 
-        public static double DebugNumberOfJobsInIndexOrder(Schedule Sched)
+
+     
+        
+        
+
+        
+
+
+      /*  public static double DebugNumberOfJobsInIndexOrder(Schedule Sched)
         {
+
             double NGoodPairs = 0;
             foreach (Machine M in Sched.Machines)
             {
@@ -135,7 +197,7 @@ namespace SimulationTools
             }
             return NGoodPairs;
 
-        }
+        }*/
 
     }
 }

@@ -28,9 +28,14 @@ namespace SimulationTools
 
 
         public static string[] RMNames = { "FS", // Sum of free slacks
-                                           "BFS", // Binary free slack
-                                           "UFS", // Upperbound free slack
-                                           "wFS" //Weighted sum of free slacks
+                                           "BFS", // Sum of Binary free slack
+                                           "UFS", // Sum of Upperbound free slack
+                                           "wFS", //Sum of Weighted sum of free slacks
+                                           "TS", // Sum of Total Slack
+                                           "BTS", // Sum of Binary Total Slack
+                                           "UTS", // Sum of Upperbound Total Slack
+                                           "wTS", // NSucc weigthed total Slack
+                                           "SDR" // Sum of Slack Duration Ratio (TS/pj)
         };
         public static string[] QMNames = { "Cmax",
                                            "LinearStartDelay",
