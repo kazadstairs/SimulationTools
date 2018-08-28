@@ -106,6 +106,7 @@ namespace SimulationTools
         /// <returns></returns>
         public double SampleProcessingTime()
         {
+            if (JobParams.ID == 0) { return 0; }
             switch (Sim.DistributionType)
             {
                 case "N(p,1)":
