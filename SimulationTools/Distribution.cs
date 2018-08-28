@@ -15,6 +15,11 @@ namespace SimulationTools
             rand = new Random();
         }
 
+        static public double Uniform01()
+        {
+            return rand.NextDouble();
+        }
+
         static public int UniformInt(int upper)
         {
             return rand.Next(upper);
@@ -85,5 +90,18 @@ namespace SimulationTools
 
             return 0.5 * (1.0 + sign * y);
         }
+
+        static public double SampleExponential(double mean) // always positive
+        {
+            double u = Uniform01(); // u in 0,1
+            return -mean * Math.Log(1 - u); //Inverse of CDF. Use: P(X<= x) = P(Finv(u) <= x) = P(u<= F(x)) = F(x) (u is uniform).
+        }
+
+        static public double SampleLogNormal(double mean, double StdDev) //always positive
+        {
+            double Z = SampleStandardNormal();
+            return Math.Exp(mean + StdDev * Z);
+        }
+
     }
 }

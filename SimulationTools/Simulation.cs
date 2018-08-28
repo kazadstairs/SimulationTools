@@ -77,7 +77,7 @@ namespace SimulationTools
       //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }
-            Console.WriteLine("Simulation completed");
+            Console.WriteLine("Simulation completed (Nruns = {0})",NRuns);
 
         }
 

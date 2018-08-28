@@ -116,6 +116,14 @@ namespace SimulationTools
                     return Distribution.SampleNormal(JobParams.MeanProcessingTime, 0.1 * JobParams.MeanProcessingTime);
                 case "N(p,0.25p)":
                     return Distribution.SampleNormal(JobParams.MeanProcessingTime, 0.25 * JobParams.MeanProcessingTime);
+                case "Exp(p)":
+                    return Distribution.SampleExponential(JobParams.MeanProcessingTime);
+                case "LN(p,0.01p)":
+                    return Distribution.SampleLogNormal(JobParams.MeanProcessingTime, 0.01 * JobParams.MeanProcessingTime);
+                case "LN(p,0.1p)":
+                    return Distribution.SampleLogNormal(JobParams.MeanProcessingTime, 0.1 * JobParams.MeanProcessingTime);
+                case "LN(p,0.25p)":
+                    return Distribution.SampleLogNormal(JobParams.MeanProcessingTime, 0.25 * JobParams.MeanProcessingTime);
 
                 default:
                     throw new Exception("Distribution not recognized");
