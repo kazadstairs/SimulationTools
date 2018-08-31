@@ -51,6 +51,9 @@ namespace SimulationTools
                 case "wTS":
                     Value = RobustnessMeasures.wTS(S);
                     break;
+                case "SDR":
+                    Value = RobustnessMeasures.SDR(S);
+                    break;
                 default:
                     throw new Exception("RM name not recognized");
                     break;
