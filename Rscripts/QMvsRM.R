@@ -219,7 +219,8 @@ MakeAllPlots <- function()
 #p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
 
 ########### plot from one big data file ############
-myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
+myDF <- read.csv2(LAPTOPPATH)
 MakePlot.WithRange("FS","Cmax",1000,1000)
 MakeAllPlots()
 

@@ -24,19 +24,35 @@ namespace SimulationTools
 
         public void Calculate(Schedule S)
         {
+            double _GAMMA = 0.25;
             switch (Name)
             {
                 case "FS":
-                    Value = RobustnessMeasures.SumOfFreeSlacks(S);
+                    Value = RobustnessMeasures.FS(S);
                     break;
                 case "BFS":
-                    Value = RobustnessMeasures.BinaryFreeSlack(0.25, S);
+                    Value = RobustnessMeasures.BFS(S, _GAMMA);
                     break;
                 case "UFS":
-                    Value = RobustnessMeasures.UpperboundFreeSlack(0.25, S);
+                    Value = RobustnessMeasures.UFS(S, _GAMMA);
                     break;
                 case "wFS":
-                    Value = RobustnessMeasures.WSoFS(S);
+                    Value = RobustnessMeasures.wFS(S);
+                    break;
+                case "TS":
+                    Value = RobustnessMeasures.TS(S);
+                    break;
+                case "BTS":
+                    Value = RobustnessMeasures.BTS(S, _GAMMA);
+                    break;
+                case "UTS":
+                    Value = RobustnessMeasures.UTS(S, _GAMMA);
+                    break;
+                case "wTS":
+                    Value = RobustnessMeasures.wTS(S);
+                    break;
+                case "SDR":
+                    Value = RobustnessMeasures.SDR(S);
                     break;
                 default:
                     throw new Exception("RM name not recognized");

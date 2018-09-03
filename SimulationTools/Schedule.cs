@@ -122,7 +122,7 @@ namespace SimulationTools
             AssignJobToMachineById(9, 1);
         }
 
-        public void EstimateCmax()
+        public double EstimateCmax()
         {
             //placeholder;
             double Maximum = 0;
@@ -133,7 +133,9 @@ namespace SimulationTools
                 if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum) { Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime; MaxID = i; }
             }
             EstimatedCmax = Maximum;
+
             Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
+            return EstimatedCmax;
         }
 
         private void AssignJobsBy(Action<Job> AssignmentLogic)
@@ -291,6 +293,7 @@ namespace SimulationTools
         public void Print()
         {
             Console.WriteLine("Schedule information:");
+            Console.WriteLine("Mean Cmax determined to be: {0}", FitnessFunctions.MeanBasedCmax(this));
             Console.WriteLine("Machine info:");
             foreach (Machine m in Machines)
             {
@@ -502,6 +505,15 @@ namespace SimulationTools
             }
         }
 
+
+        public int[] GetJobIdsTopologically()
+        {
+            throw new Exception("Potentially bugged, fix before continuing");
+            int[] TopoIds = new int[PrecedenceDAG.N];
+            int index = 0;
+            ForeachJobInPrecOrderDo((j => TopoIds[index++] = j.ID)); // Assing j.ID to TopoIds[index], then increment index.
+            return TopoIds;
+        }
 
 
         /// <summary>

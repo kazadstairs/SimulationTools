@@ -19,69 +19,89 @@ namespace SimulationTools
             // SETUP
             //
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
-            INSTANCEFOLDER = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\probleminstances\");
-            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            
+           // BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
+            INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
             //
             // End of Setup
             //
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
-            INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
-            for (int i = 0; i < INSTANCENAMES.Length; i++)
+
+            bool DEBUG = true;
+            if (DEBUG)
             {
-                string[] temp = INSTANCENAMES[i].Split('\\');
-                INSTANCENAMES[i] = temp[temp.Length-1];
+                ProblemInstance Ins = new ProblemInstance();
+                string InstanceName = "100j-100r-12m.ms";
+                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                Schedule Sched;
+                Sched = NewSchedule(Ins, "GLB", "ESS");
+                LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
+                Sched.Print();
+                new Simulation(50, Sched, "N(p,0.1p)").Perform();
+
             }
-
-            Simulation [] Sims = new Simulation[Constants.NRuns];
-
-            //For each instance, for each schedule generation heuristic, perform a simulation.
-            List<Schedule> SchedulesToSimulate = new List<Schedule>();
-           
-            ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length+1];
-            for (int i = 0; i < INSTANCENAMES.Length; i++)
+            else
             {
-                Instances[i] = new ProblemInstance();
-                Instances[i].ReadFromFile(INSTANCEFOLDER+INSTANCENAMES[i],INSTANCENAMES[i]);
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA","ESS"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB","ESS"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random","ESS"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
-                SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
-            }
-
-            ProblemInstance Pinedo = new ProblemInstance();
-            Pinedo.InstanciatePinedo();
-            Instances[INSTANCENAMES.Length] = Pinedo;
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "ESS"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "ESS"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "ESS"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
-            SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
-
-
-            /*
-                        Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
-                        {
-                           new Simulation(Nruns, currentSched).Perform();
-                        });
-                        */
-            //     ProblemInstance Ptest = new ProblemInstance();
-            //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
-            //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
-            foreach (string distribution in Constants.DISTRIBUTION)
-            {
-                foreach (Schedule currentSched in SchedulesToSimulate)
+                INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
+                for (int i = 0; i < INSTANCENAMES.Length; i++)
                 {
-                    new Simulation(Constants.NRuns, currentSched,distribution).Perform();
+                    string[] temp = INSTANCENAMES[i].Split('\\');
+                    INSTANCENAMES[i] = temp[temp.Length - 1];
                 }
-                Console.WriteLine("Finished simulations for {0} distribution", distribution);
+
+                Simulation[] Sims = new Simulation[Constants.NRuns];
+
+                //For each instance, for each schedule generation heuristic, perform a simulation.
+                List<Schedule> SchedulesToSimulate = new List<Schedule>();
+
+                ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length + 1];
+                for (int i = 0; i < INSTANCENAMES.Length; i++)
+                {
+                    Instances[i] = new ProblemInstance();
+                    Instances[i].ReadFromFile(INSTANCEFOLDER + INSTANCENAMES[i], INSTANCENAMES[i]);
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "ESS"));
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "ESS"));
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "ESS"));
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
+                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
+                }
+
+                ProblemInstance Pinedo = new ProblemInstance();
+                Pinedo.InstanciatePinedo();
+                Instances[INSTANCENAMES.Length] = Pinedo;
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "ESS"));
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
+                SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
+
+
+                /*
+                            Parallel.ForEach(SchedulesToSimulate, (currentSched) =>
+                            {
+                               new Simulation(Nruns, currentSched).Perform();
+                            });
+                            */
+                //     ProblemInstance Ptest = new ProblemInstance();
+                //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
+                //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
+                foreach (string distribution in Constants.DISTRIBUTION)
+                {
+                    foreach (Schedule currentSched in SchedulesToSimulate)
+                    {
+                        new Simulation(Constants.NRuns, currentSched, distribution).Perform();
+                    }
+                    Console.WriteLine("Finished simulations for {0} distribution", distribution);
+                }
+
+
             }
-           
 
 
             Console.WriteLine("All operations complete. Output written to:");
