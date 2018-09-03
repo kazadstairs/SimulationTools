@@ -60,8 +60,8 @@ namespace SimulationTools
                                     if (NewFitness > OriginalFitness) // Trying to minimize here, so maybe VD more appropriate than HC! This maximizes CMAX!
                                     {
                                         improvementFound = true;
-                                        Console.WriteLine("OPTIMIZING MOVE FOUND (Swap J{0},J{1}, on M{2}) resulting schedule with fitness {3} is:",J1.ID,J2.ID,CurrentMachine.MachineID, NewFitness);
-                                        CurrentSchedule.Print();
+                                      //  Console.WriteLine("OPTIMIZING MOVE FOUND (Swap J{0},J{1}, on M{2}). Schedule fitness: {3}",J1.ID,J2.ID,CurrentMachine.MachineID, NewFitness);
+                                      //  CurrentSchedule.Print();
 
                                         break;
                                         // keep it
@@ -80,20 +80,20 @@ namespace SimulationTools
 
                     // update the number of tries and move to next machine, which may require resetting index to 0 if it goes out of bounds
                     NMachinesTried++;
+                    if (NMachinesTried == CurrentSchedule.Problem.NMachines)
+                    {
+                        // Tried swaps on all machines without success;
+                        LocalOptimum = true;
+                    }
                     CurrentMachineId++;
                     CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
                     if (CurrentMachineId == CurrentSchedule.Problem.NMachines) { CurrentMachineId = 0; }
 
 
-                }// end of While over machines
-                // all possible swaps tried on all possible machines, no improvement found.
-                Console.WriteLine("LS failed to improve schedule");
-                LocalOptimum = true;
+                }// end of While over machines (single improvement step)
+            }// End of HC loop
 
-
-               
-            }
-
+            Console.WriteLine("Local optimum found with fitness: {0}", FitnessFunction(CurrentSchedule));
             return CurrentSchedule;
         }
 
@@ -178,7 +178,91 @@ namespace SimulationTools
             return CurrentSchedule;
         }
 
-    
+        static public Schedule HillClimb(Schedule Original, Func<Schedule,GeneralAdress> GetStart, Func<GeneralAdress,GeneralAdress> NextNeighbour, Func<Schedule,double> FitnessFunction)
+        {
+            Schedule CurrentSchedule = Original;
+            bool LocalOptimum = false;
+            double CurrentFitness = -double.MaxValue;
+            GeneralAdress StartPoint = null;
+            GeneralAdress Candidate = null;
+            bool ImprovementFound;
+
+            //Pick random job and or random machine:
+            while (!LocalOptimum)
+            {
+                StartPoint = GetStart(CurrentSchedule);
+                Candidate = NextNeighbour(StartPoint);
+                CurrentFitness = FitnessFunction(CurrentSchedule);
+                ImprovementFound = false;
+                while (!ImprovementFound && Candidate != StartPoint)
+                {
+                    Candidate = NextNeighbour(Candidate); // cycle through neighbourhood.
+                    if (FitnessFunction(Candidate.Sched) > CurrentFitness)
+                    {
+                        ImprovementFound = true;
+                        CurrentSchedule = Candidate.Sched;
+                        // Improving swap found. Explore neighborhood of that schedule.
+                    }
+
+                }
+
+                if (!ImprovementFound)
+                {
+                    //All neighbours explored without improvement: Local Optimum
+                    LocalOptimum = true;
+                }
+
+
+            }
+            return CurrentSchedule;
+        }
+
+        static public Schedule HCSMS(Schedule Original)
+        {
+            return HillClimb(Original, NeighbourhoodOperators.RandomStartPoints.SameMachineSwap,NeighbourhoodOperators.NextNeighbour.SameMachineSwap, FitnessFunctions.MeanBasedCmax);
+        }
+ 
+        
+
+      /*  static private void SameMachineNeighbourhood(Sched CurrentSched, int JobIndex, int MachineIndex)
+        {
+            Job J1 = null, J2 = null;
+            for (int J1index = 0; J1index < JobsOnMachine - 1; J1index++)
+            {
+                if (improvementFound) break;
+
+                J1 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J1index];
+
+                for (int J2index = J1index + 1; J2index < JobsOnMachine; J2index++)
+                {
+                    J2 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J2index];
+                    // try the swap
+                    double OriginalFitness = FitnessFunction(CurrentSchedule);
+                    if (SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule))
+                    {
+                        double NewFitness = FitnessFunction(CurrentSchedule);
+                        if (NewFitness > OriginalFitness)
+                        {
+                            improvementFound = true;
+                            Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
+                            CurrentSchedule.Print();
+
+                            break;
+                            // keep it
+                        }
+                        else
+                        {
+                            // undo swap
+                            Console.WriteLine("No improvement, undoing..");
+                            SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
+                            //undoing should always be feasible
+                        }
+                    }
+                }
+            }
+
+        }*/
+
         /// <summary>
         /// If feasible, will perform a swap and return true. If not feasible will not perform sawp. Does not consider fitness.
         /// </summary>

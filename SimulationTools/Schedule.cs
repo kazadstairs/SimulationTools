@@ -50,14 +50,17 @@ namespace SimulationTools
             AssignedMachineID = new int[PrecedenceDAG.N];
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
-            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];         
+            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+
+
+            RMs = new List<RM>();
 
 
         }
 
         public void CalcRMs()
         {
-            RMs = new List<RM>();
+            if (RMs.Count > 0) { throw new Exception("RMs aready calculated"); }
             foreach (string name in Constants.RMNames)
             {
                 RMs.Add(new RM(name));
@@ -129,7 +132,7 @@ namespace SimulationTools
         public double EstimateCmax()
         {
             //placeholder;
-            Console.WriteLine("Warning: ESS recalculated, Cmax based on new ESS times");
+            //Console.WriteLine("Warning: ESS recalculated, Cmax based on new ESS times");
             CalcESS();
             SetESS();
             double Maximum = 0;
@@ -384,7 +387,8 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
-                if (ESS[j.ID] == 0) { Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID); }
+                if (ESS[j.ID] == 0) { //Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID);
+                }
                 Starttimes[j.ID] = ESS[j.ID];
             }
         }
@@ -393,7 +397,8 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
-                if (LSS[j.ID] == 0) { Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID); }
+                if (LSS[j.ID] == 0) {// Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID);
+                }
                 Starttimes[j.ID] = LSS[j.ID];
             }
         }

@@ -11,6 +11,8 @@ namespace SimulationTools
         static public string INSTANCEFOLDER;
         static public string BASEPATH;
         static public string [] INSTANCENAMES;
+
+
         static void Main(string[] args)
         {
             
@@ -34,19 +36,30 @@ namespace SimulationTools
             bool DEBUG = true;
             if (DEBUG)
             {
-                ProblemInstance Ins = new ProblemInstance();
-                Ins.InstanciateLSTest();
-                //string InstanceName = "100j-100r-12m.ms";
-                //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                Schedule Sched = null; 
+                       
+
+        ProblemInstance Ins = new ProblemInstance();
+                //Ins.InstanciateLSTest();
+                string InstanceName = "100j-100r-12m.ms";
+                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                Schedule Sched = null;
+                Schedule MLS50Sched = null;
+                double BestFitness = -double.MaxValue;
                 //Make 50 Random schedules, try to improve with LS.
                 for (int i = 0; i < 50; i++)
                 {
                     Sched = NewSchedule(Ins, "Random", "ESS");
-                    Sched.Print();
+                 //   Sched.Print();
                     LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
+                    if (FitnessFunctions.MeanBasedCmax(Sched) > BestFitness)
+                    {
+                        BestFitness = FitnessFunctions.MeanBasedCmax(Sched);
+                        MLS50Sched = Sched;
+                        Console.WriteLine("Best fitness updated: {0}", BestFitness);
+                    }
                 }
-                //new Simulation(50, Sched, "N(p,0.1p)").Perform();
+                Console.WriteLine("Debug: Fitness of MLS sched {0}, bestfitness {1}", FitnessFunctions.MeanBasedCmax(MLS50Sched), BestFitness);
+                new Simulation(50, MLS50Sched, "N(p,0.1p)").Perform();
 
             }
             else
@@ -155,9 +168,9 @@ namespace SimulationTools
 
             }
             Console.WriteLine("*** RMS CALCULATED BASED ON {0} SCHED! ***",StartTimeType);
-            Sched.Print();
-            Sched.EstimateCmax();
-            Sched.CalcRMs();
+           // Sched.Print();
+          //  Sched.EstimateCmax();
+          //  Sched.CalcRMs();
             return Sched;
         }
     }
