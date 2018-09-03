@@ -122,19 +122,30 @@ namespace SimulationTools
             AssignJobToMachineById(9, 1);
         }
 
+        /// <summary>
+        /// Calculate ESS than Cmax based on that.
+        /// </summary>
+        /// <returns></returns>
         public double EstimateCmax()
         {
             //placeholder;
+            Console.WriteLine("Warning: ESS recalculated, Cmax based on new ESS times");
+            CalcESS();
+            SetESS();
             double Maximum = 0;
             int MaxID = 0;
             for (int i = 1; i < Starttimes.Length; i++)
             {
                 if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
-                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum) { Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime; MaxID = i; }
+                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum)
+                {
+                    Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime;
+                    MaxID = i;
+                }
             }
             EstimatedCmax = Maximum;
 
-            Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
+         //   Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
             return EstimatedCmax;
         }
 
@@ -292,18 +303,22 @@ namespace SimulationTools
         /// </summary>
         public void Print()
         {
-            Console.WriteLine("Schedule information:");
-            Console.WriteLine("Mean Cmax determined to be: {0}", FitnessFunctions.MeanBasedCmax(this));
-            Console.WriteLine("Machine info:");
+            Console.WriteLine("*** Schedule information: *** ");
+            Console.WriteLine("* Mean Cmax determined to be: {0}", EstimateCmax());
+            Console.WriteLine("* Machine info:");
+            
             foreach (Machine m in Machines)
             {
+                Console.Write("*");
                 Console.Write("  M {0}: ", m.MachineID);
                 foreach(Job j in m.AssignedJobs)
                 {
                     Console.Write("{0}, ", j.ID);
                 }
+                Console.Write(" *");
                 Console.Write(Environment.NewLine);
             }
+            Console.WriteLine("*****************************");
             /*
             Console.WriteLine("Job info:");
             foreach (Job j in PrecedenceDAG.Jobs)

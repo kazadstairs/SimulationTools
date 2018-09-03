@@ -20,8 +20,8 @@ namespace SimulationTools
             //
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             
-           // BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
-            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
+            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            //BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
             INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
@@ -35,13 +35,18 @@ namespace SimulationTools
             if (DEBUG)
             {
                 ProblemInstance Ins = new ProblemInstance();
-                string InstanceName = "100j-100r-12m.ms";
-                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                Schedule Sched;
-                Sched = NewSchedule(Ins, "GLB", "ESS");
-                LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
-                Sched.Print();
-                new Simulation(50, Sched, "N(p,0.1p)").Perform();
+                Ins.InstanciateLSTest();
+                //string InstanceName = "100j-100r-12m.ms";
+                //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                Schedule Sched = null; 
+                //Make 50 Random schedules, try to improve with LS.
+                for (int i = 0; i < 50; i++)
+                {
+                    Sched = NewSchedule(Ins, "Random", "ESS");
+                    Sched.Print();
+                    LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
+                }
+                //new Simulation(50, Sched, "N(p,0.1p)").Perform();
 
             }
             else

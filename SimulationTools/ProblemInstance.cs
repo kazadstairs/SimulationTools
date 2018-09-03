@@ -56,6 +56,25 @@ namespace SimulationTools
             Description = "Pinedo";            
         }
 
+        public void InstanciateLSTest()
+        {
+            DAG.AddJob(new Job(0, 0, 0));
+            DAG.AddJob(new Job(1, 1, 0));
+            DAG.AddJob(new Job(2, 1, 0));
+            DAG.AddJob(new Job(3, 1, 0));
+
+            DAG.AddArcById(0, 1);
+            DAG.AddArcById(0, 2);
+            DAG.AddArcById(0, 3);
+            DAG.AddArcById(2, 3);
+
+            NMachines = 2;
+
+            Description = "LSTest";
+
+            DAG.FillSuccessorDictionaries();
+        }
+
         public void ReadFromFile(string FileName, string descr)
         {
             Description = descr;
@@ -87,6 +106,8 @@ namespace SimulationTools
                     }
                 }
             }
+
+            DAG.FillSuccessorDictionaries();
             
         }
 

@@ -8,6 +8,12 @@ namespace SimulationTools
 {
     static class LocalSearch
     {
+        /// <summary>
+        /// SwapHill climb uses LS to increase the fitnessfunction.
+        /// </summary>
+        /// <param name="Original"></param>
+        /// <param name="FitnessFunction">f(S)->R, if A is a better schedule than B, then it should hold that f(A) > f(B) (to invert, add a minus sign to the fitness function!)</param>
+        /// <returns></returns>
         static public Schedule SwapHillClimb(ref Schedule Original, Func<Schedule, double> FitnessFunction)
         {
             Schedule CurrentSchedule = Original;
@@ -15,17 +21,19 @@ namespace SimulationTools
 
             Console.WriteLine("DEBUG: Starting LS *********************");
             Console.WriteLine("Original Schedule with fitness {0}", FitnessFunction(CurrentSchedule));
-            CurrentSchedule.Print();
+            //CurrentSchedule.Print();
 
             while (!LocalOptimum)
             {
-                int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines);
+                int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines-1)+1; // 1 to 11 (incl)
                 int CurrentMachineId = StartMachineId;
                 int NMachinesTried = 0;
                 bool improvementFound = false;
+                Machine CurrentMachine = CurrentSchedule.Machines[CurrentMachineId-1];
+                //Console.WriteLine("TODO LAZY: MAKE above assignment a CALL A FUNCTION IN SCHEDULE!");
                 while (!improvementFound && NMachinesTried < CurrentSchedule.Problem.NMachines)
                 {
-                    int JobsOnMachine = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs.Count;
+                    int JobsOnMachine = CurrentMachine.AssignedJobs.Count;
                     if (JobsOnMachine <= 1)
                     {
                         // swap no good, proceed to update counters
@@ -38,20 +46,21 @@ namespace SimulationTools
                         {
                             if (improvementFound) break;
 
-                            J1 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J1index];
+                            J1 = CurrentMachine.AssignedJobs[J1index];
 
                             for (int J2index = J1index + 1; J2index < JobsOnMachine; J2index++)
                             {
-                                J2 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J2index];
+                                J2 = CurrentMachine.AssignedJobs[J2index];
                                 // try the swap
                                 double OriginalFitness = FitnessFunction(CurrentSchedule);
-                                if (SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule))
+                                if (SameMachineSwap(J1, J2, CurrentMachine, CurrentSchedule))
                                 {
-                                    double NewFitness = FitnessFunction(CurrentSchedule);
-                                    if (NewFitness > OriginalFitness)
+                                    
+                                    double NewFitness = FitnessFunction(CurrentSchedule); // current schedule is updated during the SameMachineSwap function. So this works.
+                                    if (NewFitness > OriginalFitness) // Trying to minimize here, so maybe VD more appropriate than HC! This maximizes CMAX!
                                     {
                                         improvementFound = true;
-                                        Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
+                                        Console.WriteLine("OPTIMIZING MOVE FOUND (Swap J{0},J{1}, on M{2}) resulting schedule with fitness {3} is:",J1.ID,J2.ID,CurrentMachine.MachineID, NewFitness);
                                         CurrentSchedule.Print();
 
                                         break;
@@ -60,8 +69,8 @@ namespace SimulationTools
                                     else
                                     {
                                         // undo swap
-                                        Console.WriteLine("No improvement, undoing..");
-                                        SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
+                                       // Console.WriteLine("No improvement, undoing..");
+                                        SameMachineSwap(J1, J2, CurrentMachine, CurrentSchedule);
                                         //undoing should always be feasible
                                     }
                                 }
@@ -69,18 +78,20 @@ namespace SimulationTools
                         }
                     }
 
+                    // update the number of tries and move to next machine, which may require resetting index to 0 if it goes out of bounds
                     NMachinesTried++;
                     CurrentMachineId++;
+                    CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
                     if (CurrentMachineId == CurrentSchedule.Problem.NMachines) { CurrentMachineId = 0; }
 
 
                 }// end of While over machines
                 // all possible swaps tried on all possible machines, no improvement found.
+                Console.WriteLine("LS failed to improve schedule");
                 LocalOptimum = true;
 
 
-                // update the number of tries and move to next machine, which may require resetting index to 0 if it goes out of bounds
-                
+               
             }
 
             return CurrentSchedule;
@@ -178,7 +189,7 @@ namespace SimulationTools
         /// <returns></returns>
         static private bool SameMachineSwap(Job J1, Job J2, Machine M, Schedule Sched)
         {
-            
+          
             //todo: Check feasibility of the swaps. Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
             int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
             int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
@@ -195,7 +206,7 @@ namespace SimulationTools
                     if (Sched.PrecedenceDAG.PrecPathExists(M.AssignedJobs[i],M.AssignedJobs[j])) { return false; } // infeasible.
                 }
             }
-            Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
+            //Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
 
             //update the position of the jobs in the list.
             M.AssignedJobs[OldJ1Index] = J2;
@@ -203,7 +214,7 @@ namespace SimulationTools
             //update the pointers:
             Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
             Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
-
+            
             return true;
         }
 
