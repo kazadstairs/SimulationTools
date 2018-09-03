@@ -232,6 +232,7 @@ myDF.plot <- myDF %>%
 
 PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
 {
+  library(reshape)
   myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
   myDF <- subset(myDF,grepl(string.Instance,Instance.Name))
   myDF <- subset(myDF,grepl(string.AssignType,Schedule.AssignType))
@@ -256,13 +257,13 @@ cbind(my.melted.DF.plot,starttimes)
 
 ggplot(myDF.plot,aes(x=SS1,y=Delay,colour = Schedule.AssignType,shape=Schedule.AssignType)) + geom_point()
 
-#p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
-#p <- p + geom_point() 
-#p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
-#p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
-#p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
+p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
+p <- p + geom_point() 
+p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
+p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
+p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
 
-#p
+p
 
 ############ Sampling tests
 
