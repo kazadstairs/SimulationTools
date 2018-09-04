@@ -628,7 +628,7 @@ namespace SimulationTools
                         {
                             for (int lowerindex = 0; lowerindex < higherindex; lowerindex++)
                             {
-                                if (PathExists(M.AssignedJobs[lowerindex], M.AssignedJobs[higherindex]))
+                                if (PathExists(M.AssignedJobs[higherindex], M.AssignedJobs[lowerindex]))
                                 {
                                     Console.WriteLine("Cycle found on M{2}: Job {0} --Marcs--> Job {1} --Precs--> Job {0}", M.AssignedJobs[lowerindex].ID, M.AssignedJobs[higherindex].ID,M.MachineID);
                                     Cyclesfound = true;

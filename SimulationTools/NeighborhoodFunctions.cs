@@ -88,10 +88,16 @@ namespace SimulationTools
                 for (int j = i + 1; j <= RightIndex; j++)
                 {
                     // Between [J1 and J2] (inlusive) the arcs get reversed. Check all combos.
-                    if (Sched.PrecedenceDAG.PrecPathExists(M.AssignedJobs[i], M.AssignedJobs[j])) { return false; } // infeasible.
+                    //Do they though? TODO BUG!
+                    if (Sched.PrecedenceDAG.PrecPathExists(M.AssignedJobs[i], M.AssignedJobs[j]))
+                    {
+                       // Console.WriteLine("BUG?");
+                        Console.WriteLine("Swap J{0},J{1} on M{2} denied due to cycle from J{3} to J{4}",J1.ID,J2.ID,M.MachineID,M.AssignedJobs[i].ID,M.AssignedJobs[j].ID);
+                        return false;
+                    } // infeasible.
                 }
             }
-            //Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
+            Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
 
             //update the position of the jobs in the list.
             M.AssignedJobs[OldJ1Index] = J2;
