@@ -18,7 +18,8 @@ namespace SimulationTools
             //Console.WriteLine("TODO LAZY: MAKE above assignment a CALL A FUNCTION IN SCHEDULE!");
             while (NMachinesTried < CurrentSchedule.Problem.NMachines)
             {
-                CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
+               // CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
+                CurrentMachine = CurrentSchedule.GetMachineByID(CurrentMachineId);
                 int JobsOnMachine = CurrentMachine.AssignedJobs.Count;
                 if (JobsOnMachine <= 1)
                 {
@@ -53,7 +54,7 @@ namespace SimulationTools
                                 else
                                 {
                                     // undo swap
-                                    // Console.WriteLine("No improvement, undoing..");
+                                    Console.WriteLine("No improvement, undoing..");
                                     SwapJobPair(J1, J2, CurrentMachine, CurrentSchedule);
                                     //undoing should always be feasible
                                 }
@@ -74,10 +75,12 @@ namespace SimulationTools
 
         static private bool SwapJobPair(Job J1, Job J2, Machine M, Schedule Sched)
         {
-
-            //todo: Check feasibility of the swaps. Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
+            //The bug is that Arrayindex is not the correct position of the job.
+            //Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
             int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
+            if (M.AssignedJobs[OldJ1Index] != J1) { throw new Exception("Indexing wrong. J1 index not pointing to J1"); }
             int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
+            if (M.AssignedJobs[OldJ2Index] != J2) { throw new Exception("Indexing wrong. J2 index not pointing to J2"); }
             int LeftIndex = OldJ1Index;
             int RightIndex = OldJ2Index;
             if (OldJ2Index < OldJ1Index) { LeftIndex = OldJ2Index; RightIndex = OldJ1Index; }
@@ -98,6 +101,7 @@ namespace SimulationTools
                 }
             }
             Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
+            Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
 
             //update the position of the jobs in the list.
             M.AssignedJobs[OldJ1Index] = J2;
@@ -106,6 +110,7 @@ namespace SimulationTools
             Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
             Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
 
+            Console.WriteLine("Fitness AFTER swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
             return true;
         }
 

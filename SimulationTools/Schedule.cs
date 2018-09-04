@@ -96,6 +96,11 @@ namespace SimulationTools
             Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
             CalcESS();
             SetESS();
+            for (int i = 0; i < PrecedenceDAG.N; i++)
+            {
+                if (MachineArcPointers[i].ArrayIndex != Original.MachineArcPointers[i].ArrayIndex) { throw new Exception("Copy mistake"); }
+                if (MachineArcPointers[i].MachineId != Original.MachineArcPointers[i].MachineId) { throw new Exception("Copy mistake"); }
+            }
         }
 
         public void CalcRMs()
@@ -832,7 +837,8 @@ namespace SimulationTools
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
-        private Machine GetMachineByID(int MachineID)
+        // You had made this private, probably with some reason. Why?
+        public Machine GetMachineByID(int MachineID)
         {
             return Machines[MachineID - 1];
         }
