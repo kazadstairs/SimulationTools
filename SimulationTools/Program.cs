@@ -3,14 +3,31 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace SimulationTools
 {
+    public static class ExtensionMethods
+    {
+        // Deep clone
+        public static T DeepClone<T>(this T a)
+        {
+            using (MemoryStream stream = new MemoryStream())
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(stream, a);
+                stream.Position = 0;
+                return (T)formatter.Deserialize(stream);
+            }
+        }
+    }
     class Program
     {
         static public string INSTANCEFOLDER;
         static public string BASEPATH;
         static public string [] INSTANCENAMES;
+
 
 
         static void Main(string[] args)
@@ -40,24 +57,44 @@ namespace SimulationTools
 
         ProblemInstance Ins = new ProblemInstance();
                 //Ins.InstanciateLSTest();
-                string InstanceName = "100j-100r-12m.ms";
+                string InstanceName = "30j-75r-8m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                Schedule Sched = null;
+                Schedule OriginalSched = null;
+                Schedule CurrentSched = null;
                 Schedule MLS50Sched = null;
                 double BestFitness = -double.MaxValue;
                 //Make 50 Random schedules, try to improve with LS.
+
+                OriginalSched = NewSchedule(Ins, "Random", "ESS");
+                Console.WriteLine("ORIGINAL SCHEDULE");
+                OriginalSched.Print();
+
+                Schedule StartingSched = new Schedule(OriginalSched);
+                Console.WriteLine("COPY SCHEDULE");
+                StartingSched.Print();
+                Console.WriteLine("StartingSched == Originalsched: {0}", StartingSched == OriginalSched);
+                OriginalSched.MakeHTMLImage("Original Schedule");
                 for (int i = 0; i < 50; i++)
                 {
-                    Sched = NewSchedule(Ins, "Random", "ESS");
-                 //   Sched.Print();
-                    LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
-                    if (FitnessFunctions.MeanBasedCmax(Sched) > BestFitness)
+                    //   Sched.Print();
+                    //StartingSched.Print();
+                    CurrentSched = new Schedule(LocalSearch.SMSHC(StartingSched, FitnessFunctions.MeanBasedCmax));
+
+                    if (CurrentSched == StartingSched)
                     {
-                        BestFitness = FitnessFunctions.MeanBasedCmax(Sched);
-                        MLS50Sched = Sched;
+                        Console.WriteLine("Identical");
+                        // oh oh
+                    }
+
+                   // LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
+                    if (FitnessFunctions.MeanBasedCmax(CurrentSched) > BestFitness)
+                    {
+                        BestFitness = FitnessFunctions.MeanBasedCmax(CurrentSched);
+                        MLS50Sched = new Schedule(CurrentSched);
                         Console.WriteLine("Best fitness updated: {0}", BestFitness);
                     }
                 }
+                MLS50Sched.MakeHTMLImage("MLS 50 Schedule");
                 Console.WriteLine("Debug: Fitness of MLS sched {0}, bestfitness {1}", FitnessFunctions.MeanBasedCmax(MLS50Sched), BestFitness);
                 new Simulation(50, MLS50Sched, "N(p,0.1p)").Perform();
 
