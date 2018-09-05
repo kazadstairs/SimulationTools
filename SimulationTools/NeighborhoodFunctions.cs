@@ -8,8 +8,85 @@ namespace SimulationTools
 {
     static class NeighborhoodFunctions
     {
+        /// <summary>
+        /// Modifies CurrentSchedule. Returns the modified version after the first improvement, or null if no improvement was possible.
+        /// Select a random machine, and then a random pair of jobs on that machine. Swap those jobs if feasible. 
+        /// </summary>
+        /// <param name=""></param>
+        /// <param name="FitnessFunction"></param>
+        /// <returns></returns>
+        public static Schedule NeighborSwaps(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
+        {
+            int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
+            int CurrentMachineId = StartMachineId;
+            int NMachinesTried = 0;
+            // bool improvementFound = false;
+            Machine CurrentMachine = null;
+            Job J1 = null;
+            Job J2 = null;
+            double CurrentFitness;
+            double NewFitness;
+            //Console.WriteLine("TODO LAZY: MAKE above assignment a CALL A FUNCTION IN SCHEDULE!");
+            while (NMachinesTried < CurrentSchedule.Problem.NMachines)
+            {
+                // CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
+                CurrentMachine = CurrentSchedule.GetMachineByID(CurrentMachineId);
+                int JobsOnMachine = CurrentMachine.AssignedJobs.Count;
+                if (JobsOnMachine <= 1)
+                {
+                    // swap no good, proceed to update counters
+                }
+                else
+                {
+                    int StartJobIndex = Distribution.UniformInt(CurrentMachine.AssignedJobs.Count - 1); // -1 because the last job cannot go right
+                    int NJobstried = 0;
+                    int CurrentJobIndex = StartJobIndex;
+                    while (NJobstried < CurrentMachine.AssignedJobs.Count - 1)
+                    {
+
+                        J1 = CurrentMachine.AssignedJobs[CurrentJobIndex];
+                        J2 = CurrentMachine.AssignedJobs[CurrentJobIndex + 1];
+                        CurrentFitness = FitnessFunction(CurrentSchedule);
+                        if (NeighborSwapFeasible(J1, J2, CurrentMachine, CurrentSchedule))
+                        {
+                            UNSAFE_SwapOnMachine(J1, J2, CurrentMachine, CurrentSchedule);
+                            NewFitness = FitnessFunction(CurrentSchedule);
+                            if (NewFitness > CurrentFitness)
+                            {
+                                // First Improvement:
+                                return CurrentSchedule;
+                            }
+                            else
+                            {
+                                // undo swap
+                                UNSAFE_SwapOnMachine(J1, J2, CurrentMachine, CurrentSchedule);
+
+                                //look at other swap:
+
+                            }
+                        }
+
+
+                        CurrentJobIndex++;
+                        if (CurrentJobIndex == CurrentMachine.AssignedJobs.Count - 1)
+                        {
+                            CurrentJobIndex = 0;
+                        }
+                        NJobstried++;
+                    }
+                }
+                //this machine was no good, try the next
+                NMachinesTried++;
+                CurrentMachineId++;
+                if (CurrentMachineId > CurrentSchedule.Problem.NMachines) { CurrentMachineId = 1; }
+            }
+            //tried all jobs on all machines, no improvement
+            return null;
+        }
+
         public static Schedule SameMachineSwap(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
+            throw new Exception("ERROR, function as is does not work: It can create cycles");
             int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
             int CurrentMachineId = StartMachineId;
             int NMachinesTried = 0;
@@ -73,8 +150,72 @@ namespace SimulationTools
             return null;
         }
 
+        static private bool NeighborSwapFeasible(Job LeftJob, Job RightJob, Machine M, Schedule Sched)
+        {
+           // Console.WriteLine("Testing J{0},J{1} (M{2}) swap for creating cycles...",LeftJob.ID,RightJob.ID,M.MachineID);
+            int OldJ1Index = Sched.MachineArcPointers[LeftJob.ID].ArrayIndex;
+            if (M.AssignedJobs[OldJ1Index] != LeftJob) { throw new Exception("Indexing wrong. J1 index not pointing to J1"); }
+            int OldJ2Index = Sched.MachineArcPointers[RightJob.ID].ArrayIndex;
+            if (M.AssignedJobs[OldJ2Index] != RightJob) { throw new Exception("Indexing wrong. J2 index not pointing to J2"); }
+            if (OldJ1Index + 1 != OldJ2Index) { throw new Exception("Jobs must be neighbours for this swap!"); }
+
+            // 'remove' the machine arc from LeftJob to RightJob
+            // If path still exists from Left To Right, swap is not feasible
+            if (Sched.PrecMachPathExistsWithout(LeftJob, RightJob, new Tuple<Job, Job>(LeftJob, RightJob)))
+            {
+                // not feasible
+    //            Console.WriteLine("DENIED (will create cycle)");
+                return false;
+            }
+            else
+            {
+   //             Console.WriteLine("ALLOWED");
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Swap the jobs on a machine without any checks.
+        /// </summary>
+        /// <param name="J1"></param>
+        /// <param name="J2"></param>
+        /// <param name="M"></param>
+        /// <param name="Sched"></param>
+        static private void UNSAFE_SwapOnMachine(Job J1, Job J2, Machine M, Schedule Sched)
+        {/*
+            Console.WriteLine("**************************************************");
+            Console.WriteLine(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,");
+            Console.WriteLine("**************************************************");
+            Console.WriteLine("S W A P   S T A R T I N G ! (JOB J{0} with JOB J{1}",J1.ID,J2.ID);
+            Console.WriteLine("Schedule BEFORE Swap:");
+            Sched.Print();
+            Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
+            */
+
+            int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
+            int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
+            M.AssignedJobs[OldJ1Index] = J2;
+            M.AssignedJobs[OldJ2Index] = J1;
+            //update the pointers:
+            Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
+            Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
+/*
+            Console.WriteLine("Schedule AFTER Swap:");
+            Sched.Print();
+            Console.WriteLine("Fitness AFTER swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
+            Console.WriteLine("**************************************************");
+            Console.WriteLine("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+            Console.WriteLine("**************************************************");
+            */
+        }
+
+
         static private bool SwapJobPair(Job J1, Job J2, Machine M, Schedule Sched)
         {
+            Console.WriteLine("S W A P   S T A R T I N G !");
+            Console.WriteLine("Schedule BEFORE Swap:");
+            Sched.Print();
+            Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
             //The bug is that Arrayindex is not the correct position of the job.
             //Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
             int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
@@ -100,16 +241,12 @@ namespace SimulationTools
                     } // infeasible.
                 }
             }
-            Console.WriteLine("Swap J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
-            Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
+            Console.WriteLine("Swapping J{0}, J{1} on M{2}", J1.ID, J2.ID, M.MachineID);
 
-            //update the position of the jobs in the list.
-            M.AssignedJobs[OldJ1Index] = J2;
-            M.AssignedJobs[OldJ2Index] = J1;
-            //update the pointers:
-            Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
-            Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
+            UNSAFE_SwapOnMachine(J1, J2, M, Sched);
 
+            Console.WriteLine("Schedule AFTER Swap:");
+            Sched.Print();
             Console.WriteLine("Fitness AFTER swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
             return true;
         }

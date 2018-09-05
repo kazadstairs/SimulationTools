@@ -9,6 +9,11 @@ namespace SimulationTools
     static class LocalSearch
     {
 
+        static public Schedule NeighborSwapHillClimb(Schedule Original, Func<Schedule,double> FitnessFunction)
+        {
+            return HillClimb(Original, NeighborhoodFunctions.NeighborSwaps, FitnessFunction);
+        }
+
         static public Schedule SMSHC(Schedule Original, Func<Schedule, double> FitnessFunction)
         {
             return HillClimb(Original, NeighborhoodFunctions.SameMachineSwap , FitnessFunction);
@@ -185,12 +190,14 @@ namespace SimulationTools
 */
         static public Schedule HillClimb(Schedule Original, Func<Schedule,Func<Schedule,double>,Schedule> ExploreNeighborhood, Func<Schedule,double> FitnessFunction)
         {
-            Schedule CurrentSchedule = Original;
+            Schedule CurrentSchedule = new Schedule(Original);
             Schedule ImprovedSchedule = null;
             bool LocalOptimum = false;
             double CurrentFitness = -double.MaxValue;
-
+            
             Console.WriteLine("Starting HillClimb from fitness = {0}...",FitnessFunction(Original));
+      
+
             //Pick random job and or random machine:
             int Debug_numberofHCs = 0;
             while (!LocalOptimum)
@@ -212,8 +219,9 @@ namespace SimulationTools
                     Debug_numberofHCs++;
                     LocalOptimum = false;
                 }
+                Debug_numberofHCs++;
 
-
+                if (Debug_numberofHCs % 10 == 0) { Console.WriteLine("10 Improving Steps made (total = {0})", Debug_numberofHCs) ; }
             }
             Console.WriteLine("...Found LO with fitness {0} in {1} improvements", FitnessFunction(CurrentSchedule), Debug_numberofHCs);
             return CurrentSchedule;

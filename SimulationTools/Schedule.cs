@@ -633,7 +633,7 @@ namespace SimulationTools
                         {
                             for (int lowerindex = 0; lowerindex < higherindex; lowerindex++)
                             {
-                                if (PathExists(M.AssignedJobs[higherindex], M.AssignedJobs[lowerindex]))
+                                if (PrecedenceDAG.PrecPathExists(M.AssignedJobs[higherindex], M.AssignedJobs[lowerindex]))
                                 {
                                     Console.WriteLine("Cycle found on M{2}: Job {0} --Marcs--> Job {1} --Precs--> Job {0}", M.AssignedJobs[lowerindex].ID, M.AssignedJobs[higherindex].ID,M.MachineID);
                                     Cyclesfound = true;
@@ -719,7 +719,7 @@ namespace SimulationTools
                     // then the machine is empty and the assignment is always feasible.
                     return true;
                 }
-                else if (PathExists(j, m.LastJob()))
+                else if (PrecAndMachinePathExists(j, m.LastJob()))
                 {
                     //then adding j to m will create a cycle
                     return false;
@@ -734,7 +734,7 @@ namespace SimulationTools
         /// <param name="OriginJob">The Job from which BFS is performed</param>
         /// <param name="ApplyLogic">Job ==> Bool, returns true in the case of early stopping. False in the case of exhaustive unsuccessful search</param>
         /// <returns></returns>
-        private bool BFSfrom(Job OriginJob, Func<Job,bool> ApplyLogic)
+        private bool PrecAndMachineBFSfrom(Job OriginJob, Func<Job,bool> ApplyLogic)
         {
             bool[] BFSVisited = new bool[this.PrecedenceDAG.N];
             Queue<Job> BFSQueue = new Queue<Job>();
@@ -785,9 +785,69 @@ namespace SimulationTools
             return false;
         }
 
-        public bool PathExists(Job OriginJob, Job TargetJob)
+
+        /// <summary>
+        /// Checks for path in COMBINED Prec,Machine graph
+        /// </summary>
+        /// <param name="OriginJob"></param>
+        /// <param name="TargetJob"></param>
+        /// <returns></returns>
+        public bool PrecAndMachinePathExists(Job OriginJob, Job TargetJob)
         {
-            return BFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
+            return PrecAndMachineBFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
+        }
+
+        public bool PrecMachPathExistsWithout(Job OriginJob, Job TargetJob, Tuple<Job,Job> ForbiddenArc)
+        {
+            bool[] BFSVisited = new bool[this.PrecedenceDAG.N];
+            Queue<Job> BFSQueue = new Queue<Job>();
+            BFSQueue.Enqueue(OriginJob);
+            Job CurrentJob;
+            Job MSucc;
+            while (BFSQueue.Count > 0)
+            {
+                CurrentJob = BFSQueue.Dequeue();
+                if (CurrentJob == TargetJob) { return true; }
+                foreach (Job Succ in CurrentJob.Successors)
+                {
+                    if (!BFSVisited[Succ.ID])
+                    {
+                        BFSVisited[Succ.ID] = true;
+                        BFSQueue.Enqueue(Succ);
+                    }
+
+                }
+                // same logic as the foreach above. Note that a successor will only be visited once, independent of how many in arcs it has.
+                // ONLY check for successors if this job is assigned
+                if (AssignedMachineID[CurrentJob.ID] <= 0)
+                {
+                    //Job not yet assigned, no successor arcs will exits.
+                }
+                else
+                {
+                    MSucc = GetMachineSuccessor(CurrentJob);
+                    if (MSucc != null && !BFSVisited[MSucc.ID])
+                    {
+                        if (CurrentJob == ForbiddenArc.Item1 && MSucc == ForbiddenArc.Item2)
+                        {
+                            // this is the forbidden arc, ignore it.
+
+                        }
+                        else
+                        {
+                            BFSVisited[MSucc.ID] = true;
+                            BFSQueue.Enqueue(MSucc);
+                        }
+                    }             
+                    
+                   
+
+                }
+
+
+            }
+            return false;
+
         }
 
      

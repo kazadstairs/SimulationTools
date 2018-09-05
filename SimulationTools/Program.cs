@@ -55,7 +55,7 @@ namespace SimulationTools
             {
                        
 
-        ProblemInstance Ins = new ProblemInstance();
+                ProblemInstance Ins = new ProblemInstance();
                 //Ins.InstanciateLSTest();
                 string InstanceName = "30j-75r-8m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
@@ -74,11 +74,12 @@ namespace SimulationTools
                 StartingSched.Print();
                 Console.WriteLine("StartingSched == Originalsched: {0}", StartingSched == OriginalSched);
                 OriginalSched.MakeHTMLImage("Original Schedule");
+                Console.WriteLine(OriginalSched.PrecMachPathExistsWithout(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19), new Tuple<Job, Job>(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19))));
                 for (int i = 0; i < 50; i++)
                 {
                     //   Sched.Print();
                     //StartingSched.Print();
-                    CurrentSched = new Schedule(LocalSearch.SMSHC(StartingSched, FitnessFunctions.MeanBasedCmax));
+                    CurrentSched = LocalSearch.NeighborSwapHillClimb(StartingSched, FitnessFunctions.MeanBasedCmax);
 
                     if (CurrentSched == StartingSched)
                     {
