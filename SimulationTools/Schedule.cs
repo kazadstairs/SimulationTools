@@ -106,6 +106,7 @@ namespace SimulationTools
         public void CalcRMs()
         {
             if (RMs.Count > 0) { throw new Exception("RMs aready calculated"); }
+            else if (EstimatedCmax <= 0) { Console.WriteLine("Warning, estimated Cmax = 0. Calling EstimateCmax()."); EstimateCmax(); } // has to be done before calculating RMs
             foreach (string name in Constants.RMNames)
             {
                 RMs.Add(new RM(name));
@@ -403,7 +404,7 @@ namespace SimulationTools
                 file.WriteLine(@"<style>");
 
                 // css part:
-                int scale = 5;
+                int scale = 15;
                 double top, left, width;                
                 foreach (Job j in PrecedenceDAG.Jobs)
                 {
@@ -415,6 +416,18 @@ namespace SimulationTools
                     file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
                     file.WriteLine(@"height: 20px; border: 1px solid #73AD21; text-align: center; vertical-align: middle;}");
                 }
+                //CmaxBlok:
+                top = 50 ;
+                EstimateCmax();
+                left = EstimatedCmax * scale;
+                width = 2 * scale;
+                double height = 50 * Machines.Count + 100;
+                file.WriteLine("div.CMAX");
+                file.WriteLine("{position: fixed;");
+                file.WriteLine("top: {0}px; left: {1}px; width: {2}px;height: {3}px;", top, left, width,height);
+                file.WriteLine(@" border: 1px solid #73AD21; text-align: center; vertical-align: middle; colour: red;}");
+
+
                 file.WriteLine(@"</style></head><body>");
                 file.WriteLine(@"<div>");
                 file.WriteLine(title);
@@ -423,6 +436,7 @@ namespace SimulationTools
                 {
                     file.WriteLine("<div class=\"j{0}\"> J{0}; </div>",j.ID);
                 }
+                file.WriteLine("<div class=\"CMAX\"> Cmax = {0}; </div>", EstimatedCmax);
                 file.WriteLine(@"</body></html>");
             }
         }

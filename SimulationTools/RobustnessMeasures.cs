@@ -97,6 +97,8 @@ namespace SimulationTools
 
         private static double TotalSlackOf(Job j, Schedule S)
         {
+            S.CalcESS();
+            S.CalcLSS();
             return S.LSS[j.ID] - S.ESS[j.ID];
         }
 

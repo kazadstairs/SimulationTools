@@ -1,21 +1,21 @@
-SCHEDNAMES <- c("Rolling Machine Assignment", "Random", "GreedyLoadBalancing")
-INSTANCES <- c("Pinedo",
-               "30j-15r-4m.ms",
-               "30j-15r-8m.ms",
-               "30j-30r-4m.ms",
-               "30j-30r-4m.ms",
-               "30j-75r-4m.ms",
-               "30j-75r-4m.ms",
-               "100j-50r-6m.ms",
-               "100j-50r-12m.ms",
-               "100j-100r-6m.ms",
-               "100j-100r-12m.ms",
-               "100j-250r-6m.ms",
-               "100j-250r-12m.ms")
+#SCHEDNAMES <- c("Rolling Machine Assignment", "Random", "GreedyLoadBalancing")
+#INSTANCES <- c("Pinedo",
+#               "30j-15r-4m.ms",
+#               "30j-15r-8m.ms",
+#               "30j-30r-4m.ms",
+#               "30j-30r-4m.ms",
+#               "30j-75r-4m.ms",
+#               "30j-75r-4m.ms",
+#               "100j-50r-6m.ms",
+#               "100j-50r-12m.ms",
+#               "100j-100r-6m.ms",
+#              "100j-100r-12m.ms",
+#              "100j-250r-6m.ms",
+#               "100j-250r-12m.ms")
 NRUNS <- "1000"
 
-RM.ID <- 1
-QM.ID <- 2
+#RM.ID <- 1
+#QM.ID <- 2
 
 ###
 ########################## Libraries #########################################
@@ -23,6 +23,7 @@ QM.ID <- 2
 library(ggplot2)
 library(plyr)
 library(dplyr)
+library(reshape)
 
 ###
 ########################## FUNCTIONS #########################################
@@ -169,7 +170,7 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
   
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.AssignType)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,xRange)) 
@@ -181,12 +182,6 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
   ggsave(filename = fileName,plot = p)
   
   print(p)
-  
-}
-
-Plot.SchedStart.vs.RealisedStart <- function()
-{
-  
   
 }
 
@@ -219,9 +214,11 @@ MakeAllPlots <- function()
 #p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
 
 ########### plot from one big data file ############
+
+UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
-myDF <- read.csv2(LAPTOPPATH)
-MakePlot.WithRange("FS","Cmax",1000,1000)
+myDF <- read.csv2(UUPATH)
+MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 
 

@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = true;
+            bool DEBUG = false;
             if (DEBUG)
             {
                        
@@ -49,42 +49,6 @@ namespace SimulationTools
                 
                 Schedule MLSOpt = LocalSearch.MLS(10000, Ins, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 
-                //Make 50 Random schedules, try to improve with LS.
-/*
-                OriginalSched = NewSchedule(Ins, "Random", "ESS");
-                Console.WriteLine("ORIGINAL SCHEDULE");
-                OriginalSched.Print();
-
-                Schedule StartingSched = new Schedule(OriginalSched);
-                Console.WriteLine("COPY SCHEDULE");
-                StartingSched.Print();
-                Console.WriteLine("StartingSched == Originalsched: {0}", StartingSched == OriginalSched);
-                OriginalSched.MakeHTMLImage("Original Schedule");
-                Console.WriteLine(OriginalSched.PrecMachPathExistsWithout(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19), new Tuple<Job, Job>(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19))));
-            for (int i = 0; i < 50; i++)
-                {
-                    //   Sched.Print();
-                    //StartingSched.Print();
-                    CurrentSched = LocalSearch.NeighborSwapHillClimb(StartingSched, FitnessFunctions.MeanBasedCmax);
-
-                    if (CurrentSched == StartingSched)
-                    {
-                        Console.WriteLine("Identical");
-                        // oh oh
-                    }
-
-                   // LocalSearch.SwapHillClimb(ref Sched, FitnessFunctions.MeanBasedCmax);
-                    if (FitnessFunctions.MeanBasedCmax(CurrentSched) > BestFitness)
-                    {
-                        BestFitness = FitnessFunctions.MeanBasedCmax(CurrentSched);
-                        MLS50Sched = new Schedule(CurrentSched);
-                        Console.WriteLine("Best fitness updated: {0}", BestFitness);
-                    }
-                }
-                MLS50Sched.MakeHTMLImage("MLS 50 Schedule");
-                Console.WriteLine("Debug: Fitness of MLS sched {0}, bestfitness {1}", FitnessFunctions.MeanBasedCmax(MLS50Sched), BestFitness);
-                new Simulation(50, MLS50Sched, "N(p,0.1p)").Perform();
-*/
             }
             else
             {
@@ -108,7 +72,13 @@ namespace SimulationTools
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "ESS"));
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "ESS"));
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "ESS"));
-                    SchedulesToSimulate.Add(LocalSearch.MLS(1000, Instances[i], FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps));
+                    Schedule MLSSched = LocalSearch.MLS(200, Instances[i], FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
+                    MLSSched.CalcESS();
+                    MLSSched.SetESS();
+                    MLSSched.AssignmentDescription = "MLS";
+                    MLSSched.MakeHTMLImage(string.Format("ESS {0} schedule for {1}", MLSSched.AssignmentDescription, Instances[i].Description));
+                    SchedulesToSimulate.Add(MLSSched);
+                  
         //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
         //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
         //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
@@ -120,7 +90,9 @@ namespace SimulationTools
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "ESS"));
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "ESS"));
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "ESS"));
-                SchedulesToSimulate.Add(LocalSearch.MLS(1000, Pinedo, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps));
+                Schedule PinedoMLS = LocalSearch.MLS(200, Pinedo, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
+                SchedulesToSimulate.Add(PinedoMLS);
+                PinedoMLS.EstimateCmax();
                 //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
                 //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
                 //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
@@ -135,13 +107,14 @@ namespace SimulationTools
                 //     ProblemInstance Ptest = new ProblemInstance();
                 //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
                 //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
-                foreach (string distribution in Constants.DISTRIBUTION)
-                {
-                    foreach (Schedule currentSched in SchedulesToSimulate)
-                    {
+               foreach (Schedule currentSched in SchedulesToSimulate)
+               {
+                    currentSched.CalcRMs();
+                    foreach (string distribution in Constants.DISTRIBUTION)
+                    {                        
                         new Simulation(Constants.NRuns, currentSched, distribution).Perform();
                     }
-                    Console.WriteLine("Finished simulations for {0} distribution", distribution);
+
                 }
 
 
@@ -193,10 +166,7 @@ namespace SimulationTools
 
 
             }
-            Console.WriteLine("*** RMS CALCULATED BASED ON {0} SCHED! ***",StartTimeType);
-           // Sched.Print();
-          //  Sched.EstimateCmax();
-          //  Sched.CalcRMs();
+            Sched.EstimateCmax();
             return Sched;
         }
     }

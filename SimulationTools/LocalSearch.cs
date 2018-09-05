@@ -37,7 +37,8 @@ namespace SimulationTools
                     Console.WriteLine("MLS opt updated");
                     BestFitness = CurrentFitness;
                     MLSOptimumSched = new Schedule(CurrentSchedule); // create a copy
-                }  
+                }
+                if (i % 20 == 0) { Console.WriteLine("MLS at {0}/{1}", i, NRuns); }
             }
 
             Console.WriteLine("MLS{0} optimal schedule with fitness {1}(check {2}):", NRuns, BestFitness, FitnessFunction(MLSOptimumSched));
@@ -233,7 +234,7 @@ namespace SimulationTools
             bool LocalOptimum = false;
             double CurrentFitness = -double.MaxValue;
             
-            Console.WriteLine("Starting HillClimb from fitness = {0}...",FitnessFunction(Original));
+       //     Console.WriteLine("Starting HillClimb from fitness = {0}...",FitnessFunction(Original));
       
 
             //Pick random job and or random machine:
@@ -258,10 +259,9 @@ namespace SimulationTools
                     LocalOptimum = false;
                 }
                 Debug_numberofHCs++;
-
-                if (Debug_numberofHCs % 10 == 0) { Console.WriteLine("10 Improving Steps made (total = {0})", Debug_numberofHCs) ; }
+                
             }
-            Console.WriteLine("...Found LO with fitness {0} in {1} improvements", FitnessFunction(CurrentSchedule), Debug_numberofHCs);
+       //     Console.WriteLine("...Found LO with fitness {0} in {1} improvements", FitnessFunction(CurrentSchedule), Debug_numberofHCs);
             return CurrentSchedule;
         }
 

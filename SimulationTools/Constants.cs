@@ -17,11 +17,11 @@ namespace SimulationTools
         // public static int DISTRIBUTIONTYPE = 1;
 
         public static string[] DISTRIBUTION = { "N(p,1)", // Normal, with sigma 1
-                                                   "N(p,0.01p)", //Normal, sigma is 0.01*p
+   //                                                "N(p,0.01p)", //Normal, sigma is 0.01*p
                                                    "N(p,0.1p)",
-                                                   "N(p,0.25p)",
+   //                                                "N(p,0.25p)",
                                                    "Exp(p)", //Exponential with mean p
-                                                   "LN(p,0.01p)", //LogNormal distribution, sigma is 0.01p
+   //                                                "LN(p,0.01p)", //LogNormal distribution, sigma is 0.01p
                                                    "LN(p,0.1p)", //LogNormal distribution, sigma is 0.1p
    //                                                "LN(p,0.25p)" //LogNormal distribution, sigma is 0.25p Variation is HUUGE. Don't use this.
         };
