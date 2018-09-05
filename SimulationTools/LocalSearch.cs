@@ -8,6 +8,44 @@ namespace SimulationTools
 {
     static class LocalSearch
     {
+        /// <summary>
+        /// Returns the best schedule found after exploring NRuns local optima in the search space.
+        /// </summary>
+        /// <param name="NRuns"></param>
+        /// <param name="FitnessFunction"></param>
+        /// <param name="NeighborhoodOperator"></param>
+        /// <returns></returns>
+        static public Schedule MLS(int NRuns,ProblemInstance Prob,Func <Schedule,double> FitnessFunction, Func<Schedule,Func<Schedule,double>,Schedule> NeighborhoodOperator)
+        {
+            double BestFitness = -double.MaxValue;
+            double CurrentFitness = -double.MaxValue;
+            Schedule MLSOptimumSched = null;
+            for (int i = 0; i < NRuns; i++)
+            {
+                // create random solution
+                Schedule CurrentSchedule = new Schedule(Prob);
+                CurrentSchedule.MakeRandomAssignment();
+                CurrentSchedule.CalcESS();
+                CurrentSchedule.SetESS();
+
+                //optimize it
+                HillClimb(CurrentSchedule, NeighborhoodOperator, FitnessFunction);
+                CurrentFitness = FitnessFunction(CurrentSchedule);
+
+                if (CurrentFitness > BestFitness)
+                {
+                    Console.WriteLine("MLS opt updated");
+                    BestFitness = CurrentFitness;
+                    MLSOptimumSched = new Schedule(CurrentSchedule); // create a copy
+                }  
+            }
+
+            Console.WriteLine("MLS{0} optimal schedule with fitness {1}(check {2}):", NRuns, BestFitness, FitnessFunction(MLSOptimumSched));
+            MLSOptimumSched.Print();
+            return MLSOptimumSched;
+            //return the best
+
+        }
 
         static public Schedule NeighborSwapHillClimb(Schedule Original, Func<Schedule,double> FitnessFunction)
         {

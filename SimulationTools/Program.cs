@@ -8,20 +8,7 @@ using System.IO;
 
 namespace SimulationTools
 {
-    public static class ExtensionMethods
-    {
-        // Deep clone
-        public static T DeepClone<T>(this T a)
-        {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                BinaryFormatter formatter = new BinaryFormatter();
-                formatter.Serialize(stream, a);
-                stream.Position = 0;
-                return (T)formatter.Deserialize(stream);
-            }
-        }
-    }
+
     class Program
     {
         static public string INSTANCEFOLDER;
@@ -59,12 +46,11 @@ namespace SimulationTools
                 //Ins.InstanciateLSTest();
                 string InstanceName = "30j-75r-8m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                Schedule OriginalSched = null;
-                Schedule CurrentSched = null;
-                Schedule MLS50Sched = null;
-                double BestFitness = -double.MaxValue;
-                //Make 50 Random schedules, try to improve with LS.
+                
+                Schedule MLSOpt = LocalSearch.MLS(10000, Ins, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 
+                //Make 50 Random schedules, try to improve with LS.
+/*
                 OriginalSched = NewSchedule(Ins, "Random", "ESS");
                 Console.WriteLine("ORIGINAL SCHEDULE");
                 OriginalSched.Print();
@@ -75,7 +61,7 @@ namespace SimulationTools
                 Console.WriteLine("StartingSched == Originalsched: {0}", StartingSched == OriginalSched);
                 OriginalSched.MakeHTMLImage("Original Schedule");
                 Console.WriteLine(OriginalSched.PrecMachPathExistsWithout(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19), new Tuple<Job, Job>(OriginalSched.PrecedenceDAG.GetJobById(30), OriginalSched.PrecedenceDAG.GetJobById(19))));
-                for (int i = 0; i < 50; i++)
+            for (int i = 0; i < 50; i++)
                 {
                     //   Sched.Print();
                     //StartingSched.Print();
@@ -98,7 +84,7 @@ namespace SimulationTools
                 MLS50Sched.MakeHTMLImage("MLS 50 Schedule");
                 Console.WriteLine("Debug: Fitness of MLS sched {0}, bestfitness {1}", FitnessFunctions.MeanBasedCmax(MLS50Sched), BestFitness);
                 new Simulation(50, MLS50Sched, "N(p,0.1p)").Perform();
-
+*/
             }
             else
             {
@@ -122,9 +108,10 @@ namespace SimulationTools
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "ESS"));
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "ESS"));
                     SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "ESS"));
-                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
-                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
-                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
+                    SchedulesToSimulate.Add(LocalSearch.MLS(1000, Instances[i], FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps));
+        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
+        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
+        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
                 }
 
                 ProblemInstance Pinedo = new ProblemInstance();
@@ -133,9 +120,10 @@ namespace SimulationTools
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "ESS"));
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "ESS"));
                 SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "ESS"));
-                SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
-                SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
-                SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
+                SchedulesToSimulate.Add(LocalSearch.MLS(1000, Pinedo, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps));
+                //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "RMA", "LSS"));
+                //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "GLB", "LSS"));
+                //       SchedulesToSimulate.Add(NewSchedule(Pinedo, "Random", "LSS"));
 
 
                 /*
