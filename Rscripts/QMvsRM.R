@@ -135,17 +135,21 @@ MakePlot <- function(string.RM, string.QM)
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
     summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
   
+  show(names(myDF.plot)[1:15])
   # names(myDF.plot)[3] <- string.RM
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
-  
+  Xvals <- myDF.plot[,"RM"][[1]]
+  Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
+  Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
+
   p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
   p <- p + xlab(string.RM) + ylab(string.QM)
-  p <- p + theme(legend.position = "top")
+  p <- p + theme(legend.position = "top") + ggtitle(paste("Spearman = ",Srho$estimate))
   
   fileName <- paste("C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\",string.RM,"_vs_",string.QM,".pdf",sep="")
   ggsave(filename = fileName,plot = p)
@@ -218,6 +222,7 @@ MakeAllPlots <- function()
 UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
 myDF <- read.csv2(UUPATH)
+myDF <- subset(myDF,myDF$Distribution.Type == "N(p,1)")
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 
