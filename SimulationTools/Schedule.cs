@@ -440,7 +440,6 @@ namespace SimulationTools
             return Succs;
         }
 
-
         /// <summary>
         /// Given a schedule with machine assignments, estimate the earliest start schedule based on mean processing times.
         /// </summary>
@@ -647,6 +646,7 @@ namespace SimulationTools
                 AssignedMachineID[j.ID] = m.MachineID;
             }
         }
+        
 
         public void DeleteJobFromMachine(Job J)
         {
@@ -657,7 +657,9 @@ namespace SimulationTools
             }
             M.AssignedJobs.RemoveAt(MachineArcPointers[J.ID].ArrayIndex);
             MachineArcPointers[J.ID].ArrayIndex = -1;
-            MachineArcPointers[J.ID].MachineId = -1;            
+            MachineArcPointers[J.ID].MachineId = -1;
+            M.Load -= J.MeanProcessingTime;
+            AssignedMachineID[J.ID] = -1;
         }
 
         public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
