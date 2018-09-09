@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-    class Schedule
+    [Serializable] class Schedule
     {
         // Job[] Jobs;
         // Machine[] Machines;
@@ -50,14 +50,63 @@ namespace SimulationTools
             AssignedMachineID = new int[PrecedenceDAG.N];
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
-            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];         
+            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+
+
+            RMs = new List<RM>();
 
 
         }
 
+        /// <summary>
+        /// Copy constructor
+        /// </summary>
+        /// <param name="Original"></param>
+        public Schedule(Schedule Original)
+        {
+            //Point to same thing as original
+            Problem = Original.Problem;
+            PrecedenceDAG = Original.PrecedenceDAG;
+            RMs = Original.RMs;
+
+            //Create new
+            Machines = new List<Machine>(Problem.NMachines);
+
+            for (int i = 0; i < Problem.NMachines; i++)
+            {
+                Machines.Add(new Machine(i + 1));
+            }
+
+            Starttimes = new double[PrecedenceDAG.N];
+            for (int i = 0; i < Starttimes.Length; i++)
+            {
+                Starttimes[i] = -1;
+            }
+
+            AssignedMachineID = new int[PrecedenceDAG.N];
+            for (int i = 0; i < PrecedenceDAG.N;i++)
+            {
+                AssignedMachineID[i] = -1;
+            }
+            LSS = new double[PrecedenceDAG.N];
+            ESS = new double[PrecedenceDAG.N];
+            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+
+            //Copy the information:
+            Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
+            CalcESS();
+            SetESS();
+            for (int i = 0; i < PrecedenceDAG.N; i++)
+            {
+                if (MachineArcPointers[i].ArrayIndex != Original.MachineArcPointers[i].ArrayIndex) { throw new Exception("Copy mistake"); }
+                if (MachineArcPointers[i].MachineId != Original.MachineArcPointers[i].MachineId) { throw new Exception("Copy mistake"); }
+            }
+        }
+
         public void CalcRMs()
         {
-            RMs = new List<RM>();
+            if (RMs.Count > 0) { throw new Exception("RMs aready calculated"); }
+            else if (EstimatedCmax <= 0) { Console.WriteLine("Warning, estimated Cmax = 0. Calling EstimateCmax()."); EstimateCmax(); } // has to be done before calculating RMs
             foreach (string name in Constants.RMNames)
             {
                 RMs.Add(new RM(name));
@@ -122,19 +171,30 @@ namespace SimulationTools
             AssignJobToMachineById(9, 1);
         }
 
+        /// <summary>
+        /// Calculate ESS than Cmax based on that.
+        /// </summary>
+        /// <returns></returns>
         public double EstimateCmax()
         {
             //placeholder;
+            //Console.WriteLine("Warning: ESS recalculated, Cmax based on new ESS times");
+            CalcESS();
+            SetESS();
             double Maximum = 0;
             int MaxID = 0;
             for (int i = 1; i < Starttimes.Length; i++)
             {
                 if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
-                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum) { Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime; MaxID = i; }
+                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum)
+                {
+                    Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime;
+                    MaxID = i;
+                }
             }
             EstimatedCmax = Maximum;
 
-            Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
+         //   Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
             return EstimatedCmax;
         }
 
@@ -292,18 +352,22 @@ namespace SimulationTools
         /// </summary>
         public void Print()
         {
-            Console.WriteLine("Schedule information:");
-            Console.WriteLine("Mean Cmax determined to be: {0}", FitnessFunctions.MeanBasedCmax(this));
-            Console.WriteLine("Machine info:");
+            Console.WriteLine("*** Schedule information: *** ");
+          //  Console.WriteLine("* Mean Cmax determined to be: {0}", EstimateCmax());
+            Console.WriteLine("* Machine info:");
+            
             foreach (Machine m in Machines)
             {
+                Console.Write("*");
                 Console.Write("  M {0}: ", m.MachineID);
                 foreach(Job j in m.AssignedJobs)
                 {
                     Console.Write("{0}, ", j.ID);
                 }
+                Console.Write(" *");
                 Console.Write(Environment.NewLine);
             }
+            Console.WriteLine("*****************************");
             /*
             Console.WriteLine("Job info:");
             foreach (Job j in PrecedenceDAG.Jobs)
@@ -340,7 +404,7 @@ namespace SimulationTools
                 file.WriteLine(@"<style>");
 
                 // css part:
-                int scale = 5;
+                int scale = 15;
                 double top, left, width;                
                 foreach (Job j in PrecedenceDAG.Jobs)
                 {
@@ -352,6 +416,18 @@ namespace SimulationTools
                     file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
                     file.WriteLine(@"height: 20px; border: 1px solid #73AD21; text-align: center; vertical-align: middle;}");
                 }
+                //CmaxBlok:
+                top = 50 ;
+                EstimateCmax();
+                left = EstimatedCmax * scale;
+                width = 2 * scale;
+                double height = 50 * Machines.Count + 100;
+                file.WriteLine("div.CMAX");
+                file.WriteLine("{position: fixed;");
+                file.WriteLine("top: {0}px; left: {1}px; width: {2}px;height: {3}px;", top, left, width,height);
+                file.WriteLine(@" border: 1px solid #73AD21; text-align: center; vertical-align: middle; colour: red;}");
+
+
                 file.WriteLine(@"</style></head><body>");
                 file.WriteLine(@"<div>");
                 file.WriteLine(title);
@@ -360,6 +436,7 @@ namespace SimulationTools
                 {
                     file.WriteLine("<div class=\"j{0}\"> J{0}; </div>",j.ID);
                 }
+                file.WriteLine("<div class=\"CMAX\"> Cmax = {0}; </div>", EstimatedCmax);
                 file.WriteLine(@"</body></html>");
             }
         }
@@ -369,7 +446,8 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
-                if (ESS[j.ID] == 0) { Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID); }
+                if (ESS[j.ID] == 0) { //Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID);
+                }
                 Starttimes[j.ID] = ESS[j.ID];
             }
         }
@@ -378,7 +456,8 @@ namespace SimulationTools
         {
             foreach (Job j in PrecedenceDAG.Jobs)
             {
-                if (LSS[j.ID] == 0) { Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID); }
+                if (LSS[j.ID] == 0) {// Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID);
+                }
                 Starttimes[j.ID] = LSS[j.ID];
             }
         }
@@ -468,38 +547,119 @@ namespace SimulationTools
         public void ForeachJobInPrecOrderDo(Action<Job> PerFormAction)
         {
             int[] nParentsProcessed = new int[PrecedenceDAG.N + 1]; // Position i contains the number of parents of Job with ID i that have been fully updated.
-            Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.           
+            Stack<Job> AllPredDone = new Stack<Job>(); // The jobs that will no longer change Rj are those for which all Parents have been considered.  
+            bool[] IsPushed = new bool[PrecedenceDAG.N + 1];
+            bool[] IsVisited = new bool[PrecedenceDAG.N + 1];
+            for (int i = 0; i < PrecedenceDAG.N + 1; i++)
+            {
+                IsPushed[i] = false;
+                IsVisited[i] = false;
+            }
+
             foreach (Job j in PrecedenceDAG.Jobs)  //All jobs without predecessors can know their final Rj (it is equal to their own rj).
             {
-                if (j.Predecessors.Count == 0 && GetMachinePredecessor(j) == null)
+                if (j.Predecessors.Count == 0
+                    && GetMachinePredecessor(j) == null)
                 {
                     AllPredDone.Push(j);
+                    IsPushed[j.ID] = true;
                     // ESS[j.ID] = j.EarliestReleaseDate; Do this as part of the action!
+                }
+                else
+                {/* todo delete debugging statements (all this commented stuff)
+                    Console.Write("Job {0} has pred: ", j.ID);
+                    foreach (Job pred in j.Predecessors)
+                    {
+                        Console.Write("  {0}", pred.ID);
+                    }
+                    if (GetMachinePredecessor(j) != null)
+                    {
+                        Console.Write("  (Mpred:) {0}", GetMachinePredecessor(j).ID);
+                    }
+                    Console.Write(Environment.NewLine);
+                    */
                 }
             }
             Job CurrentJob = null;
-            bool[] IsVisited = new bool[PrecedenceDAG.N + 1];
-            bool[] IsPushed = new bool[PrecedenceDAG.N + 1];
             //algo
+            int DebugJobsPopped = 0;
             while (AllPredDone.Count > 0)
             {
                 CurrentJob = AllPredDone.Pop();
+                if (IsVisited[CurrentJob.ID])
+                {
+                    // Oops, found it twice.
+                }
+                DebugJobsPopped++;
 
                 PerFormAction(CurrentJob);
 
                 IsVisited[CurrentJob.ID] = true;
+
                 Job MachineSucc = GetMachineSuccessor(CurrentJob);
-                if (MachineSucc != null && nParentsProcessed[MachineSucc.ID] == MachineSucc.Predecessors.Count)
+               
+                /* debugging: todo, delete
+                Console.Write("Job {0} has successors:", CurrentJob.ID);
+                foreach (Job Child in CurrentJob.Successors)
                 {
-                    if(!IsPushed[MachineSucc.ID]) AllPredDone.Push(MachineSucc);
+                    Console.Write("  {0}",Child.ID);
                 }
+                if (MachineSucc != null) {
+                    Console.Write("   (Msuc:) {0}", MachineSucc.ID);
+                }
+                Console.WriteLine();
+                */
+
                 foreach (Job Child in CurrentJob.Successors)
                 {
                     nParentsProcessed[Child.ID]++;
-                    if (nParentsProcessed[Child.ID] == Child.Predecessors.Count && (GetMachinePredecessor(Child) == null || IsVisited[GetMachinePredecessor(Child).ID]))
+                    Job MachinePred = GetMachinePredecessor(Child);
+                    if (nParentsProcessed[Child.ID] == Child.Predecessors.Count && (MachinePred == null || IsVisited[MachinePred.ID]))
                     {
-                        if (!IsPushed[Child.ID]) AllPredDone.Push(Child);
+                        if (!IsPushed[Child.ID])
+                        {
+                            AllPredDone.Push(Child);
+                            IsPushed[Child.ID] = true;
+                        } 
                     }
+                }
+                if (MachineSucc != null && nParentsProcessed[MachineSucc.ID] == MachineSucc.Predecessors.Count)
+                {
+                    if (!IsPushed[MachineSucc.ID])
+                    {
+                        AllPredDone.Push(MachineSucc);
+                        IsPushed[MachineSucc.ID] = true;
+                    }
+                }
+                // missing machine arcs? NO! Machine arcs are dealt with.
+            }
+             for(int i = 0; i < PrecedenceDAG.N; i++)
+            {
+                if (!IsVisited[i]) {
+                    Console.WriteLine("ERROR! Printing Schedule for debugging then aborting.");
+                    Console.WriteLine("Processed {0}/{1} jobs in Prec Order", DebugJobsPopped, PrecedenceDAG.N);
+                    Console.WriteLine("Checking for cycles...");
+                    bool Cyclesfound = false;
+                    foreach (Machine M in this.Machines)
+                    {
+                        for (int higherindex = 1; higherindex < M.AssignedJobs.Count; higherindex ++)
+                        {
+                            for (int lowerindex = 0; lowerindex < higherindex; lowerindex++)
+                            {
+                                if (PrecedenceDAG.PrecPathExists(M.AssignedJobs[higherindex], M.AssignedJobs[lowerindex]))
+                                {
+                                    Console.WriteLine("Cycle found on M{2}: Job {0} --Marcs--> Job {1} --Precs--> Job {0}", M.AssignedJobs[lowerindex].ID, M.AssignedJobs[higherindex].ID,M.MachineID);
+                                    Cyclesfound = true;
+                                }
+                            }
+                        }
+
+                    }
+                    if (!Cyclesfound) { Console.WriteLine("No cycles found"); }
+                    
+                    this.Print();
+
+                    throw new Exception("Not all jobs visited!");
                 }
             }
         }
@@ -572,7 +732,7 @@ namespace SimulationTools
                     // then the machine is empty and the assignment is always feasible.
                     return true;
                 }
-                else if (PathExists(j, m.LastJob()))
+                else if (PrecAndMachinePathExists(j, m.LastJob()))
                 {
                     //then adding j to m will create a cycle
                     return false;
@@ -587,7 +747,7 @@ namespace SimulationTools
         /// <param name="OriginJob">The Job from which BFS is performed</param>
         /// <param name="ApplyLogic">Job ==> Bool, returns true in the case of early stopping. False in the case of exhaustive unsuccessful search</param>
         /// <returns></returns>
-        private bool BFSfrom(Job OriginJob, Func<Job,bool> ApplyLogic)
+        private bool PrecAndMachineBFSfrom(Job OriginJob, Func<Job,bool> ApplyLogic)
         {
             bool[] BFSVisited = new bool[this.PrecedenceDAG.N];
             Queue<Job> BFSQueue = new Queue<Job>();
@@ -609,19 +769,28 @@ namespace SimulationTools
                 }
                 // same logic as the foreach above. Note that a successor will only be visited once, independent of how many in arcs it has.
                 // ONLY check for successors if this job is assigned
-                if (AssignedMachineID[CurrentJob.ID] == 0)
+                if (AssignedMachineID[CurrentJob.ID] <= 0)
                 {
                     //Job not yet assigned, no successor arcs will exits.
                 }
                 else
                 {
                     MSucc = GetMachineSuccessor(CurrentJob);
-                    if (ApplyLogic(MSucc) == true) { return true; }
-                    else if (!BFSVisited[MSucc.ID])
+                    if (MSucc != null)
                     {
-                        BFSVisited[MSucc.ID] = true;
-                        BFSQueue.Enqueue(MSucc);
+                        if (ApplyLogic(MSucc) == true) { return true; }
+                        else if (!BFSVisited[MSucc.ID])
+                        {
+                            BFSVisited[MSucc.ID] = true;
+                            BFSQueue.Enqueue(MSucc);
+                        }
+
                     }
+                    else
+                    {
+                        Console.WriteLine("Warning: Not checked!");
+                    }
+                    
                 }
                    
 
@@ -629,14 +798,75 @@ namespace SimulationTools
             return false;
         }
 
-        public bool PathExists(Job OriginJob, Job TargetJob)
+
+        /// <summary>
+        /// Checks for path in COMBINED Prec,Machine graph
+        /// </summary>
+        /// <param name="OriginJob"></param>
+        /// <param name="TargetJob"></param>
+        /// <returns></returns>
+        public bool PrecAndMachinePathExists(Job OriginJob, Job TargetJob)
         {
-            return BFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
+            return PrecAndMachineBFSfrom(OriginJob, (Job CurrentJob) => CurrentJob == TargetJob);
+        }
+
+        public bool PrecMachPathExistsWithout(Job OriginJob, Job TargetJob, Tuple<Job,Job> ForbiddenArc)
+        {
+            bool[] BFSVisited = new bool[this.PrecedenceDAG.N];
+            Queue<Job> BFSQueue = new Queue<Job>();
+            BFSQueue.Enqueue(OriginJob);
+            Job CurrentJob;
+            Job MSucc;
+            while (BFSQueue.Count > 0)
+            {
+                CurrentJob = BFSQueue.Dequeue();
+                if (CurrentJob == TargetJob) { return true; }
+                foreach (Job Succ in CurrentJob.Successors)
+                {
+                    if (!BFSVisited[Succ.ID])
+                    {
+                        BFSVisited[Succ.ID] = true;
+                        BFSQueue.Enqueue(Succ);
+                    }
+
+                }
+                // same logic as the foreach above. Note that a successor will only be visited once, independent of how many in arcs it has.
+                // ONLY check for successors if this job is assigned
+                if (AssignedMachineID[CurrentJob.ID] <= 0)
+                {
+                    //Job not yet assigned, no successor arcs will exits.
+                }
+                else
+                {
+                    MSucc = GetMachineSuccessor(CurrentJob);
+                    if (MSucc != null && !BFSVisited[MSucc.ID])
+                    {
+                        if (CurrentJob == ForbiddenArc.Item1 && MSucc == ForbiddenArc.Item2)
+                        {
+                            // this is the forbidden arc, ignore it.
+
+                        }
+                        else
+                        {
+                            BFSVisited[MSucc.ID] = true;
+                            BFSQueue.Enqueue(MSucc);
+                        }
+                    }             
+                    
+                   
+
+                }
+
+
+            }
+            return false;
+
         }
 
      
         void AssignJobToMachine(Job j, Machine m)
         {
+            if (m.MachineID == 0) { throw new Exception("Machines are 1 based"); }
             if (GetMachineArcPointer(j) != null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
             else
             {
@@ -683,7 +913,8 @@ namespace SimulationTools
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
-        private Machine GetMachineByID(int MachineID)
+        // You had made this private, probably with some reason. Why?
+        public Machine GetMachineByID(int MachineID)
         {
             return Machines[MachineID - 1];
         }

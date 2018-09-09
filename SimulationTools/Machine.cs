@@ -22,6 +22,18 @@ namespace SimulationTools
             Load = 0;
         }
 
+        public Machine(Machine Original)
+        {
+            AssignedJobs = new List<Job>();
+            for (int i = 0; i < Original.AssignedJobs.Count; i++)
+            {
+                AssignedJobs[i] = Original.AssignedJobs[i];
+            }
+            JobsWaitingToStart = new Queue<Job>(); //todo: empty?
+            MachineID = Original.MachineID;
+            Load = Original.Load;
+        }
+
         public Job LastJob()
         {
             if(AssignedJobs.Count == 0)

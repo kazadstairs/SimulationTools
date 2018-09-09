@@ -1,21 +1,21 @@
-SCHEDNAMES <- c("Rolling Machine Assignment", "Random", "GreedyLoadBalancing")
-INSTANCES <- c("Pinedo",
-               "30j-15r-4m.ms",
-               "30j-15r-8m.ms",
-               "30j-30r-4m.ms",
-               "30j-30r-4m.ms",
-               "30j-75r-4m.ms",
-               "30j-75r-4m.ms",
-               "100j-50r-6m.ms",
-               "100j-50r-12m.ms",
-               "100j-100r-6m.ms",
-               "100j-100r-12m.ms",
-               "100j-250r-6m.ms",
-               "100j-250r-12m.ms")
+#SCHEDNAMES <- c("Rolling Machine Assignment", "Random", "GreedyLoadBalancing")
+#INSTANCES <- c("Pinedo",
+#               "30j-15r-4m.ms",
+#               "30j-15r-8m.ms",
+#               "30j-30r-4m.ms",
+#               "30j-30r-4m.ms",
+#               "30j-75r-4m.ms",
+#               "30j-75r-4m.ms",
+#               "100j-50r-6m.ms",
+#               "100j-50r-12m.ms",
+#               "100j-100r-6m.ms",
+#              "100j-100r-12m.ms",
+#              "100j-250r-6m.ms",
+#               "100j-250r-12m.ms")
 NRUNS <- "1000"
 
-RM.ID <- 1
-QM.ID <- 2
+#RM.ID <- 1
+#QM.ID <- 2
 
 ###
 ########################## Libraries #########################################
@@ -23,6 +23,7 @@ QM.ID <- 2
 library(ggplot2)
 library(plyr)
 library(dplyr)
+library(reshape)
 
 ###
 ########################## FUNCTIONS #########################################
@@ -134,17 +135,21 @@ MakePlot <- function(string.RM, string.QM)
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
     summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
   
+  show(names(myDF.plot)[1:15])
   # names(myDF.plot)[3] <- string.RM
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
-  
+  Xvals <- myDF.plot[,"RM"][[1]]
+  Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
+  Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
+
   p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
   p <- p + xlab(string.RM) + ylab(string.QM)
-  p <- p + theme(legend.position = "top")
+  p <- p + theme(legend.position = "top") + ggtitle(paste("Spearman = ",Srho$estimate))
   
   fileName <- paste("C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\",string.RM,"_vs_",string.QM,".pdf",sep="")
   ggsave(filename = fileName,plot = p)
@@ -169,7 +174,7 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
   
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.AssignType)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,xRange)) 
@@ -181,12 +186,6 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
   ggsave(filename = fileName,plot = p)
   
   print(p)
-  
-}
-
-Plot.SchedStart.vs.RealisedStart <- function()
-{
-  
   
 }
 
@@ -219,9 +218,12 @@ MakeAllPlots <- function()
 #p + labs(x = paste(c("Schedule ",abbreviate(GetRMName())," score"),collapse=''), y = GetQMName())
 
 ########### plot from one big data file ############
+
+UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
-myDF <- read.csv2(LAPTOPPATH)
-MakePlot.WithRange("FS","Cmax",1000,1000)
+myDF <- read.csv2(UUPATH)
+myDF <- subset(myDF,myDF$Distribution.Type == "N(p,1)")
+MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 
 
@@ -233,6 +235,7 @@ myDF.plot <- myDF %>%
 
 PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
 {
+  library(reshape)
   myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
   myDF <- subset(myDF,grepl(string.Instance,Instance.Name))
   myDF <- subset(myDF,grepl(string.AssignType,Schedule.AssignType))
@@ -257,13 +260,13 @@ cbind(my.melted.DF.plot,starttimes)
 
 ggplot(myDF.plot,aes(x=SS1,y=Delay,colour = Schedule.AssignType,shape=Schedule.AssignType)) + geom_point()
 
-#p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
-#p <- p + geom_point() 
-#p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
-#p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
-#p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
+p <- ggplot(myDF.plot,aes(x=FS,y=Cmax,colour=Schedule.StartTimeType,shape=Schedule.StartTimeType)) 
+p <- p + geom_point() 
+p <- p + geom_errorbar(aes(ymin=Cmax-Cmaxsd,ymax=Cmax+Cmaxsd))
+p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,2000)) 
+p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,500))
 
-#p
+p
 
 ############ Sampling tests
 

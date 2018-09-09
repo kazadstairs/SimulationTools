@@ -102,7 +102,7 @@ namespace SimulationTools
             return false;
         }
 
-        private bool SlowPrecPathExists(Job u, Job v)
+        public bool SlowPrecPathExists(Job u, Job v)
         {
             return PrecBFS(u, (Job Curr) => Curr == v);
 
@@ -151,11 +151,21 @@ namespace SimulationTools
         }
     }
 
-    class MachineArc : Arc
+ /*   class MachineArc : Arc
     {
         Job U;
         Job V;
         Machine M;
+
+        public Job GetOrigin()
+        {
+            return U;
+        }
+
+        public Job GetTarget()
+        {
+            return V;
+        }
 
         public MachineArc(Job u, Job v, Machine m)
         {
@@ -164,5 +174,7 @@ namespace SimulationTools
             M = m;
         }
     }
+
+    */
 
 }

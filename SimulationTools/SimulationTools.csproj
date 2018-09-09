@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FitnessFunctions.cs" />
+    <Compile Include="NeighborhoodFunctions.cs" />
     <Compile Include="RM.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="Distribution.cs" />

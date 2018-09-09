@@ -91,7 +91,7 @@ namespace SimulationTools
             return 0.5 * (1.0 + sign * y);
         }
 
-        static public double SampleExponential(double mean) // always positive
+        static public double SampleExponential(double mean) // always positive, has a higher SDev.
         {
             double u = Uniform01(); // u in 0,1
             return -mean * Math.Log(1 - u); //Inverse of CDF. Use: P(X<= x) = P(Finv(u) <= x) = P(u<= F(x)) = F(x) (u is uniform).
