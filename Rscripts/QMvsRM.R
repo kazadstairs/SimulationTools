@@ -24,6 +24,8 @@ library(ggplot2)
 library(plyr)
 library(dplyr)
 library(reshape)
+library(rlang)
+
 
 ###
 ########################## FUNCTIONS #########################################
@@ -120,6 +122,27 @@ BuildPlot <- function(cScheduleNames,InstanceName,Nruns)
 	dfplotinfo <- rbind.fill(dflist)
 	
 	return (dfplotinfo)
+}
+
+
+MakeQuantilePlot <- function(string.RM)
+{
+  library(dplyr)
+  RMsym <- rlang::sym(string.RM)
+  QMsym <- rlang::sym("Cmax")
+  
+  myDF.plot <- myDF %>% 
+    group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),0.90))
+  
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  p <- p + geom_point() 
+  p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
+  p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
+  p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
+  p <- p + xlab(string.RM) + ylab(string.QM)
+  p <- p + theme(legend.position = "top") + ggtitle(paste("Spearman = ",Srho$estimate))
+  
 }
 
 MakePlot <- function(string.RM, string.QM)
@@ -221,7 +244,7 @@ MakeAllPlots <- function()
 
 UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
-myDF <- read.csv2(UUPATH)
+myDF <- read.csv2(LAPTOPPATH)
 myDF <- subset(myDF,myDF$Distribution.Type == "N(p,1)")
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()

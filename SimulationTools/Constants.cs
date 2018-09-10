@@ -38,6 +38,10 @@ namespace SimulationTools
                                            "SDR" // Sum of Slack Duration Ratio (TS/pj)
         };
         public static string[] QMNames = { "Cmax",
+                                         //  "90%ProjectCertainty", DONE in R
+                                         //  "ExtensionTo90%", DONE in R
+                                         //  "RelativeExtentionTo90%", DONE in R
+                                         //  "Cmax - MeanBasedCmax", DONE in R
                                            "LinearStartDelay",
                                            "Start Punctuality",
                                            "Finish Punctuality"

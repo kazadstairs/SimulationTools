@@ -139,7 +139,7 @@ namespace SimulationTools
                     Sched.MakeRandomAssignment();
                     break;
                 case "RMA":
-                    Sched.AssignByRolling();
+                    Sched.MakeRollingMachineAssignment();
                     break;
                 case "GLB":
                     Sched.MakeGreedyLoadAssignment();
@@ -167,6 +167,7 @@ namespace SimulationTools
 
             }
             Sched.EstimateCmax();
+            LocalSearch.MLS(200, Sched.Problem, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
             return Sched;
         }
     }
