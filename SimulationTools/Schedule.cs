@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace SimulationTools
 {
     // MAIN CLASS, with class definition and constructors.
-    // Class divided over 4 files:
+    // Class divided over 5 files:
     // --> this file:                      
     //          Class declaration, constructor, methods for calculating start times.
     // --> ScheduleLowLevelMethods.cs:
@@ -16,6 +16,8 @@ namespace SimulationTools
     //          Methods for processing jobs in order of the graph, or getting jobs by graph relation (e.g. successors)
     // --> ScheduleAssignmentMethods.cs:
     //          High level methods to create Assignments (Random,RMA,GLB etc.)
+    // --> SchedulePrintFunctions.cs:
+    //          Create HTML output, print to console, etc.
 
     partial class Schedule
     {

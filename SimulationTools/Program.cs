@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = false;
+            bool DEBUG = true;
             if (DEBUG)
             {
                        
@@ -47,7 +47,7 @@ namespace SimulationTools
                 string InstanceName = "30j-75r-8m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
                 
-                Schedule MLSOpt = LocalSearch.MLS(10000, Ins, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
+                Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 
             }
             else
