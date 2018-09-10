@@ -99,7 +99,7 @@ namespace SimulationTools
         {
             S.CalcESS();
             S.CalcLSS();
-            return S.LSS[j.ID] - S.ESS[j.ID];
+            return S.GetLatestStart(j) - S.GetEarliestStart(j);
         }
 
         private static double SDROf(Job j, Schedule S)

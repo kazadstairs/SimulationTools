@@ -28,7 +28,7 @@ namespace SimulationTools
         }
 
 
-        private void DeleteJobFromMachine(Job J)
+        public void DeleteJobFromMachine(Job J)
         {
             Machine M = Machines[MachineArcPointers[J.ID].MachineId];
             for (int i = MachineArcPointers[J.ID].ArrayIndex + 1; i < M.AssignedJobs.Count; i++)
@@ -42,7 +42,19 @@ namespace SimulationTools
             AssignedMachineID[J.ID] = -1;
         }
 
-        private void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
+        public double GetLatestStart(Job J)
+        {
+            Console.WriteLine("WARNING: TODO, check LSS index on assignment matches index on read");
+            return LSS[J.ID];
+        }
+
+        public double GetEarliestStart(Job J)
+        {
+            Console.WriteLine("WARNING: TODO, check ESS index on assignment matches index on read");
+            return ESS[J.ID];
+        }
+
+        public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
         {
             M.AssignedJobs.Insert(Index, J);
             MachineArcPointers[J.ID].MachineId = M.MachineID;

@@ -17,8 +17,9 @@ namespace SimulationTools
         /// <param name="FitnessFunction"></param>
         /// <param name="NeighborhoodOperator"></param>
         /// <returns></returns>
-        static public Schedule MLS(int NRuns,ProblemInstance Prob,Action<Job> AssignMentLogic, Func <Schedule,double> FitnessFunction, Func<Schedule,Func<Schedule,double>,Schedule> NeighborhoodOperator)
+        static public Schedule MLS(int NRuns,ProblemInstance Prob,string AssignmentType, Func <Schedule,double> FitnessFunction, Func<Schedule,Func<Schedule,double>,Schedule> NeighborhoodOperator)
         {
+            Console.WriteLine("Running MLS {0} for schedules with assingment type {1}...", NRuns, AssignmentType);
             double BestFitness = -double.MaxValue;
             double CurrentFitness = -double.MaxValue;
             Schedule MLSOptimumSched = null;
@@ -26,9 +27,20 @@ namespace SimulationTools
             {
                 // create random solution
                 Schedule CurrentSchedule = new Schedule(Prob);
-                CurrentSchedule.Print();
-                CurrentSchedule.Assignby()
-                CurrentSchedule.Print();
+                switch (AssignmentType)
+                {
+                    case "Random":
+                        CurrentSchedule.MakeRandomAssignment();
+                        break;
+                    case "GLB":
+                        CurrentSchedule.MakeGreedyLoadAssignment();
+                        break;
+                    case "RMA":
+                        CurrentSchedule.MakeRollingMachineAssignment();
+                        break;
+                    default:
+                        throw new Exception("AssignmentType not recognized");
+                }
                 CurrentSchedule.CalcESS();
                 CurrentSchedule.SetESS();
 

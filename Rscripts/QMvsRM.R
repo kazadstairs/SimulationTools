@@ -20,6 +20,21 @@ NRUNS <- "1000"
 ###
 ########################## Libraries #########################################
 ###
+installNeededPackages <- function()
+{
+  install.packages("ggplot2")
+  install.packages("rlang")
+  install.packages("plyr")
+  install.packages("dplyr")
+  install.packages("reshape")
+  library(ggplot2)
+  library(plyr)
+  library(dplyr)
+  library(reshape)
+  library(rlang)
+  show("If no warnings shown, installation successfull.")
+}
+
 library(ggplot2)
 library(plyr)
 library(dplyr)
@@ -124,24 +139,72 @@ BuildPlot <- function(cScheduleNames,InstanceName,Nruns)
 	return (dfplotinfo)
 }
 
+MakeQuantilePlot <-  function(string.RM,double.upperQ,type)
+{
+  if(type == "absolute")
+  {
+    show(MakeAbsoluteQuantileDifPlot(string.RM,double.upperQ))
+  }
+  else if(type == "relative")
+  {
+    show(MakeRelativeQuantileDifPlot(string.RM,double.upperQ))
+  }
+  else
+  {
+    show("Type parameter unrecognized. Must be absolute or relative")
+  }
+  
+}
 
-MakeQuantilePlot <- function(string.RM)
+MakeAbsoluteQuantileDifPlot <- function(string.RM,double.upperQ)
 {
   library(dplyr)
   RMsym <- rlang::sym(string.RM)
-  QMsym <- rlang::sym("Cmax")
+  string.QM <- "Cmax"
+  QMsym <- rlang::sym(string.QM)
   
   myDF.plot <- myDF %>% 
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),0.90))
+    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),double.upperQ)-mean(!!QMsym))
   
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  Xvals <- myDF.plot[,"RM"][[1]]
+  Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
+  Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
+  
+  
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.StartTimeType)) 
   p <- p + geom_point() 
-  p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
-  p <- p + xlab(string.RM) + ylab(string.QM)
-  p <- p + theme(legend.position = "top") + ggtitle(paste("Spearman = ",Srho$estimate))
+  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax - mean(Cmax)"))
+  p <- p + theme(legend.position = "top") + ggtitle(paste(100*double.upperQ,"% quantile - 50% quantile. Spearman = ",Srho$estimate))
+  show(p)
+  
+}
+
+MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
+{
+  library(dplyr)
+  RMsym <- rlang::sym(string.RM)
+  string.QM <- "Cmax"
+  QMsym <- rlang::sym(string.QM)
+  
+  myDF.plot <- myDF %>% 
+    group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),double.upperQ)/mean(!!QMsym))
+  
+  Xvals <- myDF.plot[,"RM"][[1]]
+  Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
+  Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
+  
+  
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.StartTimeType)) 
+  p <- p + geom_point() 
+  p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
+  p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
+  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax / mean(Cmax)"))
+  p <- p + theme(legend.position = "top") + ggtitle(paste(100*double.upperQ,"% quantile / 50% quantile. Spearman = ",Srho$estimate))
+  show(p)
   
 }
 
@@ -245,9 +308,10 @@ MakeAllPlots <- function()
 UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
 myDF <- read.csv2(LAPTOPPATH)
-myDF <- subset(myDF,myDF$Distribution.Type == "N(p,1)")
+myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
+MakeQuantilePlot("TS",0.80,type="absolute")
 
 
 ############################
