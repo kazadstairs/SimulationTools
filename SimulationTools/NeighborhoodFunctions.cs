@@ -26,7 +26,6 @@ namespace SimulationTools
             Job J2 = null;
             double CurrentFitness;
             double NewFitness;
-            //Console.WriteLine("TODO LAZY: MAKE above assignment a CALL A FUNCTION IN SCHEDULE!");
             while (NMachinesTried < CurrentSchedule.Problem.NMachines)
             {
                 // CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
@@ -82,6 +81,48 @@ namespace SimulationTools
             }
             //tried all jobs on all machines, no improvement
             return null;
+        }
+
+
+        /// <summary>
+        /// Mastrolilli and Garambella: Remove job from Machine Graph, reinsert feasibly.
+        /// </summary>
+        /// <param name="CurrentSchedule"></param>
+        /// <param name="FitnessFunction"></param>
+        /// <returns></returns>
+        public static Schedule RemoveAndReinstert(Job MoveJob, Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
+        {
+            //Qk: CurrentSchedu
+            Machine k = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
+            Schedule FullSchedule = new Schedule(CurrentSchedule);
+            CurrentSchedule.DeleteJobFromMachine(MoveJob);
+            CurrentSchedule.CalcESS();
+            double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
+            CurrentSchedule.EstimateCmax();
+            CurrentSchedule.CalcLSS();
+            double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
+            HashSet<Job> Rk = new HashSet<Job>();
+            HashSet<Job> Lk = new HashSet<Job>();
+            bool jinRk;
+            bool IntersectNonEmpty = false;
+            foreach (Job j in k.AssignedJobs)
+            {
+                jinRk = false;
+                if (FullSchedule.GetEarliestStart(j) + j.MeanProcessingTime > EarliestStartofMoveJob)
+                {
+                    // j in Rk
+                    Rk.Add(j);
+                    jinRk = true;
+                }
+                if (FullSchedule.EstimatedCmax - FullSchedule.GetLatestStart(j) > CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime)
+                {
+                    // j in Lk
+                    Lk.Add(j);
+                    if (jinRk) { IntersectNonEmpty = true; }
+                }
+            }
+
+
         }
 
         public static Schedule SameMachineSwap(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
