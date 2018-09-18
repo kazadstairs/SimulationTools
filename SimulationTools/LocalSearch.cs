@@ -113,46 +113,6 @@ namespace SimulationTools
         }
 
         
-
-      /*  static private void SameMachineNeighbourhood(Sched CurrentSched, int JobIndex, int MachineIndex)
-        {
-            Job J1 = null, J2 = null;
-            for (int J1index = 0; J1index < JobsOnMachine - 1; J1index++)
-            {
-                if (improvementFound) break;
-
-                J1 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J1index];
-
-                for (int J2index = J1index + 1; J2index < JobsOnMachine; J2index++)
-                {
-                    J2 = CurrentSchedule.Machines[CurrentMachineId].AssignedJobs[J2index];
-                    // try the swap
-                    double OriginalFitness = FitnessFunction(CurrentSchedule);
-                    if (SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule))
-                    {
-                        double NewFitness = FitnessFunction(CurrentSchedule);
-                        if (NewFitness > OriginalFitness)
-                        {
-                            improvementFound = true;
-                            Console.WriteLine("OPTIMIZING MOVE FOUND, resulting schedule with fitness {0} is:", NewFitness);
-                            CurrentSchedule.Print();
-
-                            break;
-                            // keep it
-                        }
-                        else
-                        {
-                            // undo swap
-                            Console.WriteLine("No improvement, undoing..");
-                            SameMachineSwap(J1, J2, CurrentSchedule.Machines[CurrentMachineId], CurrentSchedule);
-                            //undoing should always be feasible
-                        }
-                    }
-                }
-            }
-
-        }*/
-
         /// <summary>
         /// If feasible, will perform a swap and return true. If not feasible will not perform sawp. Does not consider fitness.
         /// </summary>

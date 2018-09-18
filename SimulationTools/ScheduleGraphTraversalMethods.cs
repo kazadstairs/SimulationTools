@@ -63,9 +63,20 @@ namespace SimulationTools
                 PerFormAction(CurrentJob);
 
                 IsVisited[CurrentJob.ID] = true;
+                Console.WriteLine("Visited J{0} with successors:",CurrentJob.ID);
+                foreach (Job J in CurrentJob.Successors)
+                {
+                    Console.Write("{0}  ",J.ID);
+                }
+
 
                 Job MachineSucc = GetMachineSuccessor(CurrentJob);
-                
+                if (MachineSucc != null)
+                {
+                    Console.Write("(Machine arc:) {0}", MachineSucc.ID);
+                }
+                Console.Write(Environment.NewLine);
+
 
                 foreach (Job Child in CurrentJob.Successors)
                 {
@@ -182,6 +193,11 @@ namespace SimulationTools
         public Job GetMachineSuccessor(Job i)
         {
             if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
+            if (MachineArcPointers[i.ID].MachineId == -1)
+            {
+                //Job was assigned and has been unassigned (intentional behaviour).
+                return null;
+            }
             else
             {
                 if (MachineArcPointers[i.ID].ArrayIndex < GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs.Count - 1) // successor exists
@@ -199,6 +215,11 @@ namespace SimulationTools
         public Job GetMachinePredecessor(Job i)
         {
             if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
+            if (MachineArcPointers[i.ID].MachineId == -1)
+            {
+                //Job was assigned and has been unassigned (intentional behaviour).
+                return null;
+            }
             else
             {
                 if (MachineArcPointers[i.ID].ArrayIndex > 0) // predecessor exists

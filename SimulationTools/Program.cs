@@ -26,8 +26,8 @@ namespace SimulationTools
             //
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             
-            //BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
-            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
+            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+           // BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
             INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = false;
+            bool DEBUG = true;
             if (DEBUG)
             {
                        
@@ -46,6 +46,8 @@ namespace SimulationTools
                 //Ins.InstanciateLSTest();
                 string InstanceName = "30j-75r-8m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
+                LocalSearch.MastrolilliHC(TestSched,FitnessFunctions.MeanBasedCmax);
                 
          //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 

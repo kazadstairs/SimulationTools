@@ -92,18 +92,22 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule RemoveAndReinstert(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
+            Console.WriteLine("Yohoho");
             //Qk: CurrentSchedu
             //loop over all jobs:
             int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
             int NjobsTried = 0;
             Job MoveJob;
-            while(NjobsTried < CurrentSchedule.PrecedenceDAG.N)
+            Schedule FullSchedule = new Schedule(CurrentSchedule);
+            double OriginalFitness = FitnessFunction(FullSchedule);
+            
+
+            while (NjobsTried < CurrentSchedule.PrecedenceDAG.N)
             {
+                CurrentSchedule = FullSchedule; // reset the current schedule to the original graph
                 MoveJob = CurrentSchedule.PrecedenceDAG.GetJobById(MoveJobID);
                 Machine CurrentMachine = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
-                Schedule FullSchedule = new Schedule(CurrentSchedule);
-                double OriginalFitness = FitnessFunction(FullSchedule);
-
+                
                 CurrentSchedule.DeleteJobFromMachine(MoveJob);
                 CurrentSchedule.CalcESS();
                 double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
