@@ -95,33 +95,46 @@ namespace SimulationTools
             //Qk: CurrentSchedu
             Machine k = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
             Schedule FullSchedule = new Schedule(CurrentSchedule);
+
             CurrentSchedule.DeleteJobFromMachine(MoveJob);
             CurrentSchedule.CalcESS();
             double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
+
             CurrentSchedule.EstimateCmax();
             CurrentSchedule.CalcLSS();
             double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
-            HashSet<Job> Rk = new HashSet<Job>();
-            HashSet<Job> Lk = new HashSet<Job>();
-            bool jinRk;
-            bool IntersectNonEmpty = false;
-            foreach (Job j in k.AssignedJobs)
+
+            Machine NewMachineCandidate = null; //todo
+            bool CaseB = false; //L,R Intersection Nonempty case
+            foreach (Job X in NewMachineCandidate)
             {
-                jinRk = false;
-                if (FullSchedule.GetEarliestStart(j) + j.MeanProcessingTime > EarliestStartofMoveJob)
+                if (FullSchedule.XIsInL(X,TailTimeofMoveJob))
                 {
-                    // j in Rk
-                    Rk.Add(j);
-                    jinRk = true;
+                    if (!(FullSchedule.XIsInR(X, EarliestStartofMoveJob)))
+                    { continue; }
+                    else
+                    {
+                        //
+                        throw new NotImplementedException(); //todo check for improvement
+                        CaseB = true;
+                    }
                 }
-                if (FullSchedule.EstimatedCmax - FullSchedule.GetLatestStart(j) > CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime)
+                if (FullSchedule.XIsInL(X, TailTimeofMoveJob)) { throw new Exception("Continue is not doing what you think it is"); }
+                if (!CaseB)
                 {
-                    // j in Lk
-                    Lk.Add(j);
-                    if (jinRk) { IntersectNonEmpty = true; }
+                    if (!FullSchedule.XIsInR(X, EarliestStartofMoveJob))
+                    {
+                        //Case A, feasible
+                        throw new NotImplementedException(); //todo check for improvement
+                    }
+                    else
+                    {
+                        // no more feasible solutions exist on this machine.
+                        throw new NotImplementedException(); //todo: Move on to next machine
+
+                    }
                 }
             }
-
 
         }
 

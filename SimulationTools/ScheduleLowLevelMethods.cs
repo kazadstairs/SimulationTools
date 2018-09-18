@@ -42,16 +42,37 @@ namespace SimulationTools
             AssignedMachineID[J.ID] = -1;
         }
 
+
+
         public double GetLatestStart(Job J)
         {
-            Console.WriteLine("WARNING: TODO, check LSS index on assignment matches index on read");
             return LSS[J.ID];
         }
 
         public double GetEarliestStart(Job J)
         {
-            Console.WriteLine("WARNING: TODO, check ESS index on assignment matches index on read");
             return ESS[J.ID];
+        }
+
+        /// <summary>
+        /// Compares job X with the TailTime (Cmax- - LSSv-  - pv) of V IN THE REDUCED GRAPH to determine if X is in L
+        /// </summary>
+        /// <param name="X"></param>
+        /// <param name="_TailTimeofV"></param>
+        /// <returns></returns>
+        public bool XIsInL(Job X, double _TailTimeofV)
+        {
+            return (this.EstimatedCmax - GetLatestStart(X) > _TailTimeofV);
+        }
+        /// <summary>
+        /// Compares job X with the starttime of V IN THE REDUCED GRAPH to determine if X is in R
+        /// </summary>
+        /// <param name="X"></param>
+        /// <param name="_StartTimeofV"></param>
+        /// <returns></returns>
+        public bool XIsInR(Job X, double _StartTimeofV)
+        {
+            return (GetStartTimeOfJob(X) + X.MeanProcessingTime > _StartTimeofV);
         }
 
         public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
