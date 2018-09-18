@@ -27,6 +27,25 @@ namespace SimulationTools
             }
         }
 
+        /// <summary>
+        /// Insert J into machine M at the position of X, move all other jobs backwards by one position.
+        /// </summary>
+        /// <param name="J"></param>
+        /// <param name="M"></param>
+        /// <param name="X"></param>
+        public void AssignJbeforeX(Job J, Machine M, Job X)
+        {
+            int CurrentXindex = GetMachineArcPointer(X).ArrayIndex;
+            M.AssignedJobs.Insert(CurrentXindex, J);
+            GetMachineArcPointer(J).ArrayIndex = CurrentXindex;
+            GetMachineArcPointer(J).MachineId = M.MachineID;
+            M.Load += J.MeanProcessingTime;
+
+            for (int i = CurrentXindex + 1; i < M.AssignedJobs.Count; i++)
+            {
+                GetMachineArcPointer(M.AssignedJobs[i]).ArrayIndex = i;
+            }
+        }
 
         public void DeleteJobFromMachine(Job J)
         {

@@ -90,52 +90,119 @@ namespace SimulationTools
         /// <param name="CurrentSchedule"></param>
         /// <param name="FitnessFunction"></param>
         /// <returns></returns>
-        public static Schedule RemoveAndReinstert(Job MoveJob, Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
+        public static Schedule RemoveAndReinstert(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
             //Qk: CurrentSchedu
-            Machine k = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
-            Schedule FullSchedule = new Schedule(CurrentSchedule);
-
-            CurrentSchedule.DeleteJobFromMachine(MoveJob);
-            CurrentSchedule.CalcESS();
-            double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
-
-            CurrentSchedule.EstimateCmax();
-            CurrentSchedule.CalcLSS();
-            double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
-
-            Machine NewMachineCandidate = null; //todo
-            bool CaseB = false; //L,R Intersection Nonempty case
-            foreach (Job X in NewMachineCandidate)
+            //loop over all jobs:
+            int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
+            int NjobsTried = 0;
+            Job MoveJob;
+            while(NjobsTried < CurrentSchedule.PrecedenceDAG.N)
             {
-                if (FullSchedule.XIsInL(X,TailTimeofMoveJob))
-                {
-                    if (!(FullSchedule.XIsInR(X, EarliestStartofMoveJob)))
-                    { continue; }
-                    else
-                    {
-                        //
-                        throw new NotImplementedException(); //todo check for improvement
-                        CaseB = true;
-                    }
-                }
-                if (FullSchedule.XIsInL(X, TailTimeofMoveJob)) { throw new Exception("Continue is not doing what you think it is"); }
-                if (!CaseB)
-                {
-                    if (!FullSchedule.XIsInR(X, EarliestStartofMoveJob))
-                    {
-                        //Case A, feasible
-                        throw new NotImplementedException(); //todo check for improvement
-                    }
-                    else
-                    {
-                        // no more feasible solutions exist on this machine.
-                        throw new NotImplementedException(); //todo: Move on to next machine
+                MoveJob = CurrentSchedule.PrecedenceDAG.GetJobById(MoveJobID);
+                Machine CurrentMachine = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
+                Schedule FullSchedule = new Schedule(CurrentSchedule);
+                double OriginalFitness = FitnessFunction(FullSchedule);
 
-                    }
-                }
-            }
+                CurrentSchedule.DeleteJobFromMachine(MoveJob);
+                CurrentSchedule.CalcESS();
+                double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
 
+                CurrentSchedule.EstimateCmax();
+                CurrentSchedule.CalcLSS();
+                double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
+
+                Machine NewMachineCandidate = null; //todo
+                bool CaseB = false; //L,R Intersection Nonempty case
+                bool CaseA = false;
+
+                int NMachinesTried = 0;
+                int CandidateMachineID = Distribution.UniformInt(FullSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
+                if (CandidateMachineID >= CurrentMachine.MachineID) { CandidateMachineID++; } // correct for the -1.
+                while (NMachinesTried < FullSchedule.Machines.Count - 1) // -1, because we do not try to reinsert on the same machine.
+                {
+                    Console.WriteLine("Trying to assign J{0} to M{1}", MoveJob.ID, CandidateMachineID);
+                    NewMachineCandidate = FullSchedule.GetMachineByID(CandidateMachineID);
+                    foreach (Job X in NewMachineCandidate.AssignedJobs)
+                    {
+                        if (!CaseA && FullSchedule.XIsInL(X, TailTimeofMoveJob))
+                        {
+                            if (!(FullSchedule.XIsInR(X, EarliestStartofMoveJob)))
+                            { continue; } //try next job
+                            else
+                            {
+                                //
+                                CurrentSchedule.AssignJbeforeX(MoveJob, NewMachineCandidate, X);
+                                double NewFitness = FitnessFunction(CurrentSchedule);
+                                // todo: Speedup with upperbound?
+                                if (NewFitness > OriginalFitness)
+                                {
+                                    // improvement found, return
+                                    return CurrentSchedule;
+                                }
+                                else
+                                {
+                                    // undo assignment
+                                    CurrentSchedule.DeleteJobFromMachine(MoveJob);
+                                }
+                                CaseB = true;
+                                continue; //try next job
+                            }
+                        }
+                        if (FullSchedule.XIsInL(X, TailTimeofMoveJob)) { throw new Exception("Continue is not doing what you think it is"); }
+                        if (CaseB)
+                        {
+                            // CaseB but not returned: No improvement found, move on to next machine
+
+                        }
+                        if (!CaseB)
+                        {
+                            if (!FullSchedule.XIsInR(X, EarliestStartofMoveJob))
+                            {
+                                //Case A, feasible
+                                CaseA = true;
+                                CurrentSchedule.AssignJbeforeX(MoveJob, NewMachineCandidate, X);
+                                double NewFitness = FitnessFunction(CurrentSchedule);
+                                // todo: Speedup with upperbound?
+                                if (NewFitness > OriginalFitness)
+                                {
+                                    // improvement found, return
+                                    return CurrentSchedule;
+                                }
+                                else
+                                {
+                                    // undo assignment
+                                    CurrentSchedule.DeleteJobFromMachine(MoveJob);
+                                }
+                                continue; //try next job
+                            }
+                            else
+                            {
+                                // no more feasible solutions exist on this machine.
+                                Console.WriteLine("Failed, moving on to next machine.");
+                            }
+                        }
+                    }//end of trying all jobs on Machine
+
+                    NMachinesTried++;
+                    CandidateMachineID++;
+                    if (CandidateMachineID == CurrentMachine.MachineID) { CandidateMachineID++; } //Skip the original machine
+                    if (CandidateMachineID > FullSchedule.Machines.Count) { CandidateMachineID = 0; } // Loop round
+
+                }//end of loop over all machines
+
+                //No improvement for this job on any machine.
+                //try the next job
+                Console.WriteLine("No improvement by remove and insert for J{0} on any machine",MoveJobID);
+                NjobsTried++;
+                MoveJobID++;
+                if (MoveJobID > CurrentSchedule.PrecedenceDAG.N) { MoveJobID = 0; }
+            }//end of loop over all jobs
+
+            //no job has any improvement on any machine: Local optimum. Return null to HC function.
+            Console.WriteLine("LOCAL OPTIMUM found");
+            return null;
+            
         }
 
         public static Schedule SameMachineSwap(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
