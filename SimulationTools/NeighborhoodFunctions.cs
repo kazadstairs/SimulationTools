@@ -277,10 +277,12 @@ namespace SimulationTools
 
         static private bool NeighborSwapFeasible(Job LeftJob, Job RightJob, Machine M, Schedule Sched)
         {
-           // Console.WriteLine("Testing J{0},J{1} (M{2}) swap for creating cycles...",LeftJob.ID,RightJob.ID,M.MachineID);
-            int OldJ1Index = Sched.MachineArcPointers[LeftJob.ID].ArrayIndex;
+            // Console.WriteLine("Testing J{0},J{1} (M{2}) swap for creating cycles...",LeftJob.ID,RightJob.ID,M.MachineID);
+            int OldJ1Index = Sched.GetIndexOnMachine(LeftJob);
+         //       Sched.MachineArcPointers[LeftJob.ID].ArrayIndex;
             if (M.AssignedJobs[OldJ1Index] != LeftJob) { throw new Exception("Indexing wrong. J1 index not pointing to J1"); }
-            int OldJ2Index = Sched.MachineArcPointers[RightJob.ID].ArrayIndex;
+            int OldJ2Index = Sched.GetIndexOnMachine(RightJob);
+            //Sched.MachineArcPointers[RightJob.ID].ArrayIndex;
             if (M.AssignedJobs[OldJ2Index] != RightJob) { throw new Exception("Indexing wrong. J2 index not pointing to J2"); }
             if (OldJ1Index + 1 != OldJ2Index) { throw new Exception("Jobs must be neighbours for this swap!"); }
 
@@ -317,13 +319,15 @@ namespace SimulationTools
             Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
             */
 
-            int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
-            int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
+            int OldJ1Index = Sched.GetIndexOnMachine(J1); // Sched.MachineArcPointers[J1.ID].ArrayIndex;
+            int OldJ2Index = Sched.GetIndexOnMachine(J2); // Sched.MachineArcPointers[J2.ID].ArrayIndex;
             M.AssignedJobs[OldJ1Index] = J2;
             M.AssignedJobs[OldJ2Index] = J1;
             //update the pointers:
-            Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
-            Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
+        //    Sched.MachineArcPointers[J1.ID].ArrayIndex = OldJ2Index;
+            Sched.AssignedMachine(J1).SetJobIndex(J1,OldJ2Index);
+            Sched.AssignedMachine(J2).SetJobIndex(J2,OldJ1Index);
+        //    Sched.MachineArcPointers[J2.ID].ArrayIndex = OldJ1Index;
 /*
             Console.WriteLine("Schedule AFTER Swap:");
             Sched.Print();
@@ -343,9 +347,9 @@ namespace SimulationTools
             Console.WriteLine("Fitness BEFORE swap: {0}", FitnessFunctions.MeanBasedCmax(Sched));
             //The bug is that Arrayindex is not the correct position of the job.
             //Give each job a dictionary of all its transitive descendants. Check in almost O(1) if swap is feasible. (MUCH BETTER THAN BFS).
-            int OldJ1Index = Sched.MachineArcPointers[J1.ID].ArrayIndex;
+            int OldJ1Index = Sched.GetIndexOnMachine(J1);// Sched.MachineArcPointers[J1.ID].ArrayIndex;
             if (M.AssignedJobs[OldJ1Index] != J1) { throw new Exception("Indexing wrong. J1 index not pointing to J1"); }
-            int OldJ2Index = Sched.MachineArcPointers[J2.ID].ArrayIndex;
+            int OldJ2Index = Sched.GetIndexOnMachine(J2);// Sched.MachineArcPointers[J2.ID].ArrayIndex;
             if (M.AssignedJobs[OldJ2Index] != J2) { throw new Exception("Indexing wrong. J2 index not pointing to J2"); }
             int LeftIndex = OldJ1Index;
             int RightIndex = OldJ2Index;

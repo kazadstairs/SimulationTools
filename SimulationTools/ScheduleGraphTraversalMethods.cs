@@ -190,19 +190,20 @@ namespace SimulationTools
             }
         }
 
-        public Job GetMachineSuccessor(Job i)
+        public Job GetMachineSuccessor(Job J)
         {
-            if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
-            if (MachineArcPointers[i.ID].MachineId == -1)
-            {
+            if (AssignedMachineID[J.ID] < 0) { throw new Exception("Job not yet assigned to a machine"); }
+           //     MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
+         //   if (MachineArcPointers[i.ID].MachineId == -1)
+         //   {
                 //Job was assigned and has been unassigned (intentional behaviour).
-                return null;
-            }
+         //       return null;
+         //   }
             else
             {
-                if (MachineArcPointers[i.ID].ArrayIndex < GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs.Count - 1) // successor exists
+                if (GetIndexOnMachine(J) < AssignedMachine(J).AssignedJobs.Count - 1)// GetMachineByID(MachineArcPointers[J.ID].MachineId).AssignedJobs.Count - 1) // successor exists
                 {
-                    return GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs[MachineArcPointers[i.ID].ArrayIndex + 1];
+                    return AssignedMachine(J).AssignedJobs[GetIndexOnMachine(J) + 1];
                 }
                 else // Last job on the machine
                 {
@@ -212,19 +213,24 @@ namespace SimulationTools
 
         }
 
-        public Job GetMachinePredecessor(Job i)
+        public int GetIndexOnMachine(Job J)
         {
-            if (MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
-            if (MachineArcPointers[i.ID].MachineId == -1)
+            return GetMachineByID(AssignedMachineID[J.ID]).GetJobIndex(J);
+        }
+
+        public Job GetMachinePredecessor(Job J)
+        {
+            if (AssignedMachineID[J.ID] == 0) { throw new Exception("Job not yet assigned to a machine"); }
+            if (AssignedMachineID[J.ID] == -1)
             {
                 //Job was assigned and has been unassigned (intentional behaviour).
                 return null;
             }
             else
             {
-                if (MachineArcPointers[i.ID].ArrayIndex > 0) // predecessor exists
+                if (GetIndexOnMachine(J) > 0) // predecessor exists
                 {
-                    return GetMachineByID(MachineArcPointers[i.ID].MachineId).AssignedJobs[MachineArcPointers[i.ID].ArrayIndex - 1];
+                    return AssignedMachine(J).AssignedJobs[GetIndexOnMachine(J) - 1];
                 }
                 else // First job on the machine
                 {

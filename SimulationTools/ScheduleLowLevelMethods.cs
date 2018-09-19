@@ -14,16 +14,18 @@ namespace SimulationTools
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
-        private void AssignJobToMachine(Job j, Machine m)
+        private void AssignJobToMachine(Job J, Machine M)
         {
-            if (m.MachineID == 0) { throw new Exception("Machines are 1 based"); }
-            if (GetMachineArcPointer(j) != null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
+            if (M.MachineID == 0) { throw new Exception("Machines are 1 based"); }
+            if (AssignedMachine(J)!= null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
             else
             {
-                m.AssignedJobs.Add(j);
-                MachineArcPointers[j.ID] = new MachineArcPointer(m.MachineID, m.AssignedJobs.Count - 1);
-                m.Load += j.MeanProcessingTime;
-                AssignedMachineID[j.ID] = m.MachineID;
+                M.AssignedJobs.Add(J);
+                //MachineArcPointers[J.ID] = new MachineArcPointer(M.MachineID, M.AssignedJobs.Count - 1);
+
+                M.Load += J.MeanProcessingTime;
+                AssignedMachineID[J.ID] = M.MachineID;
+                if (GetMachineByID(M.MachineID) != M) { throw new Exception("Indexing bug"); }
             }
         }
 
@@ -35,30 +37,38 @@ namespace SimulationTools
         /// <param name="X"></param>
         public void AssignJbeforeX(Job J, Machine M, Job X)
         {
-            int CurrentXindex = GetMachineArcPointer(X).ArrayIndex;
+            int CurrentXindex = GetIndexOnMachine(X);
             M.AssignedJobs.Insert(CurrentXindex, J);
-            GetMachineArcPointer(J).ArrayIndex = CurrentXindex;
-            GetMachineArcPointer(J).MachineId = M.MachineID;
+            M.SetJobIndex(J,CurrentXindex);
+            AssignedMachineID[J.ID] = M.MachineID; // GetMachineArcPointer(J).MachineId = M.MachineID;
             M.Load += J.MeanProcessingTime;
 
             for (int i = CurrentXindex + 1; i < M.AssignedJobs.Count; i++)
             {
-                GetMachineArcPointer(M.AssignedJobs[i]).ArrayIndex = i;
+                M.SetJobIndex(M.AssignedJobs[i],i);
             }
         }
 
         public void DeleteJobFromMachine(Job J)
         {
-            Machine M = Machines[MachineArcPointers[J.ID].MachineId];
-            for (int i = MachineArcPointers[J.ID].ArrayIndex + 1; i < M.AssignedJobs.Count; i++)
-            {
-                MachineArcPointers[M.AssignedJobs[i].ID].ArrayIndex = i - 1;
+            int DEBUG_AssignedMachineID = AssignedMachineID[J.ID];
+            Machine M = AssignedMachine(J);
+            if (DEBUG_AssignedMachineID != M.MachineID) {
+                throw new Exception("Inconsistency in indexing..");
             }
-            M.AssignedJobs.RemoveAt(MachineArcPointers[J.ID].ArrayIndex);
-            MachineArcPointers[J.ID].ArrayIndex = -1;
-            MachineArcPointers[J.ID].MachineId = -1;
+            for (int i = GetIndexOnMachine(J) + 1; i < M.AssignedJobs.Count; i++)
+            {
+                M.SetJobIndex(M.AssignedJobs[i], i - 1); // all indeces set to 1 below their actual position
+            }
+            M.AssignedJobs.RemoveAt(GetIndexOnMachine(J)); // remove J, now all indices are correct again
+            M.SetJobIndex(J,-1);
             M.Load -= J.MeanProcessingTime;
             AssignedMachineID[J.ID] = -1;
+        }
+
+        public Machine AssignedMachine(Job J)
+        {
+            return GetMachineByID(AssignedMachineID[J.ID]);
         }
 
 
@@ -94,7 +104,7 @@ namespace SimulationTools
             return (GetStartTimeOfJob(X) + X.MeanProcessingTime > _StartTimeofV);
         }
 
-        public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
+    /*    public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)
         {
             M.AssignedJobs.Insert(Index, J);
             MachineArcPointers[J.ID].MachineId = M.MachineID;
@@ -103,7 +113,7 @@ namespace SimulationTools
             {
                 MachineArcPointers[M.AssignedJobs[i].ID].ArrayIndex = i;
             }
-        }
+        }*/
 
         /// <summary>
         /// Checks the feasibility of a machine assignment for both machine and prec arcs.
@@ -130,10 +140,10 @@ namespace SimulationTools
             return true;
         }
 
-        private MachineArcPointer GetMachineArcPointer(Job j)
-        {
-            return MachineArcPointers[j.ID];
-        }
+   //     private MachineArcPointer GetMachineArcPointer(Job j)
+    //    {
+     //       return MachineArcPointers[j.ID];
+     //   }
 
         public double GetStartTimeOfJob(Job j)
         {

@@ -22,7 +22,7 @@ namespace SimulationTools
     partial class Schedule
     {
         public DirectedAcyclicGraph PrecedenceDAG;
-        public MachineArcPointer[] MachineArcPointers { get; private set; } // Maps Job Id to machine it is assigned to and its position in the list.
+    //    public MachineArcPointer[] MachineArcPointers { get; private set; } // Maps Job Id to machine it is assigned to and its position in the list.
         public List<Machine> Machines; 
         public ProblemInstance Problem;
         // schedule basics:
@@ -47,7 +47,7 @@ namespace SimulationTools
             Machines = new List<Machine>(prob.NMachines); 
             for (int i = 0; i < prob.NMachines; i++)
             {
-                Machines.Add(new Machine(i + 1));
+                Machines.Add(new Machine(i + 1,PrecedenceDAG.N));
             }
 
             Starttimes = new double[PrecedenceDAG.N];
@@ -59,7 +59,7 @@ namespace SimulationTools
             AssignedMachineID = new int[PrecedenceDAG.N];
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
-            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+          //  MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
 
             RMs = new List<RM>();
         }
@@ -80,7 +80,7 @@ namespace SimulationTools
 
             for (int i = 0; i < Problem.NMachines; i++)
             {
-                Machines.Add(new Machine(i + 1));
+                Machines.Add(new Machine(i + 1,PrecedenceDAG.N));
             }
 
             Starttimes = new double[PrecedenceDAG.N];
@@ -96,7 +96,7 @@ namespace SimulationTools
             }
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
-            MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
+            //MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
 
             //Copy the information:
             Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
@@ -104,8 +104,8 @@ namespace SimulationTools
             SetESS();
             for (int i = 0; i < PrecedenceDAG.N; i++)
             {
-                if (MachineArcPointers[i].ArrayIndex != Original.MachineArcPointers[i].ArrayIndex) { throw new Exception("Copy mistake"); }
-                if (MachineArcPointers[i].MachineId != Original.MachineArcPointers[i].MachineId) { throw new Exception("Copy mistake"); }
+                if (GetIndexOnMachine(PrecedenceDAG.GetJobById(i)) != Original.GetIndexOnMachine(PrecedenceDAG.GetJobById(i))) { throw new Exception("Copy mistake"); }
+                if (AssignedMachine(PrecedenceDAG.GetJobById(i)) != Original.AssignedMachine(PrecedenceDAG.GetJobById(i))) { throw new Exception("Copy mistake"); }
             }
         }
 

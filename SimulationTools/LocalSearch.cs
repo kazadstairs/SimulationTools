@@ -122,7 +122,7 @@ namespace SimulationTools
         /// <param name="Sched">Schedule that is being updated</param>
         /// <returns></returns>
  
-
+/*
         static private bool ToMachineAt(Job J, Machine NewM, int JindexOnM, Schedule Sched)
         {
             // check feasibility:
@@ -137,7 +137,7 @@ namespace SimulationTools
             return true;
 
         }
-
+*/
     }
 
 

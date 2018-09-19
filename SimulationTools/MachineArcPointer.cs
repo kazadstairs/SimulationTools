@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-
+/*
     class MachineArcPointer
     {
         public int MachineId;
@@ -17,5 +17,5 @@ namespace SimulationTools
             MachineId = _MachineId;
             ArrayIndex = _ArrayIndex;
         }
-    }
+    }*/
 }
