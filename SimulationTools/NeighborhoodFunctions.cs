@@ -98,7 +98,7 @@ namespace SimulationTools
             int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
             int NjobsTried = 0;
             Job MoveJob;
-            Schedule FullSchedule = new Schedule(CurrentSchedule);
+            //Schedule FullSchedule = new Schedule(CurrentSchedule);
             double OriginalFitness = FitnessFunction(FullSchedule);
             
 
@@ -107,27 +107,34 @@ namespace SimulationTools
                 CurrentSchedule = FullSchedule; // reset the current schedule to the original graph (doesn´t work?)
                 MoveJob = CurrentSchedule.PrecedenceDAG.GetJobById(MoveJobID);
                 Machine CurrentMachine = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
-                int PositionOfJobBeforeRemoval = CurrentMachine.GetJobIndex(MoveJob);                
-                CurrentSchedule.DeleteJobFromMachine(MoveJob);
-                CurrentSchedule.CalcESS();
-                double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
+                int PositionOfJobBeforeRemoval = CurrentMachine.GetJobIndex(MoveJob);
 
-                CurrentSchedule.EstimateCmax();
-                CurrentSchedule.CalcLSS();
-                double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
+                double EarliestStartofMoveJob = double.MaxValue;
+                double tempStarttime;
+                foreach (Job Pred in MoveJob.Predecessors) //intentionally exclude machine pred. Using Sv- = min(Si- + pi) = min(Si + pi)
+                {
+                    tempStarttime = CurrentSchedule.GetEarliestStart(Pred) + Pred.MeanProcessingTime;
+                    if (tempStarttime < EarliestStartofMoveJob) { EarliestStartofMoveJob = tempStarttime; }
+                }
+                double TailTimeofMoveJob = -double.MaxValue;
+                foreach (Job Suc in MoveJob.Successors)
+                {
+                    tempStarttime = CurrentSchedule.CalcTailTime(Suc) + Suc.MeanProcessingTime;
+                    if (tempStarttime > TailTimeofMoveJob) { TailTimeofMoveJob = tempStarttime; }
+                }
 
                 Machine NewMachineCandidate = null; //todo
 
                 int NMachinesTried = 0;
-                int CandidateMachineID = Distribution.UniformInt(FullSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
+                int CandidateMachineID = Distribution.UniformInt(CurrentSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
                 if (CandidateMachineID >= CurrentMachine.MachineID) { CandidateMachineID++; } // correct for the -1.
-                while (NMachinesTried < FullSchedule.Machines.Count - 1) // -1, because we do not try to reinsert on the same machine.
+                while (NMachinesTried < CurrentSchedule.Machines.Count - 1) // -1, because we do not try to reinsert on the same machine.
                 {
 
                     bool CaseB = false; //L,R Intersection Nonempty case
                     bool CaseA = false;
                     Console.WriteLine("Trying to assign J{0} to M{1}", MoveJob.ID, CandidateMachineID);
-                    NewMachineCandidate = FullSchedule.GetMachineByID(CandidateMachineID);
+                    NewMachineCandidate = CurrentSchedule.GetMachineByID(CandidateMachineID);
                     // foreach (Job X in NewMachineCandidate.AssignedJobs) FOREACH does not allow editting the list. (conflict with line 139: AssignJbeforeX
                     for(int i = 0; i < NewMachineCandidate.AssignedJobs.Count; i++)
                     {
@@ -135,6 +142,7 @@ namespace SimulationTools
                         Console.Write("   | X = J{0}", X.ID);
                         if (!CaseA && FullSchedule.XIsInL(X, TailTimeofMoveJob))
                         {
+                            throw new NotFiniteNumberException("You will have to calculate all Tail times. Maybe idk.. lunch");
                             Console.Write(" in L... ");
                             if (!(FullSchedule.XIsInR(X, EarliestStartofMoveJob)))
                             {

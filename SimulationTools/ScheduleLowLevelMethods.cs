@@ -115,6 +115,11 @@ namespace SimulationTools
             return ESS[J.ID];
         }
 
+        public double CalcTailTime(Job J)
+        {
+            return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
+        }
+
         /// <summary>
         /// Compares job X with the TailTime (Cmax- - LSSv-  - pv) of V IN THE REDUCED GRAPH to determine if X is in L
         /// </summary>
@@ -123,7 +128,7 @@ namespace SimulationTools
         /// <returns></returns>
         public bool XIsInL(Job X, double _TailTimeofV)
         {
-            return (this.EstimatedCmax - GetLatestStart(X) > _TailTimeofV);
+            return (this.CalcTailTime(X) + X.MeanProcessingTime > _TailTimeofV);
         }
         /// <summary>
         /// Compares job X with the starttime of V IN THE REDUCED GRAPH to determine if X is in R
