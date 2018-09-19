@@ -117,6 +117,8 @@ namespace SimulationTools
 
         public double CalcTailTime(Job J)
         {
+            if (GetLatestStart(J) == 0)
+            { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
             return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
         }
 

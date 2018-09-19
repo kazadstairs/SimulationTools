@@ -44,8 +44,9 @@ namespace SimulationTools
 
                 ProblemInstance Ins = new ProblemInstance();
                 //Ins.InstanciateLSTest();
-                string InstanceName = "30j-75r-8m.ms";
-                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                Ins.InstanciatePinedo();
+                //string InstanceName = "30j-75r-8m.ms";
+                //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
                 Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
                 LocalSearch.MastrolilliHC(TestSched,FitnessFunctions.MeanBasedCmax);
                 

@@ -100,6 +100,7 @@ namespace SimulationTools
             Job MoveJob;
             //Schedule FullSchedule = new Schedule(CurrentSchedule);
             double OriginalFitness = FitnessFunction(CurrentSchedule);
+            CurrentSchedule.CalcLSS();
             
 
             while (NjobsTried < CurrentSchedule.PrecedenceDAG.N)
@@ -111,12 +112,12 @@ namespace SimulationTools
                 Schedule ReducedGraph = new Schedule(CurrentSchedule);
                 ReducedGraph.DeleteJobFromMachine(MoveJob);
 
-                double EarliestStartofMoveJob = double.MaxValue;
+                double EarliestStartofMoveJob = -double.MaxValue;
                 double tempStarttime;
-                foreach (Job Pred in MoveJob.Predecessors) //intentionally exclude machine pred. Using Sv- = min(Si- + pi) = min(Si + pi)
+                foreach (Job Pred in MoveJob.Predecessors) //intentionally exclude machine pred. Using Sv- = MAX(Si- + pi) = MAX(Si + pi)
                 {
                     tempStarttime = CurrentSchedule.GetEarliestStart(Pred) + Pred.MeanProcessingTime;
-                    if (tempStarttime < EarliestStartofMoveJob) { EarliestStartofMoveJob = tempStarttime; }
+                    if (tempStarttime > EarliestStartofMoveJob) { EarliestStartofMoveJob = tempStarttime; }
                 }
                 double TailTimeofMoveJob = -double.MaxValue;
                 foreach (Job Suc in MoveJob.Successors) // calculate the maximum tail time
@@ -145,8 +146,10 @@ namespace SimulationTools
                         bool XinR = CurrentSchedule.XIsInR(X, EarliestStartofMoveJob);
                         if (!(XinL ^ XinR)) // Not XOR XinL,XinR
                         {
-                            Console.WriteLine("X " + ((XinL) ? "in L" : "not in L"));
-                            Console.WriteLine("X " + ((XinR) ? "in R" : "not in R"));
+                            Console.WriteLine(string.Format("J{0} ",X.ID) + ((XinL) ? "in L" : "not in L"));
+                            Console.WriteLine(string.Format("J{0} ", X.ID) + ((XinR) ? "in R" : "not in R"));
+                            Console.WriteLine("BEFORE:");
+                            CurrentSchedule.Print();
                             if (MoveAndInsertIsImprovement(CurrentSchedule, MoveJob, EarliestStartofMoveJob, TailTimeofMoveJob, NewMachineCandidate, i, OriginalFitness))
                             {
                                 Console.WriteLine("Improvement. Returning... ");
@@ -157,6 +160,8 @@ namespace SimulationTools
                                 // undo assignment
                                 Console.WriteLine("No Improvement");
                             }
+                            Console.WriteLine("AFTER:");
+                            CurrentSchedule.Print();
                             //feasible
                         }
                         else if (!XinL && XinR)
@@ -176,79 +181,7 @@ namespace SimulationTools
                             Console.WriteLine("X " + ((XinR) ? "in R" : "not in R"));
                             throw new Exception("Go back to Logic 1.01!");
                         }
-
-                        /*
-                        Console.Write("| X = J{0} ", X.ID);
-                        if (!CaseA && CurrentSchedule.XIsInL(X, TailTimeofMoveJob))
-                        {
-                            Console.Write(" in L... ");
-                            if (!(CurrentSchedule.XIsInR(X, EarliestStartofMoveJob)))
-                            {
-                                Console.WriteLine("not in R.|");
-                                continue;
-                            } //try next job
-                            else
-                            {
-                                //
-                                Console.Write("and in R... ");
-
-                                if (MoveAndInsertIsImprovement(CurrentSchedule, MoveJob, EarliestStartofMoveJob, TailTimeofMoveJob, NewMachineCandidate, i, OriginalFitness))
-                                {
-                                    Console.WriteLine("improvement. Returning... |");
-                                    return CurrentSchedule;
-                                }
-                                else
-                                {
-                                    // undo assignment
-                                    Console.WriteLine("no improvement. |");
-                                }
-                                CaseB = true;
-                                continue; //try next job
-                            }
-                        }
-                        else
-                        {
-                            Console.Write("not in L... ");
-                            if (CaseB)
-                            {
-                                // CaseB but not returned: No improvement found, move on to next machine
-
-                            }
-                            if (!CaseB)
-                            {
-                                if (!CurrentSchedule.XIsInR(X, EarliestStartofMoveJob))
-                                {
-                                    Console.Write("and not in R... ");
-                                    //Case A, feasible
-                                    CaseA = true;
-                                    //CurrentSchedule.AssignJbeforeX(MoveJob, NewMachineCandidate, X);
-                                    //double NewFitness = FitnessFunction(CurrentSchedule);
-                                    // todo: Speedup with upperbound?
-                                    if (MoveAndInsertIsImprovement(CurrentSchedule, MoveJob, EarliestStartofMoveJob, TailTimeofMoveJob, NewMachineCandidate, i, OriginalFitness))
-                                    {
-                                        // improvement found, return
-                                        Console.WriteLine("Improvement! |");
-                                        return CurrentSchedule;
-                                    }
-                                    else
-                                    {
-                                        // undo assignment
-                                        Console.WriteLine("no improvement|");
-                                        //CurrentSchedule.DeleteJobFromMachine(MoveJob);
-                                    }
-                                    continue; //try next job
-                                }
-                                else
-                                {
-                                    Console.WriteLine("but in R|");
-                                    // no more feasible solutions exist on this machine.
-                                    Console.WriteLine("No feasible moves left on this machine. Moving on to next machine.");
-                                }
-
-
-                            }
-
-                        }*/
+                        
                     }//end of trying all jobs on Machine
 
                     NMachinesTried++;
@@ -265,7 +198,7 @@ namespace SimulationTools
                 //CurrentSchedule.AssignJatIndex(MoveJob,CurrentMachine,PositionOfJobBeforeRemoval);
                 NjobsTried++;
                 MoveJobID++;
-                if (MoveJobID > CurrentSchedule.PrecedenceDAG.N) { MoveJobID = 0; }
+                if (MoveJobID >= CurrentSchedule.PrecedenceDAG.N) { MoveJobID = 1; } // no point trying to move the dummy job
             }//end of loop over all jobs
 
             //no job has any improvement on any machine: Local optimum. Return null to HC function.
@@ -318,12 +251,14 @@ namespace SimulationTools
                 if (NewFitness > Currentfitness)
                 {
                     //improvement
+                    Console.WriteLine("Improvement FOUND!");
                     return true;
                 }
                 else
                 {
                     //no improvement
                     //undo swap
+                    Console.WriteLine("No improvement, undoing...");
                     ScheduleBeforeMove.DeleteJobFromMachine(MoveJob);
                     ScheduleBeforeMove.AssignJatIndex(MoveJob, OldMachine, OldPosition);
                     return false;
