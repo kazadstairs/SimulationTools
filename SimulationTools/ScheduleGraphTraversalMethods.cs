@@ -8,6 +8,7 @@ namespace SimulationTools
 {
     partial class Schedule
     {
+        /*
         private List<Job> BuildSuccessorList(Job j)
         {
             throw new Exception("What uses this?");
@@ -20,7 +21,7 @@ namespace SimulationTools
                 if (v != MSucc) { Succs.Add(v); }
             }
             return Succs;
-        }
+        }*/
 
         /// <summary>
         /// Performs the Action (Job ==> Void) on each Job in Precedence order (topological order). Considers Machine Predecessors.
@@ -57,25 +58,15 @@ namespace SimulationTools
                 if (IsVisited[CurrentJob.ID])
                 {
                     // Oops, found it twice.
+                    continue;
                 }
                 DebugJobsPopped++;
 
                 PerFormAction(CurrentJob);
 
                 IsVisited[CurrentJob.ID] = true;
-                Console.WriteLine("Visited J{0} with successors:",CurrentJob.ID);
-                foreach (Job J in CurrentJob.Successors)
-                {
-                    Console.Write("{0}  ",J.ID);
-                }
-
 
                 Job MachineSucc = GetMachineSuccessor(CurrentJob);
-                if (MachineSucc != null)
-                {
-                    Console.Write("(Machine arc:) {0}", MachineSucc.ID);
-                }
-                Console.Write(Environment.NewLine);
 
 
                 foreach (Job Child in CurrentJob.Successors)
@@ -84,6 +75,10 @@ namespace SimulationTools
                     Job MachinePred = GetMachinePredecessor(Child);
                     if (nParentsProcessed[Child.ID] == Child.Predecessors.Count && (MachinePred == null || IsVisited[MachinePred.ID]))
                     {
+                        if (MachinePred == null)
+                        {
+                            //Console.WriteLine("Debug note: No machine pred for job {0}", Child.ID);
+                        }
                         if (!IsPushed[Child.ID])
                         {
                             AllPredDone.Push(Child);
@@ -128,9 +123,21 @@ namespace SimulationTools
 
                     this.Print();
 
+                    Console.Write("Missed jobs: ");
+                    for (int j = 0; j < PrecedenceDAG.N; j++)
+                    {
+                        if (!IsVisited[j])
+                        {
+                            Console.Write("{0}, ", j);
+                        }
+
+                    }
+                    Console.Write(Environment.NewLine);
                     throw new Exception("Not all jobs visited!");
                 }
             }
+
+           
         }
 
         /// <summary>
@@ -192,14 +199,7 @@ namespace SimulationTools
 
         public Job GetMachineSuccessor(Job J)
         {
-            if (AssignedMachineID[J.ID] < 0) { throw new Exception("Job not yet assigned to a machine"); }
-           //     MachineArcPointers[i.ID] == null) { throw new Exception("Job not yet assigned to a machine"); }
-         //   if (MachineArcPointers[i.ID].MachineId == -1)
-         //   {
-                //Job was assigned and has been unassigned (intentional behaviour).
-         //       return null;
-         //   }
-            else
+            if (AssignedMachineID[J.ID] < 0) { return null; } //job not yet assigned. May be intentional or may not be.
             {
                 if (GetIndexOnMachine(J) < AssignedMachine(J).AssignedJobs.Count - 1)// GetMachineByID(MachineArcPointers[J.ID].MachineId).AssignedJobs.Count - 1) // successor exists
                 {
@@ -224,6 +224,7 @@ namespace SimulationTools
             if (AssignedMachineID[J.ID] == -1)
             {
                 //Job was assigned and has been unassigned (intentional behaviour).
+                Console.WriteLine("Debug log.. J{0} unassigned, returning null.",J.ID);
                 return null;
             }
             else

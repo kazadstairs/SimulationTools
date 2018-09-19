@@ -92,7 +92,7 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule RemoveAndReinstert(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
-            Console.WriteLine("Yohoho");
+            Console.WriteLine("STARTING REMOVE AND REINSERT");
             //Qk: CurrentSchedu
             //loop over all jobs:
             int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
@@ -104,10 +104,10 @@ namespace SimulationTools
 
             while (NjobsTried < CurrentSchedule.PrecedenceDAG.N)
             {
-                CurrentSchedule = FullSchedule; // reset the current schedule to the original graph
+                CurrentSchedule = FullSchedule; // reset the current schedule to the original graph (doesn´t work?)
                 MoveJob = CurrentSchedule.PrecedenceDAG.GetJobById(MoveJobID);
                 Machine CurrentMachine = CurrentSchedule.GetMachineByJobID(MoveJob.ID);
-                
+                int PositionOfJobBeforeRemoval = CurrentMachine.GetJobIndex(MoveJob);                
                 CurrentSchedule.DeleteJobFromMachine(MoveJob);
                 CurrentSchedule.CalcESS();
                 double EarliestStartofMoveJob = CurrentSchedule.GetEarliestStart(MoveJob);
@@ -117,42 +117,56 @@ namespace SimulationTools
                 double TailTimeofMoveJob = CurrentSchedule.EstimatedCmax - CurrentSchedule.GetLatestStart(MoveJob) - MoveJob.MeanProcessingTime;
 
                 Machine NewMachineCandidate = null; //todo
-                bool CaseB = false; //L,R Intersection Nonempty case
-                bool CaseA = false;
 
                 int NMachinesTried = 0;
                 int CandidateMachineID = Distribution.UniformInt(FullSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
                 if (CandidateMachineID >= CurrentMachine.MachineID) { CandidateMachineID++; } // correct for the -1.
                 while (NMachinesTried < FullSchedule.Machines.Count - 1) // -1, because we do not try to reinsert on the same machine.
                 {
+
+                    bool CaseB = false; //L,R Intersection Nonempty case
+                    bool CaseA = false;
                     Console.WriteLine("Trying to assign J{0} to M{1}", MoveJob.ID, CandidateMachineID);
                     NewMachineCandidate = FullSchedule.GetMachineByID(CandidateMachineID);
-                    foreach (Job X in NewMachineCandidate.AssignedJobs)
+                    // foreach (Job X in NewMachineCandidate.AssignedJobs) FOREACH does not allow editting the list. (conflict with line 139: AssignJbeforeX
+                    for(int i = 0; i < NewMachineCandidate.AssignedJobs.Count; i++)
                     {
+                        Job X = NewMachineCandidate.AssignedJobs[i];
+                        Console.Write("   | X = J{0}", X.ID);
                         if (!CaseA && FullSchedule.XIsInL(X, TailTimeofMoveJob))
                         {
+                            Console.Write(" in L... ");
                             if (!(FullSchedule.XIsInR(X, EarliestStartofMoveJob)))
-                            { continue; } //try next job
+                            {
+                                Console.WriteLine("not in R.|");
+                                continue;
+                            } //try next job
                             else
                             {
                                 //
+                                Console.Write("and in R... ");
                                 CurrentSchedule.AssignJbeforeX(MoveJob, NewMachineCandidate, X);
                                 double NewFitness = FitnessFunction(CurrentSchedule);
                                 // todo: Speedup with upperbound?
                                 if (NewFitness > OriginalFitness)
                                 {
                                     // improvement found, return
+
+                                    Console.WriteLine("improvement. |");
                                     return CurrentSchedule;
                                 }
                                 else
                                 {
                                     // undo assignment
+                                    Console.WriteLine("no improvement, undoing. |");
                                     CurrentSchedule.DeleteJobFromMachine(MoveJob);
                                 }
                                 CaseB = true;
                                 continue; //try next job
                             }
                         }
+
+                        Console.Write("not in L... ");
                         if (FullSchedule.XIsInL(X, TailTimeofMoveJob)) { throw new Exception("Continue is not doing what you think it is"); }
                         if (CaseB)
                         {
@@ -163,6 +177,7 @@ namespace SimulationTools
                         {
                             if (!FullSchedule.XIsInR(X, EarliestStartofMoveJob))
                             {
+                                Console.Write("and not in R... ");
                                 //Case A, feasible
                                 CaseA = true;
                                 CurrentSchedule.AssignJbeforeX(MoveJob, NewMachineCandidate, X);
@@ -171,19 +186,22 @@ namespace SimulationTools
                                 if (NewFitness > OriginalFitness)
                                 {
                                     // improvement found, return
+                                    Console.WriteLine("Improvement! |");
                                     return CurrentSchedule;
                                 }
                                 else
                                 {
                                     // undo assignment
+                                    Console.WriteLine("no improvement, undoing |");
                                     CurrentSchedule.DeleteJobFromMachine(MoveJob);
                                 }
                                 continue; //try next job
                             }
                             else
                             {
+                                Console.WriteLine("but in R|");
                                 // no more feasible solutions exist on this machine.
-                                Console.WriteLine("Failed, moving on to next machine.");
+                                Console.WriteLine("No improveming move on this machine. Moving on to next machine.");
                             }
                         }
                     }//end of trying all jobs on Machine
@@ -191,13 +209,15 @@ namespace SimulationTools
                     NMachinesTried++;
                     CandidateMachineID++;
                     if (CandidateMachineID == CurrentMachine.MachineID) { CandidateMachineID++; } //Skip the original machine
-                    if (CandidateMachineID > FullSchedule.Machines.Count) { CandidateMachineID = 0; } // Loop round
+                    if (CandidateMachineID > FullSchedule.Machines.Count) { CandidateMachineID = 1; } // Loop round, machine ids start at 1
 
                 }//end of loop over all machines
 
                 //No improvement for this job on any machine.
                 //try the next job
-                Console.WriteLine("No improvement by remove and insert for J{0} on any machine",MoveJobID);
+                Console.WriteLine("No improvement by remove and insert for J{0} on any machine. RESETTING",MoveJobID);
+                //reinsert the job on the original machine at its original position.
+                CurrentSchedule.AssignJatIndex(MoveJob,CurrentMachine,PositionOfJobBeforeRemoval);
                 NjobsTried++;
                 MoveJobID++;
                 if (MoveJobID > CurrentSchedule.PrecedenceDAG.N) { MoveJobID = 0; }

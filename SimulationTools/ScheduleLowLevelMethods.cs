@@ -11,6 +11,7 @@ namespace SimulationTools
     {
         private void AssignJobToMachineById(int Jid, int Mid)
         {
+           // Console.WriteLine("Assigning J{0} to M{1}", PrecedenceDAG.GetJobById(Jid).ID, GetMachineByID(Mid).MachineID);
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
@@ -21,6 +22,7 @@ namespace SimulationTools
             else
             {
                 M.AssignedJobs.Add(J);
+                M.SetJobIndex(J, M.AssignedJobs.Count - 1);
                 //MachineArcPointers[J.ID] = new MachineArcPointer(M.MachineID, M.AssignedJobs.Count - 1);
 
                 M.Load += J.MeanProcessingTime;
@@ -37,16 +39,33 @@ namespace SimulationTools
         /// <param name="X"></param>
         public void AssignJbeforeX(Job J, Machine M, Job X)
         {
+            ///Debug:
+            ///
+           // Console.WriteLine("Assing J{0} to M{1} before J{2}...", J.ID, M.MachineID, X.ID);
+           // Console.WriteLine("Before assignment:");
+           // this.Print();
+            ///End of debug
             int CurrentXindex = GetIndexOnMachine(X);
-            M.AssignedJobs.Insert(CurrentXindex, J);
-            M.SetJobIndex(J,CurrentXindex);
+            AssignJatIndex(J, M, CurrentXindex);
+
+            //Debug:
+           // Console.WriteLine("After Assignment:");
+           // this.Print();
+        }
+
+        public void AssignJatIndex(Job J, Machine M, int Index)
+        {
+            Console.WriteLine("Assing J{0} to M{1} at index {2}", J.ID, M.MachineID, Index);
+            M.AssignedJobs.Insert(Index, J);
+            M.SetJobIndex(J, Index);
             AssignedMachineID[J.ID] = M.MachineID; // GetMachineArcPointer(J).MachineId = M.MachineID;
             M.Load += J.MeanProcessingTime;
 
-            for (int i = CurrentXindex + 1; i < M.AssignedJobs.Count; i++)
+            for (int i = Index + 1; i < M.AssignedJobs.Count; i++)
             {
-                M.SetJobIndex(M.AssignedJobs[i],i);
+                M.SetJobIndex(M.AssignedJobs[i], i);
             }
+
         }
 
         public void DeleteJobFromMachine(Job J)
@@ -66,9 +85,22 @@ namespace SimulationTools
             AssignedMachineID[J.ID] = -1;
         }
 
+        /// <summary>
+        /// Return the Machine J is assigned to, or NULL if J is not assigned.
+        /// </summary>
+        /// <param name="J"></param>
+        /// <returns></returns>
         public Machine AssignedMachine(Job J)
         {
-            return GetMachineByID(AssignedMachineID[J.ID]);
+            if (AssignedMachineID[J.ID] <= 0)
+            {
+                //J unasigned.
+                return null;
+            }
+            else
+            {
+                return GetMachineByID(AssignedMachineID[J.ID]);
+            }
         }
 
 

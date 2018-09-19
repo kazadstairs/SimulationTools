@@ -97,15 +97,25 @@ namespace SimulationTools
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
             //MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
-
+            Original.Print();
             //Copy the information:
             Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
+           
+            this.Print();
             CalcESS();
             SetESS();
             for (int i = 0; i < PrecedenceDAG.N; i++)
             {
                 if (GetIndexOnMachine(PrecedenceDAG.GetJobById(i)) != Original.GetIndexOnMachine(PrecedenceDAG.GetJobById(i))) { throw new Exception("Copy mistake"); }
-                if (AssignedMachine(PrecedenceDAG.GetJobById(i)) != Original.AssignedMachine(PrecedenceDAG.GetJobById(i))) { throw new Exception("Copy mistake"); }
+                if (AssignedMachine(PrecedenceDAG.GetJobById(i)).MachineID != Original.AssignedMachine(PrecedenceDAG.GetJobById(i)).MachineID)
+                {
+                    Console.WriteLine("ERROR. Copy mistake with job at index {0}. Testing ForEachJobInPrecOrderDo.. found jobs:",i);
+                    Original.ForeachJobInPrecOrderDo(j => Console.WriteLine(j.ID));
+                    Original.Print();
+                    this.Print();
+                    Console.WriteLine("AssignedMachineID {0} neq to Original AssignedMachineID {1}", AssignedMachine(PrecedenceDAG.GetJobById(i)).MachineID, Original.AssignedMachine(PrecedenceDAG.GetJobById(i)).MachineID);
+                    throw new Exception("Copy mistake");
+                }
             }
         }
 

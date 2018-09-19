@@ -64,17 +64,32 @@ namespace SimulationTools
         {
             Console.WriteLine("*** Schedule information: *** ");
             Console.WriteLine("* Machine info:");
-
+            int AssignedJobsCount = 0;
             foreach (Machine m in Machines)
             {
                 Console.Write("*");
                 Console.Write("  M {0}: ", m.MachineID);
                 foreach (Job j in m.AssignedJobs)
                 {
-                    Console.Write("{0}, ", j.ID);
+
+                    Console.Write("{0} ,", j.ID);
+                    AssignedJobsCount++;
+                   // Console.Write("{0} (index{1}), ", j.ID,m.GetJobIndex(j));
                 }
                 Console.Write(" *");
                 Console.Write(Environment.NewLine);
+            }
+            Console.WriteLine("{0}/{1} jobs assigned",AssignedJobsCount,PrecedenceDAG.N);
+            if (AssignedJobsCount < PrecedenceDAG.N - 1)
+            {
+                foreach (Job J in PrecedenceDAG.Jobs)
+                {
+                    string MachineInfo;
+                    if (AssignedMachine(J) == null) { MachineInfo = "NULL"; }
+                    else { MachineInfo = string.Format("{0}",AssignedMachine(J).MachineID); }
+                    Console.WriteLine("J{0} on M{1}", J.ID, MachineInfo);
+                }
+                throw new Exception("More than 1 job unassigned");
             }
             Console.WriteLine("*****************************");
 
