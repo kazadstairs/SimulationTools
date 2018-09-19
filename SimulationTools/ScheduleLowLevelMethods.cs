@@ -128,6 +128,7 @@ namespace SimulationTools
         /// <returns></returns>
         public bool XIsInL(Job X, double _TailTimeofV)
         {
+            //px + tx > tv
             return (this.CalcTailTime(X) + X.MeanProcessingTime > _TailTimeofV);
         }
         /// <summary>
