@@ -12,7 +12,7 @@
 #              "100j-100r-12m.ms",
 #              "100j-250r-6m.ms",
 #               "100j-250r-12m.ms")
-NRUNS <- "1000"
+NRUNS <- "30"
 
 #RM.ID <- 1
 #QM.ID <- 2
@@ -143,16 +143,20 @@ MakeQuantilePlot <-  function(string.RM,double.upperQ,type)
 {
   if(type == "absolute")
   {
-    show(MakeAbsoluteQuantileDifPlot(string.RM,double.upperQ))
+    p <- MakeAbsoluteQuantileDifPlot(string.RM,double.upperQ)
   }
   else if(type == "relative")
   {
-    show(MakeRelativeQuantileDifPlot(string.RM,double.upperQ))
+    p <- MakeRelativeQuantileDifPlot(string.RM,double.upperQ)
   }
   else
   {
     show("Type parameter unrecognized. Must be absolute or relative")
   }
+  
+  fileName <- paste(PATH,"_",Sys.Date(),"_",string.RM,"_vs_",type,"_",double.upperQ,"_quantile",".pdf",sep="")
+  show(paste("Saving to:",fileName))
+  ggsave(filename = fileName,plot = p)
   
 }
 
@@ -191,7 +195,7 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   
   myDF.plot <- myDF %>% 
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),double.upperQ)/mean(!!QMsym))
+    summarize(RM = mean(!!RMsym),QM = (quantile((!!QMsym),double.upperQ)/mean(!!QMsym))-1)
   
   Xvals <- myDF.plot[,"RM"][[1]]
   Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
@@ -202,7 +206,7 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   p <- p + geom_point() 
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
-  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax / mean(Cmax)"))
+  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax / mean(Cmax) - 1"))
   p <- p + theme(legend.position = "top") + ggtitle(paste(100*double.upperQ,"% quantile / 50% quantile. Spearman = ",Srho$estimate))
   show(p)
   
@@ -221,7 +225,7 @@ MakePlot <- function(string.RM, string.QM)
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
     summarize(RM = mean(!!RMsym),QMsd = sd(!!QMsym),QM=mean(!!QMsym))
   
-  show(names(myDF.plot)[1:15])
+  show(myDF.plot)
   # names(myDF.plot)[3] <- string.RM
   #  names(myDF.plot)[4] <- paste(string.QM,"sd",sep="")
   #  names(myDF.plot)[5] <- string.QM
@@ -229,7 +233,7 @@ MakePlot <- function(string.RM, string.QM)
   Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
   Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
 
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Distribution.Type,shape=Distribution.Type)) 
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.AssignType)) 
   p <- p + geom_point() 
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
@@ -237,7 +241,7 @@ MakePlot <- function(string.RM, string.QM)
   p <- p + xlab(string.RM) + ylab(string.QM)
   p <- p + theme(legend.position = "top") + ggtitle(paste("Spearman = ",Srho$estimate))
   
-  fileName <- paste("C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\",string.RM,"_vs_",string.QM,".pdf",sep="")
+  fileName <- paste(PATH,"_",Sys.Date(),"_",string.RM,"_vs_",string.QM,".pdf",sep="")
   ggsave(filename = fileName,plot = p)
   
   print(p)
@@ -265,10 +269,10 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
   p <- p + geom_errorbar(aes(ymin=QM-QMsd,ymax=QM+QMsd))
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,xRange)) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,yRange))
-  p <- p + xlab(string.RM) + ylab(string.QM)
+  p <- p + xlab(paste("mean ",string.RM)) + ylab(string.QM)
   p <- p + theme(legend.position = "top")
   
-  fileName <- paste("C:\\Users\\3496724\\Source\\Repos\\SimulationTools\\Results\\RMs\\",string.RM,"_vs_",string.QM,".pdf",sep="")
+  fileName <- paste(PATH,"_",Sys.Date(),"_",string.RM,"_vs_",string.QM,".pdf",sep="")
   ggsave(filename = fileName,plot = p)
   
   print(p)
@@ -277,7 +281,7 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
 
 MakeAllPlots <- function()
 {
-  RMs <- c("FS","BFS","UFS","wFS")
+  RMs <- c("FS","wFS","UFS","TS","wTS","BTS","UTS")
   QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality")
   
   for(Rm in RMs)
@@ -286,6 +290,9 @@ MakeAllPlots <- function()
     {
       MakePlot(Rm,Qm)
     }
+    
+    MakeQuantilePlot(Rm,0.95,"absolute")
+    MakeQuantilePlot(Rm,0.95,"relative")
     
   }
   
@@ -307,11 +314,13 @@ MakeAllPlots <- function()
 
 UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt"
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
+PATH <- LAPTOPPATH
 myDF <- read.csv2(LAPTOPPATH)
 myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
+names(myDF)[1:10]
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
-MakeQuantilePlot("TS",0.80,type="absolute")
+MakeQuantilePlot("BTS",0.95,type="absolute")
 
 
 ############################

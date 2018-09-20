@@ -8,47 +8,48 @@ namespace SimulationTools
 {
     static class RobustnessMeasures
     {
-        public static double FS(Schedule S)
+        
+        public static double SoFS(Schedule S)
         {
             return RM(Unweighted, FreeSlackOf, Unmodified,S,0);
         }
 
-        public static double BFS(Schedule S,double fraction)
+        public static double SoBFS(Schedule S,double fraction)
         {
             return RM(Unweighted, FreeSlackOf, Binary, S, fraction);
         }
 
-        public static double UFS(Schedule S,double fraction)
+        public static double SoUFS(Schedule S,double fraction)
         {
             return RM(Unweighted, FreeSlackOf, Upperbound, S, fraction);
         }
 
-        public static double wFS(Schedule S)
+        public static double SowFS(Schedule S)
         {
             return RM(NSucc, FreeSlackOf, Unmodified, S, 0);
         }
 
-        public static double TS(Schedule S)
+        public static double SoTS(Schedule S)
         {
             return RM(Unweighted, TotalSlackOf, Unmodified, S, 0);
         }
 
-        public static double BTS(Schedule S,double fraction)
+        public static double SoBTS(Schedule S,double fraction)
         {
             return RM(Unweighted, TotalSlackOf, Binary, S, fraction);
         }
 
-        public static double UTS(Schedule S, double fraction)
+        public static double SoUTS(Schedule S, double fraction)
         {
             return RM(Unweighted, TotalSlackOf, Upperbound, S, fraction);
         }
 
-        public static double wTS(Schedule S)
+        public static double SowTS(Schedule S)
         {
             return RM(NSucc, TotalSlackOf, Unmodified, S, 0);
         }
 
-        public static double SDR(Schedule S)
+        public static double SoSDR(Schedule S)
         {
             return RM(Unweighted, SDROf, Unmodified, S, 0);
         }
@@ -127,8 +128,18 @@ namespace SimulationTools
             return total;
         }
 
-        // weights:
-        private static double Unweighted(Job j, Schedule S)
+        private static double MeanRM(Func<Job, Schedule, double> Weight, Func<Job, Schedule, double> SlackMeasure, Func<Func<Job, Schedule, double>, Job, Schedule, double, double> Modifier, Schedule S, double fraction)
+        {
+            double total = 0.0;
+            foreach (Job j in S.PrecedenceDAG.Jobs)
+            {
+                total += Weight(j, S) * Modifier(SlackMeasure, j, S, fraction);
+    }
+            return total/S.PrecedenceDAG.N;
+        }
+
+// weights:
+private static double Unweighted(Job j, Schedule S)
         {
             return 1;
         }

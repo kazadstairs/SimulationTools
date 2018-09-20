@@ -260,3 +260,5 @@ paket-files/
 __pycache__/
 *.pyc
 /Results/RMs/allresults.txt
+/Results/RMs
+/Results

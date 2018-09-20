@@ -100,7 +100,9 @@ namespace SimulationTools
             
             //Copy the information:
             Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
-           
+
+            this.AssignmentDescription = Original.AssignmentDescription;
+            this.StartTimeDescription = Original.StartTimeDescription;
             CalcESS();
             SetESS();
             for (int i = 0; i < PrecedenceDAG.N; i++)
@@ -172,6 +174,7 @@ namespace SimulationTools
 
         public void SetESS()
         {
+            this.StartTimeDescription = "ESS";
             foreach (Job j in PrecedenceDAG.Jobs)
             {
                 if (ESS[j.ID] == 0) { //Console.WriteLine("WARNING: ESS is 0 for job {0}. Did you calculate ESS?", j.ID);
@@ -182,6 +185,7 @@ namespace SimulationTools
 
         public void SetLSS()
         {
+            this.StartTimeDescription = "LSS";
             foreach (Job j in PrecedenceDAG.Jobs)
             {
                 if (LSS[j.ID] == 0) {// Console.WriteLine("WARNING: LSS is 0 for job {0}. Did you calculate LSS?", j.ID);

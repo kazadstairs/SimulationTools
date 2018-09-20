@@ -28,31 +28,31 @@ namespace SimulationTools
             switch (Name)
             {
                 case "FS":
-                    Value = RobustnessMeasures.FS(S);
+                    Value = RobustnessMeasures.SoFS(S);
                     break;
                 case "BFS":
-                    Value = RobustnessMeasures.BFS(S, _GAMMA);
+                    Value = RobustnessMeasures.SoBFS(S, _GAMMA);
                     break;
                 case "UFS":
-                    Value = RobustnessMeasures.UFS(S, _GAMMA);
+                    Value = RobustnessMeasures.SoUFS(S, _GAMMA);
                     break;
                 case "wFS":
-                    Value = RobustnessMeasures.wFS(S);
+                    Value = RobustnessMeasures.SowFS(S);
                     break;
                 case "TS":
-                    Value = RobustnessMeasures.TS(S);
+                    Value = RobustnessMeasures.SoTS(S);
                     break;
                 case "BTS":
-                    Value = RobustnessMeasures.BTS(S, _GAMMA);
+                    Value = RobustnessMeasures.SoBTS(S, _GAMMA);
                     break;
                 case "UTS":
-                    Value = RobustnessMeasures.UTS(S, _GAMMA);
+                    Value = RobustnessMeasures.SoUTS(S, _GAMMA);
                     break;
                 case "wTS":
-                    Value = RobustnessMeasures.wTS(S);
+                    Value = RobustnessMeasures.SowTS(S);
                     break;
                 case "SDR":
-                    Value = RobustnessMeasures.SDR(S);
+                    Value = RobustnessMeasures.SoSDR(S);
                     break;
                 default:
                     throw new Exception("RM name not recognized");
@@ -60,6 +60,8 @@ namespace SimulationTools
 
 
             }
+            Console.WriteLine("CALCULATING MEANS instead of sums!");
+            Value = Value / S.PrecedenceDAG.N;
 
         }
     }
