@@ -26,8 +26,8 @@ namespace SimulationTools
             //
             //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
             
-            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
-           // BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
+          //  BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
+            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
             INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = true;
+            bool DEBUG = false;
             if (DEBUG)
             {
                        
