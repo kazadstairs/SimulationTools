@@ -112,19 +112,8 @@ namespace SimulationTools
                 Schedule ReducedGraph = new Schedule(CurrentSchedule);
                 ReducedGraph.DeleteJobFromMachine(MoveJob);
 
-                double EarliestStartofMoveJob = -double.MaxValue;
-                double tempStarttime;
-                foreach (Job Pred in MoveJob.Predecessors) //intentionally exclude machine pred. Using Sv- = MAX(Si- + pi) = MAX(Si + pi)
-                {
-                    tempStarttime = CurrentSchedule.GetEarliestStart(Pred) + Pred.MeanProcessingTime;
-                    if (tempStarttime > EarliestStartofMoveJob) { EarliestStartofMoveJob = tempStarttime; }
-                }
-                double TailTimeofMoveJob = -double.MaxValue;
-                foreach (Job Suc in MoveJob.Successors) // calculate the maximum tail time
-                {
-                    tempStarttime = CurrentSchedule.CalcTailTime(Suc) + Suc.MeanProcessingTime;
-                    if (tempStarttime > TailTimeofMoveJob) { TailTimeofMoveJob = tempStarttime; }
-                }
+                double EarliestStartofMoveJob = CurrentSchedule.CalcStartTimeOfMoveJob(MoveJob);
+                double TailTimeofMoveJob = CurrentSchedule.CalcTailTimeOfMoveJob(MoveJob);
 
                 Machine NewMachineCandidate = null; //todo
 
@@ -141,6 +130,7 @@ namespace SimulationTools
                     // foreach (Job X in NewMachineCandidate.AssignedJobs) FOREACH does not allow editting the list. (conflict with line 139: AssignJbeforeX
                     for(int i = 0; i < NewMachineCandidate.AssignedJobs.Count; i++)
                     {
+                        Console.Write("On M{1} at index {0}... ", i, NewMachineCandidate.MachineID);
                         Job X = NewMachineCandidate.AssignedJobs[i];
                         bool XinL = CurrentSchedule.XIsInL(X, TailTimeofMoveJob);
                         bool XinR = CurrentSchedule.XIsInR(X, EarliestStartofMoveJob);
@@ -148,8 +138,8 @@ namespace SimulationTools
                         {
                             Console.WriteLine(string.Format("J{0} ",X.ID) + ((XinL) ? "in L" : "not in L"));
                             Console.WriteLine(string.Format("J{0} ", X.ID) + ((XinR) ? "in R" : "not in R"));
-                            Console.WriteLine("BEFORE:");
-                            CurrentSchedule.Print();
+                           // Console.WriteLine("BEFORE:");
+                            //CurrentSchedule.Print();
                             if (MoveAndInsertIsImprovement(CurrentSchedule, MoveJob, EarliestStartofMoveJob, TailTimeofMoveJob, NewMachineCandidate, i, OriginalFitness))
                             {
                                 Console.WriteLine("Improvement. Returning... ");
@@ -157,20 +147,21 @@ namespace SimulationTools
                             }
                             else
                             {
-                                // undo assignment
-                                Console.WriteLine("No Improvement");
+                                // undo assignment is done in MoveAndInsertIsImprovement
                             }
-                            Console.WriteLine("AFTER:");
-                            CurrentSchedule.Print();
+                            //Console.WriteLine("AFTER:");
+                            //CurrentSchedule.Print();
                             //feasible
                         }
                         else if (!XinL && XinR)
                         {
+                            Console.WriteLine("Not feasible");
                             break;
                             //no feasible exists
                         }
                         else if (XinL && !XinR)
                         {
+                            Console.WriteLine("Not feasible");
                             continue;
                             //skip
                         }
@@ -236,7 +227,7 @@ namespace SimulationTools
 
             if (-(Sv + MoveJob.MeanProcessingTime + Tv) <= Currentfitness + 0.0000001)
             {
-                // No Improvement.
+                Console.WriteLine("Rejected by bound.. no improvement (no swapping needed)");
                 return false;
             }
             else
@@ -244,10 +235,11 @@ namespace SimulationTools
                 // Do it the hard way.
                 Machine OldMachine = ScheduleBeforeMove.AssignedMachine(MoveJob);
                 int OldPosition = ScheduleBeforeMove.GetIndexOnMachine(MoveJob);
-
                 ScheduleBeforeMove.DeleteJobFromMachine(MoveJob);
                 ScheduleBeforeMove.AssignJatIndex(MoveJob, NewMachine, NewPosIndex);
                 double NewFitness = FitnessFunctions.MeanBasedCmax(ScheduleBeforeMove);
+
+                Console.WriteLine("OldFitness {0}, NewFitness{1}", Currentfitness, NewFitness);
                 if (NewFitness > Currentfitness)
                 {
                     //improvement

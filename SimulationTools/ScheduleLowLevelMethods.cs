@@ -108,17 +108,18 @@ namespace SimulationTools
         public double GetLatestStart(Job J)
         {
             return LSS[J.ID];
-        }
+        }   
 
         public double GetEarliestStart(Job J)
         {
+        //    if (ESS[J.ID] == 0) { Console.WriteLine("Warning, ESS[J{0}] = 0",J.ID); }
             return ESS[J.ID];
         }
 
         public double CalcTailTime(Job J)
         {
-            if (GetLatestStart(J) == 0)
-            { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
+       //     if (GetLatestStart(J) == 0)
+      //      { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
             return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
         }
 
@@ -131,6 +132,7 @@ namespace SimulationTools
         public bool XIsInL(Job X, double _TailTimeofV)
         {
             //px + tx > tv
+          //  Console.WriteLine("Ltest: T{3} + P{3} > Sv- == {0} + {1} > {2}", CalcTailTime(X), X.MeanProcessingTime, _TailTimeofV, X.ID);
             return (this.CalcTailTime(X) + X.MeanProcessingTime > _TailTimeofV);
         }
         /// <summary>
@@ -141,7 +143,40 @@ namespace SimulationTools
         /// <returns></returns>
         public bool XIsInR(Job X, double _StartTimeofV)
         {
+          //  Console.WriteLine("Rtest: S{3} + P{3} > Sv- == {0} + {1} > {2}", GetStartTimeOfJob(X), X.MeanProcessingTime, _StartTimeofV,X.ID);
             return (GetStartTimeOfJob(X) + X.MeanProcessingTime > _StartTimeofV);
+        }
+
+        public double CalcStartTimeOfMoveJob(Job MoveJob)
+        {
+            double EarliestStartofMoveJob = 0.0;
+            double tempStarttime;
+            foreach (Job Pred in MoveJob.Predecessors) //intentionally exclude machine pred. Using Sv- = MAX(Si- + pi) = MAX(Si + pi)
+            {
+          //      Console.WriteLine("Pred: J{0} with S{0} = {1}, P{0} = {2}",Pred.ID,GetEarliestStart(Pred),Pred.MeanProcessingTime);
+                tempStarttime = this.GetEarliestStart(Pred) + Pred.MeanProcessingTime;
+                if (tempStarttime > EarliestStartofMoveJob) { EarliestStartofMoveJob = tempStarttime; }
+            }
+          //  Console.WriteLine("No other preds: Sv- = {0}", EarliestStartofMoveJob);
+            return EarliestStartofMoveJob;
+
+        }
+
+         public double CalcTailTimeOfMoveJob(Job MoveJob)
+        {
+            if (MoveJob.ID == 0)
+            {
+            }
+            double MaxTailTime = 0.0;
+            double tempTailtime;
+            foreach (Job Suc in MoveJob.Successors) //intentionally exclude machine pred. Using Sv- = MAX(Si- + pi) = MAX(Si + pi)
+            {
+           //     Console.WriteLine("Suc: J{0} with T{0} = {1}, P{0} = {2}",Suc.ID,CalcTailTime(Suc),Suc.MeanProcessingTime);
+                tempTailtime = this.CalcTailTime(Suc) + Suc.MeanProcessingTime;
+                if (tempTailtime > MaxTailTime) { MaxTailTime = tempTailtime; }
+            }
+           // Console.WriteLine("No other successors: Tv- = {0}",MaxTailTime);
+            return MaxTailTime;
         }
 
     /*    public void InsertJobOnMachineAtIndex(Job J, Machine M, int Index)

@@ -122,6 +122,7 @@ namespace SimulationTools
                     if (!Cyclesfound) { Console.WriteLine("No cycles found"); }
 
                     this.Print();
+                    this.PrintJobInfo();
 
                     Console.Write("Missed jobs: ");
                     for (int j = 0; j < PrecedenceDAG.N; j++)

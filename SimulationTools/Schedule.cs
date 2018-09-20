@@ -97,11 +97,10 @@ namespace SimulationTools
             LSS = new double[PrecedenceDAG.N];
             ESS = new double[PrecedenceDAG.N];
             //MachineArcPointers = new MachineArcPointer[PrecedenceDAG.N];
-            Original.Print();
+            
             //Copy the information:
             Original.ForeachJobInPrecOrderDo(j => AssignJobToMachineById(j.ID, Original.AssignedMachineID[j.ID]));
            
-            this.Print();
             CalcESS();
             SetESS();
             for (int i = 0; i < PrecedenceDAG.N; i++)

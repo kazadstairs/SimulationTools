@@ -95,5 +95,20 @@ namespace SimulationTools
 
         }
 
+        void PrintJobInfo()
+        {
+            Console.WriteLine("Printing job information........");
+            Console.WriteLine("| id  | px  | sx  | tx  | Sum |");
+            Job CurrentJob;
+            for (int JobID = 0; JobID < PrecedenceDAG.N; JobID++)
+            {
+                CurrentJob = PrecedenceDAG.GetJobById(JobID);
+                Console.WriteLine("| {0,-3} | {1,-3} | {2,-3} | {3,-3} | {4,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob));
+
+            }
+
+
+        }
+
     }
 }
