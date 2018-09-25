@@ -8,7 +8,7 @@ using System.IO;
 
 namespace SimulationTools
 {
-
+//newmachine Git commit test
     class Program
     {
         static public string INSTANCEFOLDER;
