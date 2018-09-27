@@ -8,6 +8,40 @@ namespace SimulationTools
 {
     static class NeighborhoodFunctions
     {
+        public static Schedule VNHC(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
+        {
+           // Console.WriteLine("******************* Starting VNHC ****************" );
+            bool NSSaturated = false;
+            bool RaRSaturated = false;
+            bool ImprovementFound = false;
+            for (int _ = 0; _ < 100; _++)
+            {
+             //   Console.WriteLine("Loopcounter: {0}, NSsaturated: {1}, RaRSaturated:{2}",_,NSSaturated,RaRSaturated);
+                if (NSSaturated && RaRSaturated) { break; }
+                else
+                {
+                    while (NeighborSwaps(CurrentSchedule, FitnessFunction) != null)
+                    {
+                        //keep doing neighbor swaps
+                        ImprovementFound = true;
+                        RaRSaturated = false;
+                    }
+                    NSSaturated = true;
+                    while (RemoveAndReinstert(CurrentSchedule, FitnessFunction) != null)
+                    {
+                        // keep doing remove and reinserts
+                        NSSaturated = false;
+                        ImprovementFound = true;
+                    }
+                    RaRSaturated = true;
+                }
+
+                if (_ == 99) { Console.WriteLine("VNHC loop TIMEOUT"); }
+            }
+            //Console.WriteLine("**************** Finished VNHC ****************");
+            if (ImprovementFound) { return CurrentSchedule; } else return null;
+        }
+
         /// <summary>
         /// Modifies CurrentSchedule. Returns the modified version after the first improvement, or null if no improvement was possible.
         /// Select a random machine, and then a random pair of jobs on that machine. Swap those jobs if feasible. 

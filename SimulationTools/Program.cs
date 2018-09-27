@@ -40,29 +40,21 @@ namespace SimulationTools
             bool DEBUG = true;
             if (DEBUG)
             {
+                ProblemInstance Ins = new ProblemInstance();
+                //Ins.InstanciateLSTest();
+                //Ins.InstanciatePinedo();
+                string InstanceName = "30j-75r-8m.ms";
+                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                //Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
 
-                for (int i = 0; i < 1000; i++)
-                {
-                    ProblemInstance Ins = new ProblemInstance();
-                    //Ins.InstanciateLSTest();
-                    Ins.InstanciatePinedo();
-                    //string InstanceName = "30j-75r-8m.ms";
-                    //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                    Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
-                    //Schedule MLSSched = LocalSearch.MLS(200, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
-                    //MLSSched.CalcLSS();
-                    //MLSSched.MakeHTMLImage("DebugMLS");
-                    TestSched.CalcLSS();
-                    LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);
-                    TestSched.MakeHTMLImage("DebugMastrolilliSched");
-                    if (i % 10 == 0)
-                    {
-                        Console.WriteLine("Completed {0} times withou error",i);
-                    }
-                }
+                Schedule MLSSched = LocalSearch.MLS(2000, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
+                //MLSSched.CalcLSS();
+                //MLSSched.MakeHTMLImage("DebugMLS");
+                MLSSched.CalcLSS();
+                //LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);
+                MLSSched.MakeHTMLImage("DebugMastrolilliMLSfor30J");
                 
-                
-         //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
+        //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 
             }
             else

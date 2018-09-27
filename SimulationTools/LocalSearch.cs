@@ -50,7 +50,7 @@ namespace SimulationTools
 
                 if (CurrentFitness > BestFitness)
                 {
-                    Console.WriteLine("MLS opt updated");
+                    Console.WriteLine("MLS opt updated. New fitness: {0}",CurrentFitness);
                     BestFitness = CurrentFitness;
                     MLSOptimumSched = new Schedule(CurrentSchedule); // create a copy
                 }
