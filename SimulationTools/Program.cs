@@ -41,7 +41,7 @@ namespace SimulationTools
             if (DEBUG)
             {
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     ProblemInstance Ins = new ProblemInstance();
                     //Ins.InstanciateLSTest();
@@ -57,7 +57,6 @@ namespace SimulationTools
                     TestSched.MakeHTMLImage("DebugMastrolilliSched");
                     if (i % 10 == 0)
                     {
-                        Console.Clear();
                         Console.WriteLine("Completed {0} times withou error",i);
                     }
                 }

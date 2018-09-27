@@ -55,7 +55,7 @@ namespace SimulationTools
 
         public void AssignJatIndex(Job J, Machine M, int Index)
         {
-            Console.WriteLine("Assing J{0} to M{1} at index {2}", J.ID, M.MachineID, Index);
+            //Console.WriteLine("Assing J{0} to M{1} at index {2}", J.ID, M.MachineID, Index);
             M.AssignedJobs.Insert(Index, J);
             M.SetJobIndex(J, Index);
             AssignedMachineID[J.ID] = M.MachineID; // GetMachineArcPointer(J).MachineId = M.MachineID;
@@ -129,8 +129,8 @@ namespace SimulationTools
 
         public double CalcTailTime(Job J)
         {
-            if (GetLatestStart(J) == 0)
-            { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
+           // if (GetLatestStart(J) == 0)
+           // { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
             return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
         }
 
@@ -154,7 +154,7 @@ namespace SimulationTools
         /// <returns></returns>
         public bool XIsInR(Job X, double _StartTimeofV)
         {
-            Console.WriteLine("Rtest: S{3} + P{3} > Sv- == {0} + {1} > {2}", GetStartTimeOfJob(X), X.MeanProcessingTime, _StartTimeofV,X.ID);
+            //Console.WriteLine("Rtest: S{3} + P{3} > Sv- == {0} + {1} > {2}", GetStartTimeOfJob(X), X.MeanProcessingTime, _StartTimeofV,X.ID);
             return (GetEarliestStart(X) + X.MeanProcessingTime > _StartTimeofV);
         }
 

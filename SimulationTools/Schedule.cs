@@ -149,8 +149,6 @@ namespace SimulationTools
         public double EstimateCmax()
         {
             //placeholder;
-            //Console.WriteLine("Warning: ESS recalculated, Cmax based on new ESS times");
-            Console.WriteLine("WARNING Estimate Cmax does not calculate LSS values");
             CalcESS();
             SetESS();
             double Maximum = 0;
