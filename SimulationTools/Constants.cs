@@ -20,6 +20,7 @@ namespace SimulationTools
    //                                                "N(p,0.01p)", //Normal, sigma is 0.01*p
                                                    //"N(p,0.1p)",
    //                                                "N(p,0.25p)",
+                                                   "N(p,0.30p)", // Guido´s normal.
                                                    "Exp(p)", //Exponential with mean p
    //                                                "LN(p,0.01p)", //LogNormal distribution, sigma is 0.01p
                                                    //"LN(p,0.1p)", //LogNormal distribution, sigma is 0.1p

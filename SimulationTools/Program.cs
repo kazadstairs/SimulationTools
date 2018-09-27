@@ -37,18 +37,31 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = false;
+            bool DEBUG = true;
             if (DEBUG)
             {
-                       
 
-                ProblemInstance Ins = new ProblemInstance();
-                //Ins.InstanciateLSTest();
-                Ins.InstanciatePinedo();
-                //string InstanceName = "30j-75r-8m.ms";
-                //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
-                Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
-                LocalSearch.MastrolilliHC(TestSched,FitnessFunctions.MeanBasedCmax);
+                for (int i = 0; i < 100; i++)
+                {
+                    ProblemInstance Ins = new ProblemInstance();
+                    //Ins.InstanciateLSTest();
+                    Ins.InstanciatePinedo();
+                    //string InstanceName = "30j-75r-8m.ms";
+                    //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                    Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
+                    //Schedule MLSSched = LocalSearch.MLS(200, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
+                    //MLSSched.CalcLSS();
+                    //MLSSched.MakeHTMLImage("DebugMLS");
+                    TestSched.CalcLSS();
+                    LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);
+                    TestSched.MakeHTMLImage("DebugMastrolilliSched");
+                    if (i % 10 == 0)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Completed {0} times withou error",i);
+                    }
+                }
+                
                 
          //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 

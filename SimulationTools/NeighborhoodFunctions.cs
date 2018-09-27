@@ -92,7 +92,9 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule RemoveAndReinstert(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
-            Console.WriteLine("STARTING REMOVE AND REINSERT");
+            Console.WriteLine("****************** STARTING REMOVE AND REINSERT ********************* ");
+            CurrentSchedule.Print();
+            CurrentSchedule.PrintJobInfo();
             //Qk: CurrentSchedu
             //loop over all jobs:
             int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
@@ -142,7 +144,14 @@ namespace SimulationTools
                             //CurrentSchedule.Print();
                             if (MoveAndInsertIsImprovement(CurrentSchedule, MoveJob, EarliestStartofMoveJob, TailTimeofMoveJob, NewMachineCandidate, i, OriginalFitness))
                             {
-                                Console.WriteLine("Improvement. Returning... ");
+                                Console.WriteLine("IMPROVEMENT.. Returning new schedule:");
+                                Console.WriteLine();
+                                Console.WriteLine();
+
+                                CurrentSchedule.Print();
+                                CurrentSchedule.PrintJobInfo();
+
+                                Console.WriteLine("****************** FINISHED REMOVE AND REINSERT ********************* ");
                                 return CurrentSchedule;
                             }
                             else
@@ -194,6 +203,7 @@ namespace SimulationTools
 
             //no job has any improvement on any machine: Local optimum. Return null to HC function.
             Console.WriteLine("LOCAL OPTIMUM found");
+            Console.WriteLine("****************** FINISHED REMOVE AND REINSERT ********************* ");
             return null;
             
         }
@@ -250,9 +260,11 @@ namespace SimulationTools
                 {
                     //no improvement
                     //undo swap
+                    //reset start times.
                     Console.WriteLine("No improvement, undoing...");
                     ScheduleBeforeMove.DeleteJobFromMachine(MoveJob);
                     ScheduleBeforeMove.AssignJatIndex(MoveJob, OldMachine, OldPosition);
+                    ScheduleBeforeMove.EstimateCmax();
                     return false;
                 }
 

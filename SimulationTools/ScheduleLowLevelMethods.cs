@@ -103,6 +103,17 @@ namespace SimulationTools
             }
         }
 
+        //Test if J is on a critical path.
+        public bool IsCritical(Job J)
+        {
+            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= EstimatedCmax - 0.001);
+        }
+
+        public bool IsAlmostCritical(Job J,double relativeIncreaseAllowed)
+        {
+            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= EstimatedCmax * (1 - relativeIncreaseAllowed));
+        }
+
 
 
         public double GetLatestStart(Job J)
@@ -118,8 +129,8 @@ namespace SimulationTools
 
         public double CalcTailTime(Job J)
         {
-       //     if (GetLatestStart(J) == 0)
-      //      { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
+            if (GetLatestStart(J) == 0)
+            { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
             return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
         }
 
@@ -143,8 +154,8 @@ namespace SimulationTools
         /// <returns></returns>
         public bool XIsInR(Job X, double _StartTimeofV)
         {
-          //  Console.WriteLine("Rtest: S{3} + P{3} > Sv- == {0} + {1} > {2}", GetStartTimeOfJob(X), X.MeanProcessingTime, _StartTimeofV,X.ID);
-            return (GetStartTimeOfJob(X) + X.MeanProcessingTime > _StartTimeofV);
+            Console.WriteLine("Rtest: S{3} + P{3} > Sv- == {0} + {1} > {2}", GetStartTimeOfJob(X), X.MeanProcessingTime, _StartTimeofV,X.ID);
+            return (GetEarliestStart(X) + X.MeanProcessingTime > _StartTimeofV);
         }
 
         public double CalcStartTimeOfMoveJob(Job MoveJob)

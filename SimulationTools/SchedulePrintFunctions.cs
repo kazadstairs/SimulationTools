@@ -22,19 +22,23 @@ namespace SimulationTools
                 // css part:
                 int scale = 15;
                 double top, left, width;
+                string background_color;
                 foreach (Job j in PrecedenceDAG.Jobs)
                 {
                     top = 50 + 50 * GetMachineByJobID(j.ID).MachineID;
                     left = Starttimes[j.ID] * scale;
                     width = j.MeanProcessingTime * scale;
+                    if (IsCritical(j)) { background_color = "#ff5500"; }
+                    else if (IsAlmostCritical(j, 0.1)) { background_color = "#ffff99"; }
+                    else { background_color = "#d9ffb3"; }
                     file.WriteLine("div.j{0}", j.ID);
                     file.WriteLine("{position: fixed;");
-                    file.WriteLine("top: {1}px; left: {2}px; width: {3}px;", j.ID, top, left, width);
+                    file.WriteLine("top: {1}px; left: {2}px; width: {3}px;  Background-color:{4};", j.ID, top, left, width,background_color);
                     file.WriteLine(@"height: 20px; border: 1px solid #73AD21; text-align: center; vertical-align: middle;}");
                 }
                 //CmaxBlok:
                 top = 50;
-                EstimateCmax();
+                CalcLSS();
                 left = EstimatedCmax * scale;
                 width = 2 * scale;
                 double height = 50 * Machines.Count + 100;
@@ -95,15 +99,15 @@ namespace SimulationTools
 
         }
 
-        void PrintJobInfo()
+        public void PrintJobInfo()
         {
             Console.WriteLine("Printing job information........");
-            Console.WriteLine("| id  | px  | sx  | tx  | Sum |");
+            Console.WriteLine("| id  | px  | sx  | tx  | Sum | Estimated Cmax (check) |");
             Job CurrentJob;
             for (int JobID = 0; JobID < PrecedenceDAG.N; JobID++)
             {
                 CurrentJob = PrecedenceDAG.GetJobById(JobID);
-                Console.WriteLine("| {0,-3} | {1,-3} | {2,-3} | {3,-3} | {4,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob));
+                Console.WriteLine("| {0,-3} | {1,-3} | {2,-3} | {3,-3} | {4,-3} | {5,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob),EstimatedCmax);
 
             }
 

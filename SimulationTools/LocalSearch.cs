@@ -102,13 +102,15 @@ namespace SimulationTools
                 {
                     // Continue Search from the better schedule
                     CurrentSchedule = ImprovedSchedule;
+                    //DEBUG: I Calc LSS here to get all the ESS and LSS times set up correctly.
+                    Console.WriteLine("IMPROVEMENT FOUND!");
+                    CurrentSchedule.CalcLSS();
                     Debug_numberofLocalOptima++;
                     LocalOptimum = false;
                 }
-                Debug_numberofLocalOptima++;
                 
             }
-       //     Console.WriteLine("...Found LO with fitness {0} in {1} improvements", FitnessFunction(CurrentSchedule), Debug_numberofLocalOptima);
+            Console.WriteLine("############### ...Found LO with fitness {0} in {1} improvements", FitnessFunction(CurrentSchedule), Debug_numberofLocalOptima);
             return CurrentSchedule;
         }
 

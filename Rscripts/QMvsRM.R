@@ -202,7 +202,8 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
   
   
-  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.StartTimeType)) 
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.StartTimeType,label=Instance.Name)) 
+  #p <- p + geom_text(aes(label=Instance.Name),hjust=0, vjust=0)
   p <- p + geom_point() 
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
@@ -211,6 +212,35 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   show(p)
   
 }
+
+MakeRelativeSDPlot <- function(string.RM)
+{
+  library(dplyr)
+  RMsym <- rlang::sym(string.RM)
+  string.QM <- "Cmax"
+  QMsym <- rlang::sym(string.QM)
+  
+  myDF.plot <- myDF %>% 
+    group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
+    summarize(RM = mean(!!RMsym),QM = (sd(!!QMsym)/mean(!!QMsym)))
+  
+  View(myDF.plot)
+  Xvals <- myDF.plot[,"RM"][[1]]
+  Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
+  Srho <- cor.test(x=Xvals,y=Yvals,method = "spearman")
+  
+  
+  p <- ggplot(myDF.plot,aes(x=RM,y=QM,colour=Schedule.AssignType,shape=Schedule.StartTimeType,label=Instance.Name)) 
+  #p <- p + geom_text(aes(label=Instance.Name),hjust=0, vjust=0)
+  p <- p + geom_point() 
+  p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
+  p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
+  p <- p + xlab(string.RM) + ylab("sd(Cmax)/Cmax")
+  p <- p + theme(legend.position = "top") + ggtitle(paste("sd(Cmax)/Cmax. Spearman = ",Srho$estimate))
+  show(p)
+  
+}
+
 
 MakePlot <- function(string.RM, string.QM)
 {
@@ -332,13 +362,14 @@ myDF.plot <- myDF %>%
 PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
 {
   library(reshape)
-  myDF <- read.csv2("C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.txt")
+  myDF <- read.csv2(PATH)
   myDF <- subset(myDF,grepl(string.Instance,Instance.Name))
   myDF <- subset(myDF,grepl(string.AssignType,Schedule.AssignType))
   melted.myDF <- melt(myDF,id=names(myDF)[1:12])
   my.melted.DF.plot <- melted.myDF %>% 
     group_by(Instance.Name,Schedule.AssignType,Schedule.StartTimeType,variable) %>% 
     summarize(mval = mean(value),sdval = sd(value))
+  View(my.melted.DF.plot)
   melted2.df.plot <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))
   xval <- subset(my.melted.DF.plot,grepl("Scheduled", variable, fixed=TRUE))$mval
   yval <- subset(my.melted.DF.plot,grepl("RealisedStartTime", variable, fixed=TRUE))$mval - xval
@@ -346,7 +377,10 @@ PlotSchedStartvsDelay <- function(string.Instance,string.AssignType)
   df.plot <- data.frame(melted2.df.plot,yval,yvalsd)
   p <- ggplot(df.plot,aes(x=mval,y=yval,group=interaction(Schedule.AssignType,Instance.Name),colour=Schedule.AssignType,shape=Instance.Name))
   p + geom_point()
-  
+  p <- p + geom_errorbar(aes(ymin=yval-yvalsd,ymax=yval+yvalsd))
+  p <- p + xlab(paste("Jobstarttime")) + ylab("Delay")
+  p <- p + theme(legend.position = "top")
+  show(p)
 }
    
 
