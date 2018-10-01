@@ -129,6 +129,7 @@ namespace SimulationTools
         /// <returns></returns>
         private static void EstimateStartTimeDistribution(Job J,Schedule Sched, Distribution [,] S, double StandardDeviationAssumption)
         {
+            throw new Exception("Todo: 1) Implement missing case (see below) 2) Implement Rj dependencies");
             // as a starting point, Starttime = completion of machine predecessor.
             // todo: ADD RELEASE DATES TO STARTIME POINT?
             if (Sched.GetMachinePredecessor(J) == null)
