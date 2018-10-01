@@ -36,7 +36,9 @@ namespace SimulationTools
                                            "BTS", // Sum of Binary Total Slack
                                            "UTS", // Sum of Upperbound Total Slack
                                            "wTS", // NSucc weigthed total Slack
-                                           "SDR" // Sum of Slack Duration Ratio (TS/pj)
+                                           "SDR", // Sum of Slack Duration Ratio (TS/pj)
+                                           "DetCmax", //Deterministic Cmax
+                                           "NormalApproxCmax" // Approximation of expected makespan based on assumption that jobs are normally distributed
         };
         public static string[] QMNames = { "Cmax",
                                          //  "90%ProjectCertainty", DONE in R

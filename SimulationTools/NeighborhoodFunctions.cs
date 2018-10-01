@@ -51,7 +51,7 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule NeighborSwaps(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
-            int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
+            int StartMachineId = DistributionFunctions.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
             int CurrentMachineId = StartMachineId;
             int NMachinesTried = 0;
             // bool improvementFound = false;
@@ -71,7 +71,7 @@ namespace SimulationTools
                 }
                 else
                 {
-                    int StartJobIndex = Distribution.UniformInt(CurrentMachine.AssignedJobs.Count - 1); // -1 because the last job cannot go right
+                    int StartJobIndex = DistributionFunctions.UniformInt(CurrentMachine.AssignedJobs.Count - 1); // -1 because the last job cannot go right
                     int NJobstried = 0;
                     int CurrentJobIndex = StartJobIndex;
                     while (NJobstried < CurrentMachine.AssignedJobs.Count - 1)
@@ -129,7 +129,7 @@ namespace SimulationTools
         {
             //Qk: CurrentSchedu
             //loop over all jobs:
-            int MoveJobID = Distribution.UniformInt(CurrentSchedule.PrecedenceDAG.N);
+            int MoveJobID = DistributionFunctions.UniformInt(CurrentSchedule.PrecedenceDAG.N);
             int NjobsTried = 0;
             Job MoveJob;
             //Schedule FullSchedule = new Schedule(CurrentSchedule);
@@ -152,7 +152,7 @@ namespace SimulationTools
                 Machine NewMachineCandidate = null; //todo
 
                 int NMachinesTried = 0;
-                int CandidateMachineID = Distribution.UniformInt(CurrentSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
+                int CandidateMachineID = DistributionFunctions.UniformInt(CurrentSchedule.Machines.Count - 1) + 1; //-1 because we do not want to select the current machine, +1 because machines are 1 based
                 if (CandidateMachineID >= CurrentMachine.MachineID) { CandidateMachineID++; } // correct for the -1.
                 while (NMachinesTried < CurrentSchedule.Machines.Count - 1) // -1, because we do not try to reinsert on the same machine.
                 {

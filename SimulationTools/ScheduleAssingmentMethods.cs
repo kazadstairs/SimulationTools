@@ -177,7 +177,7 @@ namespace SimulationTools
 
         private void RandomMachineAssignment(Job CurrentJob)
         {
-            int candidateMachineId = Distribution.UniformInt(Machines.Count) + 1; // + 1 because machine ids are 1 based
+            int candidateMachineId = DistributionFunctions.UniformInt(Machines.Count) + 1; // + 1 because machine ids are 1 based
             Machine candidateMachine = GetMachineByID(candidateMachineId);
 
             if (!IsFeasibleAssignment(CurrentJob, candidateMachine)) { throw new Exception("Unfeasible assignment"); }

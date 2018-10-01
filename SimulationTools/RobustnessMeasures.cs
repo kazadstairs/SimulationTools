@@ -54,6 +54,23 @@ namespace SimulationTools
             return RM(Unweighted, SDROf, Unmodified, S, 0);
         }
 
+        public static double NormalBasedEstimatedCmax(Schedule Sched, double StdDevAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
+        {
+            var S = new Distribution[Sched.PrecedenceDAG.N, Sched.PrecedenceDAG.N]; //all starttimes as distributions (Mean,Var) pairs. S_j^k = S[j,k]
+            Sched.ForeachJobInPrecOrderDo(J => EstimateStartTimeDistribution(J, Sched, S,StdDevAssumption));
+            double Cmax = 0;
+            double Cj = 0;
+            foreach (Job J in Sched.PrecedenceDAG.Jobs)
+            {
+                Cj = GetStartTimeDistribution(J, Sched, S).Mean + J.MeanProcessingTime;
+                if (Cj > Cmax)
+                {
+                    Cmax = Cj;
+                }
+            }
+            return Cmax;
+        }
+
 
         // Slack Measures: *********************************
         /// <summary>
@@ -102,6 +119,83 @@ namespace SimulationTools
             S.CalcLSS();
             return S.GetLatestStart(j) - S.GetEarliestStart(j);
         }
+        /// <summary>
+        /// Assume we do not know the distribution of the jobs. As an estimate, use Normal distribution and StdDev = 0.1 meanproctime.
+        /// </summary>
+        /// <param name="J"></param>
+        /// <param name="Sched"></param>
+        /// <param name="S"></param>
+        /// <param name="StandardDeviationAssumption">How large the standard deviation is assumed to be, as a factor of the mean processing time.</param>
+        /// <returns></returns>
+        private static void EstimateStartTimeDistribution(Job J,Schedule Sched, Distribution [,] S, double StandardDeviationAssumption)
+        {
+            // as a starting point, Starttime = completion of machine predecessor.
+            // todo: ADD RELEASE DATES TO STARTIME POINT?
+            if (Sched.GetMachinePredecessor(J) == null)
+            {
+                S[J.ID, 0] = new ZeroDistribution();
+            }
+            else
+            {
+                Job Pred = Sched.GetMachinePredecessor(J);
+                Distribution PredCompletion = DistributionFunctions.NormalAddition( S[Pred.ID, Pred.Predecessors.Count], new ConstantAsDistribution(Pred.MeanProcessingTime));
+                S[J.ID, 0] = PredCompletion;
+            }
+            // IN A SPECIFIC ORDER: First all predecessors on the same machine.
+            foreach (Job Predecessor in J.Predecessors)
+            {
+                if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
+                {
+                    // both jobs on the same machine
+                    if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID)
+                    {
+                        //pred is machine pred
+                        throw new Exception("Does not occur in my implementation");
+                    }
+                    else
+                    {
+                        //same machine, but not direct machine predecessor.
+                        //X = S_i, Y = S^k-1_j so that delta = Y-X = sum_i to mp(j) P
+                        Distribution delta = new Distribution();
+                        Job CurrentJob = Predecessor;
+                        while (CurrentJob != J)
+                        {
+                            delta.Mean += CurrentJob.MeanProcessingTime;
+                            delta.Variation += (StandardDeviationAssumption * CurrentJob.MeanProcessingTime) * (StandardDeviationAssumption * CurrentJob.MeanProcessingTime);
+                        }
+                        S[J.ID, Predecessor.ID] = DistributionFunctions.MaximumGivenDelta(
+                                                    DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
+                                                    S[J.ID, Predecessor.ID-1], //S_j^k-1
+                                                    delta);
+                    }
+                }
+                else
+                {
+                    // job on a different machine, handle in next loop.
+                }
+            }
+            // IN A SPECIFIC ORDER: next all predecessors on a different machine
+            foreach (Job Predecessor in J.Predecessors)
+            {
+                if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
+                {
+                    // both jobs on the same machine: done in last loop, skip.
+                }
+                else
+                {
+                    S[J.ID,Predecessor.ID] = DistributionFunctions.Maximum(
+                                                    DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
+                                                    S[J.ID, Predecessor.ID - 1], //S_j^k-1
+                                                    true);
+                }
+            }
+        }
+
+        private static Distribution GetStartTimeDistribution(Job J, Schedule Sched, Distribution[,] S)
+        {
+            return S[J.ID, J.Predecessors.Count];
+        }
+        
 
         private static double SDROf(Job j, Schedule S)
         {

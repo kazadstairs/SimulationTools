@@ -54,6 +54,9 @@ namespace SimulationTools
                 case "SDR":
                     Value = RobustnessMeasures.SoSDR(S);
                     break;
+                case "DetCmax":
+                    Value = S.EstimatedCmax;
+                    break;
                 default:
                     throw new Exception("RM name not recognized");
                     break;
