@@ -142,6 +142,7 @@ namespace SimulationTools
                 S[J.ID, 0] = PredCompletion;
             }
             // IN A SPECIFIC ORDER: First all predecessors on the same machine.
+            int _k = 1;
             foreach (Job Predecessor in J.Predecessors)
             {
                 if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
@@ -165,7 +166,7 @@ namespace SimulationTools
                         }
                         S[J.ID, Predecessor.ID] = DistributionFunctions.MaximumGivenDelta(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
-                                                    S[J.ID, Predecessor.ID-1], //S_j^k-1
+                                                    S[J.ID, _k-1], //S_j^k-1
                                                     delta);
                     }
                 }
@@ -173,8 +174,10 @@ namespace SimulationTools
                 {
                     // job on a different machine, handle in next loop.
                 }
+                _k++;
             }
             // IN A SPECIFIC ORDER: next all predecessors on a different machine
+            _k = 1;
             foreach (Job Predecessor in J.Predecessors)
             {
                 if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
@@ -185,9 +188,10 @@ namespace SimulationTools
                 {
                     S[J.ID,Predecessor.ID] = DistributionFunctions.Maximum(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
-                                                    S[J.ID, Predecessor.ID - 1], //S_j^k-1
+                                                    S[J.ID, _k - 1], //S_j^k-1
                                                     true);
                 }
+                _k++;
             }
         }
 

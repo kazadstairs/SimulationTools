@@ -57,6 +57,9 @@ namespace SimulationTools
                 case "DetCmax":
                     Value = S.EstimatedCmax;
                     break;
+                case "NormalApproxCmax":
+                    Value = RobustnessMeasures.NormalBasedEstimatedCmax(S,0.3);
+                    break;
                 default:
                     throw new Exception("RM name not recognized");
                     break;

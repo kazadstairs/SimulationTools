@@ -33,5 +33,6 @@ namespace SimulationTools
             Predecessors = new List<Job>();
             //Dist = new Distribution();
         }
+        
     }      
 }

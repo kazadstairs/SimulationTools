@@ -45,15 +45,33 @@ namespace SimulationTools
                 //Ins.InstanciatePinedo();
                 string InstanceName = "30j-15r-4m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+
+                List<Schedule> SchedulesToSimulate = new List<Schedule>();
+                SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeHTMLImage("MLS10");
+                SchedulesToSimulate.Add(LocalSearch.MLS(40, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeHTMLImage("MLS40");
+
+
+                foreach (Schedule currentSched in SchedulesToSimulate)
+                {
+                    currentSched.CalcRMs();
+                    foreach (string distribution in Constants.DISTRIBUTION)
+                    {
+                        new Simulation(Constants.NRuns, currentSched, distribution).Perform();
+                    }
+
+                }
+
                 //Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
 
-                Schedule MLSSched = LocalSearch.MLS(40, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
+                //Schedule MLSSched = LocalSearch.MLS(40, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
                 //MLSSched.CalcLSS();
                 //MLSSched.MakeHTMLImage("DebugMLS");
                 //LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);
                 
-                MLSSched.PrintJobInfo();
-                MLSSched.MakeHTMLImage("DebugMastrolilliMLSfor30J");
+                //MLSSched.PrintJobInfo();
+               // MLSSched.MakeHTMLImage("DebugMastrolilliMLSfor30J");
                 
         //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
 
