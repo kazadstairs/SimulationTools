@@ -12,8 +12,11 @@ namespace SimulationTools
         public double Variation;
     }
 
-    class ZeroDistribution : Distribution { public ZeroDistribution() { Mean = 0; Variation = 0; } }
+    class ZeroDistribution : Distribution
+    {
+        public ZeroDistribution() { Mean = 0.0; Variation = 0.0; }
+    }
 
-    class ConstantAsDistribution : Distribution { public ConstantAsDistribution(double Constant) { Mean = Constant; Variation = 0; } }
+    class ConstantAsDistribution : Distribution { public ConstantAsDistribution(double Constant) { Mean = Constant; Variation = 0.0; } }
 
 }

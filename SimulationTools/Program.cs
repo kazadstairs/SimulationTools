@@ -48,12 +48,12 @@ namespace SimulationTools
 
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
                 SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
-                SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeHTMLImage("MLS10");
 
 
                 foreach (Schedule currentSched in SchedulesToSimulate)
                 {
                     currentSched.CalcRMs();
+                    currentSched.MakeHTMLImage("DEBUG MLS");
                     foreach (string distribution in Constants.DISTRIBUTION)
                     {
                         new Simulation(Constants.NRuns, currentSched, distribution).Perform();

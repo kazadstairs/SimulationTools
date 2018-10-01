@@ -55,7 +55,7 @@ namespace SimulationTools
                     Value = RobustnessMeasures.SoSDR(S);
                     break;
                 case "DetCmax":
-                    Value = S.EstimatedCmax;
+                    Value = S.EstimateCmax();
                     break;
                 case "NormalApproxCmax":
                     Value = RobustnessMeasures.NormalBasedEstimatedCmax(S,0.3);

@@ -53,6 +53,10 @@ namespace SimulationTools
                 file.WriteLine(@"</style></head><body>");
                 file.WriteLine(@"<div>");
                 file.WriteLine(title);
+                foreach (RM rm in RMs)
+                {
+                    file.Write("| RM: {0} = {1} |", rm.Name, rm.Value);
+                }
                 file.WriteLine(@"</div>");
                 foreach (Job j in PrecedenceDAG.Jobs)
                 {

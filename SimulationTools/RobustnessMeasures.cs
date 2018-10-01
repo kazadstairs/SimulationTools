@@ -56,6 +56,7 @@ namespace SimulationTools
 
         public static double NormalBasedEstimatedCmax(Schedule Sched, double StdDevAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
         {
+            Console.WriteLine("Comparing Normalbased Estimated Completion times");
             var S = new Distribution[Sched.PrecedenceDAG.N, Sched.PrecedenceDAG.N]; //all starttimes as distributions (Mean,Var) pairs. S_j^k = S[j,k]
             Sched.ForeachJobInPrecOrderDo(J => EstimateStartTimeDistribution(J, Sched, S,StdDevAssumption));
             double Cmax = 0;
@@ -63,11 +64,13 @@ namespace SimulationTools
             foreach (Job J in Sched.PrecedenceDAG.Jobs)
             {
                 Cj = GetStartTimeDistribution(J, Sched, S).Mean + J.MeanProcessingTime;
+                Console.WriteLine("C{0} = {1}",J.ID,Cj);
                 if (Cj > Cmax)
                 {
                     Cmax = Cj;
                 }
             }
+            Console.WriteLine("E(Cmax) = {0}", Cmax);
             return Cmax;
         }
 
@@ -134,7 +137,7 @@ namespace SimulationTools
             if (Sched.GetMachinePredecessor(J) == null)
             {
                 S[J.ID, 0] = new ZeroDistribution();
-                Console.WriteLine("Setting S[{0},{1}]", J.ID, 0);
+                Console.WriteLine("Setting S[{0},{1}] = N(0,0)", J.ID, 0);
             }
             else
             {
@@ -154,9 +157,10 @@ namespace SimulationTools
                     // both jobs on the same machine
                     if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID)
                     {
-                        S[J.ID, _k] = DistributionFunctions.Maximum(S[J.ID, _k - 1],
-                            DistributionFunctions.NormalAddition(new ConstantAsDistribution(Predecessor.MeanProcessingTime), GetStartTimeDistribution(Predecessor, Sched, S)),
-                            false);
+                        S[J.ID, _k] = S[J.ID, _k - 1];
+                        //S[J.ID, _k] = DistributionFunctions.Maximum(S[J.ID, _k - 1],
+                        //    DistributionFunctions.NormalAddition(new ConstantAsDistribution(Predecessor.MeanProcessingTime), GetStartTimeDistribution(Predecessor, Sched, S)),
+                        //    false);
                         //pred is machine pred
                         // perhaps this is not necessary: I don't have q_ij, other than processing times.
                     }
@@ -207,7 +211,7 @@ namespace SimulationTools
                                                     S[J.ID, _k - 1], //S_j^k-1
                                                     true);
 
-                    Console.WriteLine("Setting S[{0},{1}]", J.ID, _k);
+                    Console.WriteLine("Setting S[{0},{1}] due to different machine predecessor.", J.ID, _k);
                 }
             }
             //finally, compare with the release date

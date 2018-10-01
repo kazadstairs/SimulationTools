@@ -145,22 +145,39 @@ namespace SimulationTools
             if (XandYindependent)
             {
                 double _theta = Math.Sqrt(X.Variation + Y.Variation);
-                double t1, t2, t3;
-                t1 = Phi((X.Mean - Y.Mean) / _theta);
-                t2 = Phi((Y.Mean - X.Mean) / _theta);
-                t3 = StandardNormalPDF((X.Mean - Y.Mean) / _theta);
-                Z.Mean = X.Mean * t1 + Y.Mean * t2 + _theta * t3;
-                double EX2 = (X.Variation + X.Mean * X.Mean) * t1 +
-                             (Y.Variation + Y.Mean * Y.Mean) * t2 +
-                             (X.Mean + Y.Mean) * _theta * t3;
-                Z.Variation = EX2 - Z.Mean * Z.Mean;                
+                if (_theta == 0)
+                {
+                    //two dummy distributions added => return a dummy distribution
+                    Z.Mean = Math.Max(X.Mean, Y.Mean);
+                    Z.Variation = 0;
+                }
+                else
+                {
+                    double t1, t2, t3;
+                    t1 = Phi((X.Mean - Y.Mean) / _theta);
+                    t2 = Phi((Y.Mean - X.Mean) / _theta);
+                    t3 = StandardNormalPDF((X.Mean - Y.Mean) / _theta);
+                    Z.Mean = X.Mean * t1 + Y.Mean * t2 + _theta * t3;
+                    double EX2 = (X.Variation + X.Mean * X.Mean) * t1 +
+                                 (Y.Variation + Y.Mean * Y.Mean) * t2 +
+                                 (X.Mean + Y.Mean) * _theta * t3;
+                    Z.Variation = EX2 - Z.Mean * Z.Mean;
+                }
             }
             else
             {
                 Distribution delta = NormalMinus(Y,X);
+                if (delta.Variation == 0)
+                {
+                    throw new Exception("Divide by 0");
+                }
                 // Assuming X and Y are normally distributed.
                 double a = delta.Mean / Math.Sqrt(delta.Variation);
                 double Pr_Del_geq_0 = 1 - Phi(a);
+                if (Pr_Del_geq_0 <= 0.0001)
+                {
+                    throw new Exception("Small number explosion");
+                }
                 double Expected_Del_givenPositive = delta.Mean + Math.Sqrt(delta.Variation) * StandardNormalPDF(a) / Pr_Del_geq_0;
                 double Increase = Pr_Del_geq_0 * Expected_Del_givenPositive;
                 Z.Mean = X.Mean + Increase;
