@@ -117,6 +117,8 @@ namespace SimulationTools
                     return DistributionFunctions.SampleNormal(JobParams.MeanProcessingTime, 0.1 * JobParams.MeanProcessingTime);
                 case "N(p,0.25p)":
                     return DistributionFunctions.SampleNormal(JobParams.MeanProcessingTime, 0.25 * JobParams.MeanProcessingTime);
+                case "N(p,0.3p)":
+                    return DistributionFunctions.SampleNormal(JobParams.MeanProcessingTime, 0.3 * JobParams.MeanProcessingTime);
                 case "Exp(p)":
                     return DistributionFunctions.SampleExponential(JobParams.MeanProcessingTime);
                 case "LN(p,0.01p)":

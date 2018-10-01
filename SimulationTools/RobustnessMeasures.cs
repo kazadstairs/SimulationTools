@@ -129,7 +129,6 @@ namespace SimulationTools
         /// <returns></returns>
         private static void EstimateStartTimeDistribution(Job J,Schedule Sched, Distribution [,] S, double StandardDeviationAssumption)
         {
-            throw new Exception("Todo: 1) Implement missing case (see below) 2) Implement Rj dependencies");
             // as a starting point, Starttime = completion of machine predecessor.
             // todo: ADD RELEASE DATES TO STARTIME POINT?
             if (Sched.GetMachinePredecessor(J) == null)
@@ -145,17 +144,21 @@ namespace SimulationTools
                 Console.WriteLine("Setting S[{0},{1}]", J.ID, 0);
             }
             // IN A SPECIFIC ORDER: First all predecessors on the same machine.
-            int _k = 1;
+            int _k = 0;
             foreach (Job Predecessor in J.Predecessors)
             {
                 if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
                 {
+                    _k++;
+
                     // both jobs on the same machine
                     if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID)
                     {
-                        Distribution delta = new Distribution();
+                        S[J.ID, _k] = DistributionFunctions.Maximum(S[J.ID, _k - 1],
+                            DistributionFunctions.NormalAddition(new ConstantAsDistribution(Predecessor.MeanProcessingTime), GetStartTimeDistribution(Predecessor, Sched, S)),
+                            false);
                         //pred is machine pred
-                        throw new Exception("TODO, implement this next");
+                        // perhaps this is not necessary: I don't have q_ij, other than processing times.
                     }
                     else
                     {
@@ -163,27 +166,32 @@ namespace SimulationTools
                         //X = S_i, Y = S^k-1_j so that delta = Y-X = sum_i to mp(j) P
                         Distribution delta = new Distribution();
                         Job CurrentJob = Predecessor;
+                        int DEBUG = 0;
                         while (CurrentJob != J)
                         {
                             delta.Mean += CurrentJob.MeanProcessingTime;
                             delta.Variation += (StandardDeviationAssumption * CurrentJob.MeanProcessingTime) * (StandardDeviationAssumption * CurrentJob.MeanProcessingTime);
+
+                            CurrentJob = Sched.GetMachineSuccessor(CurrentJob);
+                            if (DEBUG > 100)
+                            {
+                                throw new Exception("infinite loop");
+                            }
                         }
                         S[J.ID, _k] = DistributionFunctions.MaximumGivenDelta(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
                                                     S[J.ID, _k-1], //S_j^k-1
                                                     delta);
 
-                        Console.WriteLine("Setting S[{0},{1}]", J.ID, Predecessor.ID);
+                        Console.WriteLine("Setting S[{0},{1}]", J.ID, _k);
                     }
                 }
                 else
                 {
                     // job on a different machine, handle in next loop.
                 }
-                _k++;
             }
             // IN A SPECIFIC ORDER: next all predecessors on a different machine
-            _k = 1;
             foreach (Job Predecessor in J.Predecessors)
             {
                 if (Sched.GetMachineByJobID(Predecessor.ID) == Sched.GetMachineByJobID(J.ID))
@@ -192,15 +200,18 @@ namespace SimulationTools
                 }
                 else
                 {
+                    _k++;
+
                     S[J.ID,_k] = DistributionFunctions.Maximum(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
                                                     S[J.ID, _k - 1], //S_j^k-1
                                                     true);
 
-                    Console.WriteLine("Setting S[{0},{1}]", J.ID, Predecessor.ID);
+                    Console.WriteLine("Setting S[{0},{1}]", J.ID, _k);
                 }
-                _k++;
             }
+            //finally, compare with the release date
+            S[J.ID, _k] = DistributionFunctions.Maximum(new ConstantAsDistribution(J.EarliestReleaseDate), S[J.ID, _k],true);
         }
 
         private static Distribution GetStartTimeDistribution(Job J, Schedule Sched, Distribution[,] S)

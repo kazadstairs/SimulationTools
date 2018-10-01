@@ -24,10 +24,10 @@ namespace SimulationTools
             //
             // SETUP
             //
-            //string INSTANCEFOLDER = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //laptop folder
-            
-            BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\");
-          //  BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\");
+
+            BASEPATH = string.Format(@"C:\Users\TEMP\Source\Repos\SimulationTools\"); //Geo Landschap
+          //  BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\"); //KBG pcs
+          //  BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\"); //Laptop
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
             INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
