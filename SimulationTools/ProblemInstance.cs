@@ -91,6 +91,7 @@ namespace SimulationTools
             { 
                 jobtemp = jobs[jobID].Split(',');                
                 DAG.AddJob(new Job(jobID, int.Parse(jobtemp[0]), int.Parse(jobtemp[1]))); // job id, pj, rj
+                Console.WriteLine("Added J{0} with P{0}={1}, R{0}={2}",jobID,int.Parse(jobtemp[0]),int.Parse(jobtemp[1]));
             }
 
             // create prec relations

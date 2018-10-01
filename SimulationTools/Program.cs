@@ -47,7 +47,7 @@ namespace SimulationTools
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
                 //Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
 
-                Schedule MLSSched = LocalSearch.MLS(100, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
+                Schedule MLSSched = LocalSearch.MLS(40, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
                 //MLSSched.CalcLSS();
                 //MLSSched.MakeHTMLImage("DebugMLS");
                 //LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);

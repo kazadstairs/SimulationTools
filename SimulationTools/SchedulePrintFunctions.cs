@@ -34,6 +34,8 @@ namespace SimulationTools
                     file.WriteLine("div.j{0}", j.ID);
                     file.WriteLine("{position: fixed;");
                     file.WriteLine("top: {1}px; left: {2}px; width: {3}px;  Background-color:{4};", j.ID, top, left, width,background_color);
+                    if (GetStartTimeOfJob(j) - j.EarliestReleaseDate < 0.001)
+                    { file.WriteLine("text-decoration: underline;"); }
                     file.WriteLine(@"height: 20px; border: 1px solid #73AD21; text-align: center; vertical-align: middle;}");
                 }
                 //CmaxBlok:
@@ -102,12 +104,12 @@ namespace SimulationTools
         public void PrintJobInfo()
         {
             Console.WriteLine("Printing job information........");
-            Console.WriteLine("| id  | px  | sx  | tx  | Sum | Estimated Cmax (check) |");
+            Console.WriteLine("| id  | px  | rx | sx  | tx  | Sum | Estimated Cmax (check) |");
             Job CurrentJob;
             for (int JobID = 0; JobID < PrecedenceDAG.N; JobID++)
             {
                 CurrentJob = PrecedenceDAG.GetJobById(JobID);
-                Console.WriteLine("| {0,-3} | {1,-3} | {2,-3} | {3,-3} | {4,-3} | {5,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob),EstimatedCmax);
+                Console.WriteLine("| {0,-3} | {1,-3} | {6,-3} | {2,-3} | {3,-3} | {4,-3} | {5,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob),EstimatedCmax,CurrentJob.EarliestReleaseDate);
 
             }
 
