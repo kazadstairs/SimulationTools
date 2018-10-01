@@ -43,15 +43,16 @@ namespace SimulationTools
                 ProblemInstance Ins = new ProblemInstance();
                 //Ins.InstanciateLSTest();
                 //Ins.InstanciatePinedo();
-                string InstanceName = "30j-75r-8m.ms";
+                string InstanceName = "30j-15r-4m.ms";
                 Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
                 //Schedule TestSched = NewSchedule(Ins, "Random", "ESS");
 
-                Schedule MLSSched = LocalSearch.MLS(2000, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
+                Schedule MLSSched = LocalSearch.MLS(100, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
                 //MLSSched.CalcLSS();
                 //MLSSched.MakeHTMLImage("DebugMLS");
-                MLSSched.CalcLSS();
                 //LocalSearch.MastrolilliHC(TestSched, FitnessFunctions.MeanBasedCmax);
+                
+                MLSSched.PrintJobInfo();
                 MLSSched.MakeHTMLImage("DebugMastrolilliMLSfor30J");
                 
         //       Schedule MLSOpt = LocalSearch.MLS(200, Ins,Schedule.MakeGreedyLoadAssignment, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
