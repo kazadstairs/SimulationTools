@@ -49,8 +49,6 @@ namespace SimulationTools
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
                 SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
                 SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeHTMLImage("MLS10");
-                SchedulesToSimulate.Add(LocalSearch.MLS(40, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
-                SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeHTMLImage("MLS40");
 
 
                 foreach (Schedule currentSched in SchedulesToSimulate)

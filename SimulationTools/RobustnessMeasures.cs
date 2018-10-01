@@ -134,12 +134,14 @@ namespace SimulationTools
             if (Sched.GetMachinePredecessor(J) == null)
             {
                 S[J.ID, 0] = new ZeroDistribution();
+                Console.WriteLine("Setting S[{0},{1}]", J.ID, 0);
             }
             else
             {
                 Job Pred = Sched.GetMachinePredecessor(J);
                 Distribution PredCompletion = DistributionFunctions.NormalAddition( S[Pred.ID, Pred.Predecessors.Count], new ConstantAsDistribution(Pred.MeanProcessingTime));
                 S[J.ID, 0] = PredCompletion;
+                Console.WriteLine("Setting S[{0},{1}]", J.ID, 0);
             }
             // IN A SPECIFIC ORDER: First all predecessors on the same machine.
             int _k = 1;
@@ -150,8 +152,9 @@ namespace SimulationTools
                     // both jobs on the same machine
                     if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID)
                     {
+                        Distribution delta = new Distribution();
                         //pred is machine pred
-                        throw new Exception("Does not occur in my implementation");
+                        throw new Exception("TODO, implement this next");
                     }
                     else
                     {
@@ -164,10 +167,12 @@ namespace SimulationTools
                             delta.Mean += CurrentJob.MeanProcessingTime;
                             delta.Variation += (StandardDeviationAssumption * CurrentJob.MeanProcessingTime) * (StandardDeviationAssumption * CurrentJob.MeanProcessingTime);
                         }
-                        S[J.ID, Predecessor.ID] = DistributionFunctions.MaximumGivenDelta(
+                        S[J.ID, _k] = DistributionFunctions.MaximumGivenDelta(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
                                                     S[J.ID, _k-1], //S_j^k-1
                                                     delta);
+
+                        Console.WriteLine("Setting S[{0},{1}]", J.ID, Predecessor.ID);
                     }
                 }
                 else
@@ -186,10 +191,12 @@ namespace SimulationTools
                 }
                 else
                 {
-                    S[J.ID,Predecessor.ID] = DistributionFunctions.Maximum(
+                    S[J.ID,_k] = DistributionFunctions.Maximum(
                                                     DistributionFunctions.NormalAddition(GetStartTimeDistribution(Predecessor, Sched, S), new ConstantAsDistribution(Predecessor.MeanProcessingTime)), //S_i + p_i
                                                     S[J.ID, _k - 1], //S_j^k-1
                                                     true);
+
+                    Console.WriteLine("Setting S[{0},{1}]", J.ID, Predecessor.ID);
                 }
                 _k++;
             }
