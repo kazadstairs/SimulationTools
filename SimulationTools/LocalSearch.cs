@@ -46,6 +46,10 @@ namespace SimulationTools
 
                 //optimize it
                 HillClimb(CurrentSchedule, NeighborhoodOperator, FitnessFunction);
+                if (!CurrentSchedule.IsCritical(CurrentSchedule.PrecedenceDAG.GetJobById(0)))
+                {
+                    throw new Exception("Weird stuff");
+                }
                 CurrentFitness = FitnessFunction(CurrentSchedule);
 
                 if (CurrentFitness > BestFitness)
@@ -63,15 +67,15 @@ namespace SimulationTools
             //return the best
         }
 
-        static public Schedule NeighborSwapHillClimb(Schedule Original, Func<Schedule,double> FitnessFunction)
-        {
-            return HillClimb(Original, NeighborhoodFunctions.NeighborSwaps, FitnessFunction);
-        }
+   //     static public Schedule NeighborSwapHillClimb(Schedule Original, Func<Schedule,double> FitnessFunction)
+   //     {
+   //         return HillClimb(Original, NeighborhoodFunctions.NeighborSwaps, FitnessFunction);
+   //     }
 
-        static public Schedule MastrolilliHC(Schedule Original, Func<Schedule, double> FitnessFunction)
-        {
-            return HillClimb(Original, NeighborhoodFunctions.RemoveAndReinstert, FitnessFunction);
-        }
+    //    static public Schedule MastrolilliHC(Schedule Original, Func<Schedule, double> FitnessFunction)
+    //    {
+    //        return HillClimb(Original, NeighborhoodFunctions.RemoveAndReinstert, FitnessFunction);
+    //    }
 
 
         static public Schedule HillClimb(Schedule Original, Func<Schedule,Func<Schedule,double>,Schedule> ExploreNeighborhood, Func<Schedule,double> FitnessFunction)

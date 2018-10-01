@@ -93,6 +93,7 @@ namespace SimulationTools
                             {
                                 // undo swap
                                 UNSAFE_SwapOnMachine(J1, J2, CurrentMachine, CurrentSchedule);
+                                CurrentSchedule.EstimateCmax();
 
                                 //look at other swap:
 
@@ -289,72 +290,7 @@ namespace SimulationTools
             }
 
         }
-
-        public static Schedule SameMachineSwap(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
-        {
-            throw new Exception("ERROR, function as is does not work: It can create cycles");
-            int StartMachineId = Distribution.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
-            int CurrentMachineId = StartMachineId;
-            int NMachinesTried = 0;
-           // bool improvementFound = false;
-            Machine CurrentMachine = null;  
-            //Console.WriteLine("TODO LAZY: MAKE above assignment a CALL A FUNCTION IN SCHEDULE!");
-            while (NMachinesTried < CurrentSchedule.Problem.NMachines)
-            {
-               // CurrentMachine = CurrentSchedule.Machines[CurrentMachineId - 1];
-                CurrentMachine = CurrentSchedule.GetMachineByID(CurrentMachineId);
-                int JobsOnMachine = CurrentMachine.AssignedJobs.Count;
-                if (JobsOnMachine <= 1)
-                {
-                    // swap no good, proceed to update counters
-                }
-                else
-                {
-                    // try all potential swaps
-                    Job J1 = null, J2 = null;
-                    for (int J1index = 0; J1index < JobsOnMachine - 1; J1index++)
-                    {
-
-                        J1 = CurrentMachine.AssignedJobs[J1index];
-
-                        for (int J2index = J1index + 1; J2index < JobsOnMachine; J2index++)
-                        {
-                            J2 = CurrentMachine.AssignedJobs[J2index];
-                            // try the swap
-                            double OriginalFitness = FitnessFunction(CurrentSchedule);
-                            if (SwapJobPair(J1, J2, CurrentMachine, CurrentSchedule))
-                            {
-
-                                double NewFitness = FitnessFunction(CurrentSchedule); // current schedule is updated during the SameMachineSwap function. So this works.
-                                if (NewFitness > OriginalFitness) // Trying to minimize here, so maybe VD more appropriate than HC! This maximizes CMAX!
-                                {
-                                   // improvementFound = true;
-                                    //  Console.WriteLine("OPTIMIZING MOVE FOUND (Swap J{0},J{1}, on M{2}). Schedule fitness: {3}",J1.ID,J2.ID,CurrentMachine.MachineID, NewFitness);
-                                    //  CurrentSchedule.Print();
-                                    return CurrentSchedule;
-                                    // keep it
-                                }
-                                else
-                                {
-                                    // undo swap
-                                    Console.WriteLine("No improvement, undoing..");
-                                    SwapJobPair(J1, J2, CurrentMachine, CurrentSchedule);
-                                    //undoing should always be feasible
-                                }
-                            }
-                        }
-                    }
-                }
-
-                NMachinesTried++;
-                CurrentMachineId++;
-                if (CurrentMachineId > CurrentSchedule.Problem.NMachines)
-                { CurrentMachineId = 1; }
-
-            }
-            //No improving schedule found
-            return null;
-        }
+        
 
         static private bool NeighborSwapFeasible(Job LeftJob, Job RightJob, Machine M, Schedule Sched)
         {
