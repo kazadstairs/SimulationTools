@@ -150,15 +150,14 @@ namespace SimulationTools
         {
             //placeholder;
             CalcESS();
-            SetESS();
             double Maximum = 0;
             int MaxID = 0;
             for (int i = 1; i < Starttimes.Length; i++)
             {
-                if (Starttimes[i] == -1) { throw new Exception("Startimes not calculated yet"); }
-                if(Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum)
+                if (GetEarliestStart(PrecedenceDAG.GetJobById(i)) < 0) { throw new Exception("Startimes not calculated yet"); }
+                if(GetEarliestStart(PrecedenceDAG.GetJobById(i)) + PrecedenceDAG.GetJobById(i).MeanProcessingTime > Maximum)
                 {
-                    Maximum = Starttimes[i] + PrecedenceDAG.GetJobById(i).MeanProcessingTime;
+                    Maximum = GetEarliestStart(PrecedenceDAG.GetJobById(i)) + PrecedenceDAG.GetJobById(i).MeanProcessingTime;
                     MaxID = i;
                 }
             }
