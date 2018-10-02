@@ -353,7 +353,7 @@ LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/Simula
 PATH <- LAPTOPPATH
 myDF <- read.csv2(LAPTOPPATH)
 myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
-myDF[1:3,1:15]
+myDF <- myDF[,1:20]
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 MakeQuantilePlot("BTS",0.95,type="relative")

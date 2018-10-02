@@ -37,23 +37,33 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = false;
+            bool DEBUG = true;
             if (DEBUG)
             {
-                ProblemInstance Ins = new ProblemInstance();
+                ProblemInstance InsBlock = new ProblemInstance();
                 //Ins.InstanciateLSTest();
                 //Ins.InstanciatePinedo();
-                string InstanceName = "30j-15r-4m.ms";
-                Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
+                InsBlock.InstanciateBlok();
+
+                ProblemInstance InsMiniBlok = new ProblemInstance();
+                InsMiniBlok.InstanciateMiniBlok();
+                // string InstanceName = "30j-15r-4m.ms";
+                //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
 
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
-                SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                Schedule BlockSched = new Schedule(InsBlock);
+                BlockSched.MakeScheduleForBlockInstance();
+                Schedule MiniBlockSched = new Schedule(InsMiniBlok);
+                MiniBlockSched.MakeScheduleForBlockInstance();
+                SchedulesToSimulate.Add(MiniBlockSched);
+                SchedulesToSimulate.Add(BlockSched);
+                //SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
 
                 foreach (Schedule currentSched in SchedulesToSimulate)
                 {
                     currentSched.CalcRMs();
-                    currentSched.MakeHTMLImage("DEBUG MLS");
+                    currentSched.MakeHTMLImage(currentSched.AssignmentDescription);
                     foreach (string distribution in Constants.DISTRIBUTION)
                     {
                         new Simulation(Constants.NRuns, currentSched, distribution).Perform();
@@ -77,10 +87,10 @@ namespace SimulationTools
             else
             {
                 INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
-                for (int i = 0; i < INSTANCENAMES.Length; i++)
+                for (int _i = 0; _i < INSTANCENAMES.Length; _i++)
                 {
-                    string[] temp = INSTANCENAMES[i].Split('\\');
-                    INSTANCENAMES[i] = temp[temp.Length - 1];
+                    string[] temp = INSTANCENAMES[_i].Split('\\');
+                    INSTANCENAMES[_i] = temp[temp.Length - 1];
                 }
 
                 Simulation[] Sims = new Simulation[Constants.NRuns];
@@ -89,19 +99,23 @@ namespace SimulationTools
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
 
                 ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length + 1];
-                for (int i = 0; i < INSTANCENAMES.Length; i++)
-                {
+                //  for (int i = 0; i < INSTANCENAMES.Length; i++)
+                //  {
+                int i = 8;
                     Instances[i] = new ProblemInstance();
                     Instances[i].ReadFromFile(INSTANCEFOLDER + INSTANCENAMES[i], INSTANCENAMES[i]);
-                    SchedulesToSimulate.Add(LocalSearch.MLS(20,Instances[i], "RMA",FitnessFunctions.MeanBasedCmax,NeighborhoodFunctions.VNHC));
-                    SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "RMA", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
-                    SchedulesToSimulate.Add(LocalSearch.MLS(20, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
-                    SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate.Add(LocalSearch.MLS(20, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
-                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
-                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
-                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
-                }
+                SchedulesToSimulate.Add(LocalSearch.MLS(50, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate.Add(LocalSearch.MLS(100, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+
+                SchedulesToSimulate.Add(LocalSearch.MLS(500, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+
+                //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
+                //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
+                //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
+                //                }
 
 
                 /*ProblemInstance Pinedo = new ProblemInstance();
@@ -128,7 +142,7 @@ namespace SimulationTools
                 //     ProblemInstance Ptest = new ProblemInstance();
                 //    Ptest.ReadFromFile(string.Format("{0}100j-100r-12m.ms", INSTANCEFOLDER), "test");
                 //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
-               foreach (Schedule currentSched in SchedulesToSimulate)
+                foreach (Schedule currentSched in SchedulesToSimulate)
                {
                     currentSched.CalcRMs();
                     foreach (string distribution in Constants.DISTRIBUTION)

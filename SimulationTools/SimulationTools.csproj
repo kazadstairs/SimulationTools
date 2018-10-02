@@ -63,6 +63,7 @@
     <Compile Include="ScheduleAssingmentMethods.cs" />
     <Compile Include="ScheduleGraphTraversalMethods.cs" />
     <Compile Include="ScheduleLowLevelMethods.cs" />
+    <Compile Include="SchedulePremades.cs" />
     <Compile Include="SchedulePrintFunctions.cs" />
     <Compile Include="SimulationJob.cs" />
     <Compile Include="SimulationPerformanceMeasures.cs" />

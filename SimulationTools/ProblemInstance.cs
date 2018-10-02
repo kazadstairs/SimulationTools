@@ -56,6 +56,63 @@ namespace SimulationTools
             Description = "Pinedo";            
         }
 
+        public void InstanciateBlok()
+        {
+            int id,parentid;
+            id = 0;
+            for (int col = 0; col < 4; col++)
+            {
+                for (int row = 0; row < 4; row++)
+                {
+                    DAG.AddJob(new Job(id, 10, 0));
+                    if (col >= 1)
+                    {
+                        for (int parentrow = 0; parentrow < 4; parentrow++)
+                        {
+                            parentid = parentrow + 4*(col - 1);
+                            DAG.AddArcById(parentid, id);
+                        }
+                    }
+                    id++;
+                }
+            }
+            DAG.FillSuccessorDictionaries();
+            Console.WriteLine(DAG.N);
+            Description = "Block";
+
+            NMachines = 4;
+        }
+
+        public void InstanciateMiniBlok()
+        {
+            int id, parentid;
+            id = 0;
+            for (int col = 0; col < 40; col++)
+            {
+                for (int row = 0; row < 4; row++)
+                {
+                    DAG.AddJob(new Job(id, 1, 0));
+                    if (col >= 1)
+                    {
+                        for (int parentrow = 0; parentrow < 4; parentrow++)
+                        {
+                            parentid = parentrow + 4 * (col - 1);
+                            DAG.AddArcById(parentid, id);
+                        }
+                    }
+                    id++;
+                }
+            }
+            DAG.FillSuccessorDictionaries();
+            Console.WriteLine(DAG.N);
+            Description = "Block";
+
+            NMachines = 4;
+        }
+
+
+
+
         public void InstanciateLSTest()
         {
             DAG.AddJob(new Job(0, 0, 0));

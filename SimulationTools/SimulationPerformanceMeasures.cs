@@ -92,6 +92,7 @@ namespace SimulationTools
                 (double)StartOnTimeJobs / NJobs,
                 (double)FinishOnTimeJobs / NJobs);
                 //Jobinfo:
+                /*
                 foreach (SimulationJob j in Sim.SimulationJobs)
                 {
                     sw.Write(";{0};{1};{2};{3}", j.Sim.Sched.GetStartTimeOfJob(j.JobParams),j.RealisedStartTime,j.RealisedProcessingTime,j.Sim.Sched.GetMachineByJobID(j.JobParams.ID).MachineID);
@@ -100,6 +101,7 @@ namespace SimulationTools
                         throw new Exception("Job started early");
                     }
                 }
+                */
                 sw.Write(Environment.NewLine);
             }
         }
