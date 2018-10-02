@@ -29,30 +29,48 @@ namespace SimulationTools
             {
                 case "FS":
                     Value = RobustnessMeasures.SoFS(S);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "BFS":
                     Value = RobustnessMeasures.SoBFS(S, _GAMMA);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "UFS":
                     Value = RobustnessMeasures.SoUFS(S, _GAMMA);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "wFS":
                     Value = RobustnessMeasures.SowFS(S);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "TS":
                     Value = RobustnessMeasures.SoTS(S);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "BTS":
                     Value = RobustnessMeasures.SoBTS(S, _GAMMA);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "UTS":
                     Value = RobustnessMeasures.SoUTS(S, _GAMMA);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "wTS":
                     Value = RobustnessMeasures.SowTS(S);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "SDR":
                     Value = RobustnessMeasures.SoSDR(S);
+                    Console.WriteLine("CALCULATING MEANS instead of sums!");
+                    Value = Value / S.PrecedenceDAG.N;
                     break;
                 case "DetCmax":
                     Value = S.EstimateCmax();
@@ -66,8 +84,6 @@ namespace SimulationTools
 
 
             }
-            Console.WriteLine("CALCULATING MEANS instead of sums!");
-            Value = Value / S.PrecedenceDAG.N;
 
         }
     }

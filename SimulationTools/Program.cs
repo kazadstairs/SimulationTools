@@ -25,9 +25,9 @@ namespace SimulationTools
             // SETUP
             //
 
-            BASEPATH = string.Format(@"C:\Users\TEMP\Source\Repos\SimulationTools\"); //Geo Landschap
+           // BASEPATH = string.Format(@"C:\Users\TEMP\Source\Repos\SimulationTools\"); //Geo Landschap
           //  BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\"); //KBG pcs
-          //  BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\"); //Laptop
+            BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\"); //Laptop
             Constants.OUTPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
             INSTANCEFOLDER = string.Format(@"{0}probleminstances\",BASEPATH);
 
@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = true;
+            bool DEBUG = false;
             if (DEBUG)
             {
                 ProblemInstance Ins = new ProblemInstance();
@@ -93,13 +93,14 @@ namespace SimulationTools
                 {
                     Instances[i] = new ProblemInstance();
                     Instances[i].ReadFromFile(INSTANCEFOLDER + INSTANCENAMES[i], INSTANCENAMES[i]);
-                    SchedulesToSimulate.Add(LocalSearch.MLS(200,Instances[i], "RMA",FitnessFunctions.MeanBasedCmax,NeighborhoodFunctions.NeighborSwaps));
-                    SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "ESS"));
-                    SchedulesToSimulate.Add(LocalSearch.MLS(200, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps));
-                  
-        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
-        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
-        //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
+                    SchedulesToSimulate.Add(LocalSearch.MLS(20,Instances[i], "RMA",FitnessFunctions.MeanBasedCmax,NeighborhoodFunctions.VNHC));
+                    SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "RMA", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                    SchedulesToSimulate.Add(LocalSearch.MLS(20, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                    SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+
+                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
+                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
+                    //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
                 }
 
 

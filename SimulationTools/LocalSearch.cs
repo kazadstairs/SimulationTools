@@ -41,6 +41,7 @@ namespace SimulationTools
                     default:
                         throw new Exception("AssignmentType not recognized");
                 }
+                CurrentSchedule.AssignmentDescription += string.Format("MLS{0}",NRuns);
                 CurrentSchedule.CalcESS();
                 CurrentSchedule.SetESS();
 

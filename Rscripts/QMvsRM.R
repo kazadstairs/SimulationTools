@@ -166,10 +166,12 @@ MakeAbsoluteQuantileDifPlot <- function(string.RM,double.upperQ)
   RMsym <- rlang::sym(string.RM)
   string.QM <- "Cmax"
   QMsym <- rlang::sym(string.QM)
+  string.RelativeTo <- "DetCmax"
+  RELsym <- rlang::sym(string.RelativeTo)
   
   myDF.plot <- myDF %>% 
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),double.upperQ)-mean(!!QMsym))
+    summarize(RM = mean(!!RMsym),QM = quantile((!!QMsym),double.upperQ)-mean(!!RELsym))
   
   Xvals <- myDF.plot[,"RM"][[1]]
   Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
@@ -192,10 +194,12 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   RMsym <- rlang::sym(string.RM)
   string.QM <- "Cmax"
   QMsym <- rlang::sym(string.QM)
+  string.RelativeTo <- "DetCmax"
+  RELsym <- rlang::sym(string.RelativeTo)
   
   myDF.plot <- myDF %>% 
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-    summarize(RM = mean(!!RMsym),QM = (quantile((!!QMsym),double.upperQ)/mean(!!QMsym))-1)
+    summarize(RM = mean(!!RMsym),QM = (quantile((!!QMsym),double.upperQ)/mean(!!RELsym))-1)
   
   Xvals <- myDF.plot[,"RM"][[1]]
   Yvals <- myDF.plot[,"QM"][[1]] #[,""] gets the single tibble column. THen [[1]] gets the first element: The vector
@@ -207,7 +211,7 @@ MakeRelativeQuantileDifPlot <- function(string.RM,double.upperQ)
   p <- p + geom_point() 
   p <- p + scale_x_continuous(expand = c(0, 0),limits = c(0,1.1*max(myDF.plot$RM))) 
   p <- p + scale_y_continuous(expand = c(0, 0),limits= c(0,1.1*max(myDF.plot$QM)))
-  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax / mean(Cmax) - 1"))
+  p <- p + xlab(string.RM) + ylab(paste(100*double.upperQ,"% quantile Cmax / DetCmax - 1"))
   p <- p + theme(legend.position = "top") + ggtitle(paste(100*double.upperQ,"% quantile / 50% quantile. Spearman = ",Srho$estimate))
   show(p)
   
@@ -219,10 +223,12 @@ MakeRelativeSDPlot <- function(string.RM)
   RMsym <- rlang::sym(string.RM)
   string.QM <- "Cmax"
   QMsym <- rlang::sym(string.QM)
+  string.RelativeTo <- "DetCmax"
+  RELsym <- rlang::sym(string.RelativeTo)
   
   myDF.plot <- myDF %>% 
     group_by(Distribution.Type,Instance.Name,Schedule.AssignType,Schedule.StartTimeType) %>% 
-    summarize(RM = mean(!!RMsym),QM = (sd(!!QMsym)/mean(!!QMsym)))
+    summarize(RM = mean(!!RMsym),QM = (sd(!!QMsym)/mean(!!RELsym)))
   
   View(myDF.plot)
   Xvals <- myDF.plot[,"RM"][[1]]
@@ -311,8 +317,8 @@ MakePlot.WithRange <- function(string.RM, string.QM,xRange,yRange)
 
 MakeAllPlots <- function()
 {
-  RMs <- c("FS","wFS","UFS","TS","wTS","BTS","UTS")
-  QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality")
+  RMs <- c("FS","wFS","UFS","TS","wTS","BTS","UTS","DetCmax","NormalApproxCmax")
+  QMs <- c("Cmax","LinearStartDelay","Start.Punctuality","Finish.Punctuality","DetCmax")
   
   for(Rm in RMs)
   {
@@ -347,10 +353,10 @@ LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/Simula
 PATH <- LAPTOPPATH
 myDF <- read.csv2(LAPTOPPATH)
 myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
-names(myDF)[1:10]
+myDF[1:3,1:15]
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
-MakeQuantilePlot("BTS",0.95,type="absolute")
+MakeQuantilePlot("BTS",0.95,type="relative")
 
 
 ############################

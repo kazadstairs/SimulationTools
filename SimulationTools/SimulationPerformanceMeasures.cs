@@ -27,9 +27,7 @@ namespace SimulationTools
 
        // double StartPunctuality; // percentage jobs that start on scheduled time.
        // double FinishPunctuality; // percentage jobs that finish before their LSS.
-
-        bool DEBUGMODE;
-
+       
         //
         //Statistics of each individual job (completion times etc)
         //
@@ -49,7 +47,6 @@ namespace SimulationTools
             }
             StartOnTimeJobs = 0;
             FinishOnTimeJobs = 0;
-            DEBUGMODE = false;
             NJobs = (double)Njobs;
             Sim = sim;
             
@@ -100,7 +97,7 @@ namespace SimulationTools
                     sw.Write(";{0};{1};{2};{3}", j.Sim.Sched.GetStartTimeOfJob(j.JobParams),j.RealisedStartTime,j.RealisedProcessingTime,j.Sim.Sched.GetMachineByJobID(j.JobParams.ID).MachineID);
                     if (j.Sim.Sched.GetStartTimeOfJob(j.JobParams) > j.RealisedStartTime)
                     {
-                        //throw new Exception("Job started early");
+                        throw new Exception("Job started early");
                     }
                 }
                 sw.Write(Environment.NewLine);

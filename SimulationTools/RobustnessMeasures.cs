@@ -216,6 +216,7 @@ namespace SimulationTools
             }
             //finally, compare with the release date
             S[J.ID, _k] = DistributionFunctions.Maximum(new ConstantAsDistribution(J.EarliestReleaseDate), S[J.ID, _k],true);
+            Console.WriteLine("S{0}=S[{0},{1}]={2}",J.ID,_k,S[J.ID,_k].Mean);
         }
 
         private static Distribution GetStartTimeDistribution(Job J, Schedule Sched, Distribution[,] S)
@@ -244,7 +245,14 @@ namespace SimulationTools
             double total = 0.0;
             foreach (Job j in S.PrecedenceDAG.Jobs)
             {
-                total += Weight(j, S) * Modifier(SlackMeasure,j,S,fraction);
+                if (j.ID == 0)
+                {//skip
+                }
+                else
+                {
+                    total += Weight(j, S) * Modifier(SlackMeasure, j, S, fraction);
+                }
+                
             }
             return total;
         }
