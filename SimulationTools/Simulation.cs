@@ -70,7 +70,9 @@ namespace SimulationTools
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
                 PerformanceMeasures = new SimulationPerformanceMeasures(runnr,Constants.PermittedIncreaseForPunctuality,Sched.PrecedenceDAG.N,this);
-             //   Console.WriteLine("***** Performing Simulation {0}...", runnr);
+
+
+                if (runnr % 100 == 0) { Console.WriteLine("***** Performing Simulation {0,-4}/{1,-4}...", runnr,NRuns); }
                 SetupSimulation();
                 PerformSimulation();
                 PerformanceMeasures.WriteToFile(Constants.OUTPATH);

@@ -78,7 +78,7 @@ namespace SimulationTools
             }
             DAG.FillSuccessorDictionaries();
             Console.WriteLine(DAG.N);
-            Description = "Block";
+            Description = "p10Block";
 
             NMachines = 4;
         }
@@ -105,7 +105,7 @@ namespace SimulationTools
             }
             DAG.FillSuccessorDictionaries();
             Console.WriteLine(DAG.N);
-            Description = "Block";
+            Description = "p1Block";
 
             NMachines = 4;
         }

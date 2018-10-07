@@ -12,7 +12,7 @@
 #              "100j-100r-12m.ms",
 #              "100j-250r-6m.ms",
 #               "100j-250r-12m.ms")
-NRUNS <- "30"
+NRUNS <- "100"
 
 #RM.ID <- 1
 #QM.ID <- 2
@@ -334,6 +334,10 @@ MakeAllPlots <- function()
   
 }
 
+Make.Different.PI.and.Distros.Plot <- function()
+{
+  ggplot(aes(y = Cmax-DetCmax, x = Distribution.Type, fill = Instance.Name), data = myDF) + geom_boxplot()
+}
 #
 #
 ######## ACTUAL WORK ##########################################
@@ -354,6 +358,7 @@ PATH <- LAPTOPPATH
 myDF <- read.csv2(LAPTOPPATH)
 myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
 myDF <- myDF[,1:20]
+MakePlot(string.RM = "DetCmax",string.QM = "Cmax")
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 MakeQuantilePlot("BTS",0.95,type="relative")
