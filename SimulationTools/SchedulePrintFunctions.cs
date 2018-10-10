@@ -144,7 +144,7 @@ namespace SimulationTools
                             sw.Write(M.AssignedJobs[index].ID);
                         }
                     }
-                    sw.WriteLine("[style=dashed];");
+                    sw.WriteLine("[style=invis];");
                     sw.WriteLine("label = \"M{0}\";", M.MachineID);
                     sw.WriteLine("}");
 
