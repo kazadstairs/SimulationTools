@@ -9,7 +9,7 @@ namespace SimulationTools
     {
         public static string OUTPATH;
        // public static int NumberOfEvents = 100;
-        public static int NRuns = 100; // Number of runs in the simulation;
+        public static int NRuns = 300; // Number of runs in the simulation;
         public static bool INCLUDEJOBINFO = false;  // true: include start and completion times for each job for each simulation run in output.
                                                     // false: do not include start and completion times for each job in simulation run.
 

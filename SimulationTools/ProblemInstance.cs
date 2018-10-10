@@ -93,6 +93,41 @@ namespace SimulationTools
             Description += "_SingleCycle";
         }
 
+        public void InstanciateNoInterMachineP10Blok()
+        {
+            InstanciateBlokHelper(4, NoInterMachine);
+            Description += "_NoInterMachine";
+        }
+
+        public void InstanciateNoInterMachineP1Blok()
+        {
+            InstanciateBlokHelper(40, NoInterMachine);
+            Description += "_NoInterMachine";
+        }
+
+        public void InstanciateDiamondP10Blok()
+        {
+            InstanciateBlokHelper(4, Diamond);
+            Description += "_Diamond";
+        }
+
+        public void InstanciateDiamondP1Blok()
+        {
+            InstanciateBlokHelper(40, Diamond);
+            Description += "_Diamond";
+        }
+        public void InstanciateRollingDiamondP10Blok()
+        {
+            InstanciateBlokHelper(4, RollingDiamond);
+            Description += "_RollingDiamond";
+        }
+
+        public void InstanciateRollingDiamondP1Blok()
+        {
+            InstanciateBlokHelper(40, RollingDiamond);
+            Description += "_RollingDiamond";
+        }
+
         private void InstanciateBlokHelper(int JobsPerMachine, Action<int,int,int> MakeInterMachinePrecs)
         {
             int id;
@@ -158,6 +193,59 @@ namespace SimulationTools
                 DAG.AddArcById(parentid, id);
             }
             //"machine arc": same row, 1 col back
+            DAG.AddArcById(ToID(row, col - 1), id);
+        }
+
+        private void NoInterMachine(int id, int col, int row)
+        {
+            DAG.AddArcById(ToID(row, col - 1), id);
+        }
+
+        private void Diamond(int id, int col, int row)
+        {
+            if (col % 2 == 1)
+            {
+                if (row == 0)
+                {
+                    for (int parentrow = 1; parentrow < 4; parentrow++)
+                    {
+                        DAG.AddArcById(ToID(parentrow, col - 1), id);
+                    }
+
+                }
+            }
+            else
+            {
+                if (row > 0)
+                {
+                    DAG.AddArcById(ToID(0, col - 1), id);
+                }
+            }
+            DAG.AddArcById(ToID(row, col - 1), id);
+        }
+
+        private void RollingDiamond(int id, int col, int row)
+        {
+            int MergeRow = ((col+1) / 2) % 4;
+            if (col % 2 == 1)
+            {
+                if (row == MergeRow)
+                {
+                    for (int parentrow = 0; parentrow < 4; parentrow++)
+                    {
+                        if (parentrow != row)
+                        { DAG.AddArcById(ToID(parentrow, col - 1), id); }
+                    }
+
+                }
+            }
+            else
+            {
+                if (row != MergeRow)
+                {
+                    DAG.AddArcById(ToID(MergeRow, col - 1), id);
+                }
+            }
             DAG.AddArcById(ToID(row, col - 1), id);
         }
 

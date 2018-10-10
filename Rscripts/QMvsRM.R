@@ -356,13 +356,13 @@ UUPATH <- "C:/Users/3496724/Source/Repos/SimulationTools/Results/RMs/allresults.
 LAPTOPPATH <- "C:/Users/Gebruiker/Documents/UU/MSc Thesis/Code/Simulation/SimulationTools/Results/RMs/allresults.txt"
 PATH <- LAPTOPPATH
 myDF <- read.csv2(LAPTOPPATH)
-myDF <- subset(myDF,myDF$Distribution.Type == "LN(p,0.1p)")
+myDF <- subset(myDF,myDF$Distribution.Type == "N(p,0.3p)")
 myDF <- myDF[,1:20]
 MakePlot(string.RM = "DetCmax",string.QM = "Cmax")
 MakePlot.WithRange("TS","Cmax",500,500)
 MakeAllPlots()
 MakeQuantilePlot("BTS",0.95,type="relative")
-
+Make.Different.PI.and.Distros.Plot()
 
 ############################
 #For debugging

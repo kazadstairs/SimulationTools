@@ -60,7 +60,7 @@ namespace SimulationTools
                     currentSched.CreateDotFile();
                     foreach (string distribution in Constants.DISTRIBUTION)
                     {
-                  //      new Simulation(Constants.NRuns, currentSched, distribution).Perform();
+                        new Simulation(Constants.NRuns, currentSched, distribution).Perform();
                     }
 
                 }
@@ -138,12 +138,13 @@ namespace SimulationTools
                 //   new Simulation(100, NewSchedule(Ptest, "GLB", "LSS")).Perform();
                 foreach (Schedule currentSched in SchedulesToSimulate)
                {
+                    Console.WriteLine("******* Starting all distribution sims for SCHED {0}", currentSched.AssignmentDescription);
                     currentSched.CalcRMs();
                     foreach (string distribution in Constants.DISTRIBUTION)
                     {                        
                         new Simulation(Constants.NRuns, currentSched, distribution).Perform();
                     }
-
+                    Console.WriteLine("******* Finished all distributions for SCHED {0}",currentSched.AssignmentDescription);
                 }
 
 
@@ -202,7 +203,7 @@ namespace SimulationTools
 
         static ProblemInstance[] AllBlokInstances()
         {            
-            ProblemInstance[] Instances = new ProblemInstance[6];
+            ProblemInstance[] Instances = new ProblemInstance[12];
             Instances[0] = new ProblemInstance();
             Instances[0].Instanciate1CycleP10Blok();
             Instances[1] = new ProblemInstance();
@@ -215,7 +216,19 @@ namespace SimulationTools
             Instances[4].InstanciateFullP10Blok();
             Instances[5] = new ProblemInstance();
             Instances[5].InstanciateFullP1Blok();
-            
+            Instances[6] = new ProblemInstance();
+            Instances[6].InstanciateDiamondP10Blok();
+            Instances[7] = new ProblemInstance();
+            Instances[7].InstanciateDiamondP1Blok();
+            Instances[8] = new ProblemInstance();
+            Instances[8].InstanciateNoInterMachineP10Blok();
+            Instances[9] = new ProblemInstance();
+            Instances[9].InstanciateNoInterMachineP1Blok();
+            Instances[10] = new ProblemInstance();
+            Instances[10].InstanciateRollingDiamondP10Blok();
+            Instances[11] = new ProblemInstance();
+            Instances[11].InstanciateRollingDiamondP1Blok();
+
             return Instances;
 
         }

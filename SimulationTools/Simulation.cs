@@ -70,8 +70,6 @@ namespace SimulationTools
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
                 PerformanceMeasures = new SimulationPerformanceMeasures(runnr,Constants.PermittedIncreaseForPunctuality,Sched.PrecedenceDAG.N,this);
-
-
                 if (runnr % 100 == 99) { Console.WriteLine("***** Performing Simulation {0,-4}/{1,-4}...", runnr,NRuns); }
                 SetupSimulation();
                 PerformSimulation();
@@ -79,9 +77,7 @@ namespace SimulationTools
       //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }
-            Console.WriteLine("Simulation completed (Nruns = {0}). Output written to:",NRuns);
-            Console.WriteLine(Constants.OUTPATH);
-
+            Console.WriteLine("Simulation completed (Nruns = {0}, INS = {1}, SCHED = {2},",NRuns,Sched.Problem.Description,Sched.AssignmentDescription);
         }
 
         private void SetupSimulation()
