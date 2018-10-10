@@ -1,0 +1,38 @@
+Blok_10_Single_Cycle
+16 //Njobs
+1 10 0 //J.ID, J.MeanProctime J.ReleaseDate
+2 10 0
+3 10 0
+4 10 0
+5 10 0
+6 10 0
+7 10 0
+8 10 0
+9 10 0
+10 10 0
+11 10 0
+12 10 0
+13 10 0
+14 10 0
+15 10 0
+16 10 0
+15 //Prec Arcs
+1 5 //machine arcs
+2 6
+3 7
+4 8
+5 9
+6 10
+7 11
+8 12
+9 13
+10 14
+11 15
+12 16 //last machine arc
+1 6 //cycle
+6 11
+11 16
+
+
+
+4 //Nmachines
