@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -56,59 +57,115 @@ namespace SimulationTools
             Description = "Pinedo";            
         }
 
-        public void InstanciateBlok()
+        public void InstanciateFullP10Blok()
         {
-            int id,parentid;
-            id = 0;
-            for (int col = 0; col < 4; col++)
+            InstanciateBlokHelper(4, FullDependency);
+            Description += "_FullDependency";
+        }
+
+        public void InstanciateFullP1Blok()
+        {
+            InstanciateBlokHelper(40, FullDependency);
+            Description += "_FullDependency";
+        }
+
+        public void Instanciate4CycleP10Blok()
+        {
+            InstanciateBlokHelper(4, FourCycles);
+            Description += "_FourCycles";
+        }
+
+        public void Instanciate4CycleP1Blok()
+        {
+            InstanciateBlokHelper(40, FourCycles);
+            Description += "_FourCycles";
+        }
+
+        public void Instanciate1CycleP10Blok()
+        {
+            InstanciateBlokHelper(4, SingleCycle);
+            Description += "_SingleCycle";
+        }
+
+        public void Instanciate1CycleP1Blok()
+        {
+            InstanciateBlokHelper(40, SingleCycle);
+            Description += "_SingleCycle";
+        }
+
+        private void InstanciateBlokHelper(int JobsPerMachine, Action<int,int,int> MakeInterMachinePrecs)
+        {
+            int id;
+            id = 1;
+            DAG.AddJob(new Job(0, 0, 0)); // dummyjob
+            Description = string.Format("Blok_{0}_JobsPerMachine",JobsPerMachine);
+            double Processingtime = 40 / JobsPerMachine;
+            for (int col = 0; col < JobsPerMachine; col++)
             {
                 for (int row = 0; row < 4; row++)
                 {
-                    DAG.AddJob(new Job(id, 10, 0));
+                    DAG.AddJob(new Job(id, Processingtime, 0));
                     if (col >= 1)
                     {
-                        for (int parentrow = 0; parentrow < 4; parentrow++)
-                        {
-                            parentid = parentrow + 4*(col - 1);
-                            DAG.AddArcById(parentid, id);
-                        }
+                        MakeInterMachinePrecs(id, col, row);
                     }
                     id++;
                 }
             }
             DAG.FillSuccessorDictionaries();
             Console.WriteLine(DAG.N);
-            Description = "p10Block";
 
             NMachines = 4;
         }
 
-        public void InstanciateMiniBlok()
+
+        private void FullDependency(int id, int col, int row)
         {
-            int id, parentid;
-            id = 0;
-            for (int col = 0; col < 40; col++)
+            int parentid;
+            for (int parentrow = 0; parentrow < 4; parentrow++)
             {
-                for (int row = 0; row < 4; row++)
-                {
-                    DAG.AddJob(new Job(id, 1, 0));
-                    if (col >= 1)
-                    {
-                        for (int parentrow = 0; parentrow < 4; parentrow++)
-                        {
-                            parentid = parentrow + 4 * (col - 1);
-                            DAG.AddArcById(parentid, id);
-                        }
-                    }
-                    id++;
-                }
+                parentid = ToID(parentrow, col - 1);
+                DAG.AddArcById(parentid, id);
             }
-            DAG.FillSuccessorDictionaries();
-            Console.WriteLine(DAG.N);
-            Description = "p1Block";
-
-            NMachines = 4;
         }
+
+        
+        private void FourCycles(int id, int col, int row)
+        {
+            //cycle:
+            int parentid, parentrow;
+            if (row == 0) { parentrow = 3; }
+            else { parentrow = row - 1; }
+            parentid = ToID(parentrow, col - 1);
+            DAG.AddArcById(parentid, id);
+            //"machine arc": same row, 1 col back
+            DAG.AddArcById(ToID(row, col - 1), id);
+        }
+
+        private void SingleCycle(int id, int col, int row)
+        {
+            if (col % 4 == row && col >= 1)
+            {
+                int parentid;
+                if (row == 0)
+                {
+                    parentid = ToID(3, col - 1);
+                }
+                else
+                {
+                    parentid = ToID(row - 1, col - 1);
+                }
+                DAG.AddArcById(parentid, id);
+            }
+            //"machine arc": same row, 1 col back
+            DAG.AddArcById(ToID(row, col - 1), id);
+        }
+
+        private int ToID(int RowNr, int ColNr)
+        {
+            return RowNr + 1 + 4 * ColNr;
+        }
+        
 
 
 
@@ -167,6 +224,24 @@ namespace SimulationTools
 
             DAG.FillSuccessorDictionaries();
             
+        }
+
+        public void CreateDotFile()
+        {
+            string OutputPath = string.Format("{0}\\probleminstances\\{1}.dotin", Program.BASEPATH, Description);
+            using (StreamWriter sw = File.CreateText(OutputPath))
+            {
+                sw.WriteLine("digraph G {");
+                foreach (Job u in DAG.Jobs)
+                {
+                    foreach (Job v in u.Successors)
+                    {
+                        sw.WriteLine("{0} -> {1}", u.ID, v.ID);
+                    }
+
+                }
+                sw.WriteLine("}");
+            }
         }
 
 

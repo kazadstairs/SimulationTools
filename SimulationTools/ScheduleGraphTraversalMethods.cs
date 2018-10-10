@@ -67,6 +67,7 @@ namespace SimulationTools
                 IsVisited[CurrentJob.ID] = true;
 
                 Job MachineSucc = GetMachineSuccessor(CurrentJob);
+                
 
 
                 foreach (Job Child in CurrentJob.Successors)

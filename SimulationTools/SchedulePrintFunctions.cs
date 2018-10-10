@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -73,6 +74,7 @@ namespace SimulationTools
         public void Print()
         {
             Console.WriteLine("*** Schedule information: *** ");
+            Console.WriteLine("Problem instance: {0}", this.Problem.Description);
             Console.WriteLine("* Machine info:");
             int AssignedJobsCount = 0;
             foreach (Machine m in Machines)
@@ -118,6 +120,46 @@ namespace SimulationTools
             }
 
 
+        }
+
+        public void CreateDotFile()
+        {
+            string OutputPath = string.Format("{0}\\probleminstances\\INS_{1}_SCHED_{2}.dotin", Program.BASEPATH,Problem.Description,AssignmentDescription );
+            using (StreamWriter sw = File.CreateText(OutputPath))
+            {
+                sw.WriteLine("digraph G {");
+
+                foreach (Machine M in Machines)
+                {
+                    sw.Write("subgraph cluster_{0}", M.MachineID);
+                    sw.WriteLine(" {");
+                    for(int index =0; index < M.AssignedJobs.Count; index++)
+                    {
+                        if (index < M.AssignedJobs.Count - 1)
+                        {
+                            if (M.AssignedJobs[index].ID != 0) { sw.Write("{0} -> ", M.AssignedJobs[index].ID); }
+                        }
+                        else
+                        {
+                            sw.Write(M.AssignedJobs[index].ID);
+                        }
+                    }
+                    sw.WriteLine("[style=dashed];");
+                    sw.WriteLine("label = \"M{0}\";", M.MachineID);
+                    sw.WriteLine("}");
+
+                }
+
+                foreach (Job u in Problem.DAG.Jobs)
+                {
+                    foreach (Job v in u.Successors)
+                    {
+                        sw.WriteLine("{0} -> {1}", u.ID, v.ID);
+                    }
+
+                }
+                sw.WriteLine("}");
+            }
         }
 
     }

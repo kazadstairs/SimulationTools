@@ -70,9 +70,12 @@ namespace SimulationTools
                     {
                         sw.Write(";{0}", qmname);
                     }
-                    foreach (SimulationJob j in Sim.SimulationJobs)
+                    if (Constants.INCLUDEJOBINFO)
                     {
-                        sw.Write(";ScheduledStartTime{0};RealisedStartTime{0};RealisedProcessingTime{0};Machine{0}", j.JobParams.ID);
+                        foreach (SimulationJob j in Sim.SimulationJobs)
+                        {
+                            sw.Write(";ScheduledStartTime{0};RealisedStartTime{0};RealisedProcessingTime{0};Machine{0}", j.JobParams.ID);
+                        }
                     }
                     sw.Write(Environment.NewLine);
                 }
@@ -91,17 +94,17 @@ namespace SimulationTools
                 TotalLinearStartDelay,
                 (double)StartOnTimeJobs / NJobs,
                 (double)FinishOnTimeJobs / NJobs);
-                //Jobinfo:
-                /*
-                foreach (SimulationJob j in Sim.SimulationJobs)
+                if (Constants.INCLUDEJOBINFO)
                 {
-                    sw.Write(";{0};{1};{2};{3}", j.Sim.Sched.GetStartTimeOfJob(j.JobParams),j.RealisedStartTime,j.RealisedProcessingTime,j.Sim.Sched.GetMachineByJobID(j.JobParams.ID).MachineID);
-                    if (j.Sim.Sched.GetStartTimeOfJob(j.JobParams) > j.RealisedStartTime)
+                    foreach (SimulationJob j in Sim.SimulationJobs)
                     {
-                        throw new Exception("Job started early");
+                        sw.Write(";{0};{1};{2};{3}", j.Sim.Sched.GetStartTimeOfJob(j.JobParams), j.RealisedStartTime, j.RealisedProcessingTime, j.Sim.Sched.GetMachineByJobID(j.JobParams.ID).MachineID);
+                        if (j.Sim.Sched.GetStartTimeOfJob(j.JobParams) > j.RealisedStartTime)
+                        {
+                            throw new Exception("Job started early");
+                        }
                     }
                 }
-                */
                 sw.Write(Environment.NewLine);
             }
         }

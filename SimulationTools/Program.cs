@@ -40,23 +40,16 @@ namespace SimulationTools
             bool DEBUG = true;
             if (DEBUG)
             {
-                ProblemInstance InsBlock = new ProblemInstance();
-                //Ins.InstanciateLSTest();
-                //Ins.InstanciatePinedo();
-                InsBlock.InstanciateBlok();
-
-                ProblemInstance InsMiniBlok = new ProblemInstance();
-                InsMiniBlok.InstanciateMiniBlok();
+                ProblemInstance[] Instances = AllBlokInstances();
                 // string InstanceName = "30j-15r-4m.ms";
                 //Ins.ReadFromFile(string.Format(@"{0}\{1}",INSTANCEFOLDER, InstanceName), InstanceName);
 
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
-                Schedule BlockSched = new Schedule(InsBlock);
-                BlockSched.MakeScheduleForBlockInstance();
-                Schedule MiniBlockSched = new Schedule(InsMiniBlok);
-                MiniBlockSched.MakeScheduleForBlockInstance();
-                SchedulesToSimulate.Add(MiniBlockSched);
-                SchedulesToSimulate.Add(BlockSched);
+                foreach (ProblemInstance Ins in Instances)
+                {
+                    SchedulesToSimulate.Add(new Schedule(Ins));
+                    SchedulesToSimulate[SchedulesToSimulate.Count - 1].MakeScheduleForBlockInstance();
+                }
                 //SchedulesToSimulate.Add(LocalSearch.MLS(10, Ins, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
 
@@ -64,9 +57,10 @@ namespace SimulationTools
                 {
                     currentSched.CalcRMs();
                     currentSched.MakeHTMLImage(currentSched.AssignmentDescription);
+                    currentSched.CreateDotFile();
                     foreach (string distribution in Constants.DISTRIBUTION)
                     {
-                        new Simulation(Constants.NRuns, currentSched, distribution).Perform();
+                  //      new Simulation(Constants.NRuns, currentSched, distribution).Perform();
                     }
 
                 }
@@ -204,6 +198,26 @@ namespace SimulationTools
             Sched.EstimateCmax();
      //       LocalSearch.MLS(200, Sched.Problem, FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.NeighborSwaps);
             return Sched;
+        }
+
+        static ProblemInstance[] AllBlokInstances()
+        {            
+            ProblemInstance[] Instances = new ProblemInstance[6];
+            Instances[0] = new ProblemInstance();
+            Instances[0].Instanciate1CycleP10Blok();
+            Instances[1] = new ProblemInstance();
+            Instances[1].Instanciate1CycleP1Blok();
+            Instances[2] = new ProblemInstance();
+            Instances[2].Instanciate4CycleP10Blok();
+            Instances[3] = new ProblemInstance();
+            Instances[3].Instanciate4CycleP1Blok();
+            Instances[4] = new ProblemInstance();
+            Instances[4].InstanciateFullP10Blok();
+            Instances[5] = new ProblemInstance();
+            Instances[5].InstanciateFullP1Blok();
+            
+            return Instances;
+
         }
     }
 

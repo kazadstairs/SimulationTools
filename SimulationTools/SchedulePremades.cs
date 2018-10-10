@@ -13,7 +13,8 @@ namespace SimulationTools
             int MachineID;
             foreach (Job J in PrecedenceDAG.Jobs)
             {
-                MachineID = (J.ID % 4) + 1;
+                MachineID = (J.ID % 4);
+                if (MachineID == 0) { MachineID = 4; }
                 AssignJobToMachine(J, GetMachineByID(MachineID));
             }
 
