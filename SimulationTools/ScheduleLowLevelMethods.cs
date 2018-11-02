@@ -17,7 +17,7 @@ namespace SimulationTools
 
         private void AssignJobToMachine(Job J, Machine M)
         {
-            Console.WriteLine("Assigning J{0} to M{1}",J.ID,M.MachineID);
+            //Console.WriteLine("Assigning J{0} to M{1}",J.ID,M.MachineID);
             if (M.MachineID == 0) { throw new Exception("Machines are 1 based"); }
             if (AssignedMachine(J)!= null) { throw new System.Exception("Job already assigned! If you want to reassign use Reassign function"); }
             else

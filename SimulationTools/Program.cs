@@ -37,7 +37,7 @@ namespace SimulationTools
             Console.WriteLine("REMOVING OLD DATA...");
             System.IO.File.Delete(Constants.OUTPATH);
 
-            bool DEBUG = true;
+            bool DEBUG = false;
             if (DEBUG)
             {
                 ProblemInstance[] Instances = AllBlokInstances();
@@ -80,6 +80,7 @@ namespace SimulationTools
             }
             else
             {
+                throw new NotImplementedException() // bug when the instancs are made. Something silly like reading in the box cases.
                 INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
                 for (int _i = 0; _i < INSTANCENAMES.Length; _i++)
                 {
@@ -93,23 +94,24 @@ namespace SimulationTools
                 List<Schedule> SchedulesToSimulate = new List<Schedule>();
 
                 ProblemInstance[] Instances = new ProblemInstance[INSTANCENAMES.Length + 1];
-                //  for (int i = 0; i < INSTANCENAMES.Length; i++)
-                //  {
-                int i = 8;
+                  for (int i = 0; i < INSTANCENAMES.Length; i++)
+                  {
+                //int i = 8;
                     Instances[i] = new ProblemInstance();
                     Instances[i].ReadFromFile(INSTANCEFOLDER + INSTANCENAMES[i], INSTANCENAMES[i]);
                 SchedulesToSimulate.Add(LocalSearch.MLS(5, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
                 SchedulesToSimulate.Add(LocalSearch.MLS(20, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
-                SchedulesToSimulate.Add(LocalSearch.MLS(50, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
-                SchedulesToSimulate.Add(LocalSearch.MLS(100, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+                SchedulesToSimulate.Add(LocalSearch.MLS(80, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
+
+                    SchedulesToSimulate.Add(LocalSearch.MLS(200, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
                 SchedulesToSimulate.Add(LocalSearch.MLS(500, Instances[i], "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC));
 
                 //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "RMA", "LSS"));
                 //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "GLB", "LSS"));
                 //          SchedulesToSimulate.Add(NewSchedule(Instances[i], "Random", "LSS"));
-                //                }
+                                }
 
 
                 /*ProblemInstance Pinedo = new ProblemInstance();

@@ -336,7 +336,7 @@ MakeAllPlots <- function()
 
 Make.Different.PI.and.Distros.Plot <- function()
 {
-  ggplot(aes(y = Cmax-DetCmax, x = Distribution.Type, fill = Instance.Name), data = myDF) + geom_boxplot()
+  ggplot(aes(y = Start.Punctuality, x = Distribution.Type, fill = Instance.Name), data = myDF) + geom_boxplot()
 }
 #
 #
