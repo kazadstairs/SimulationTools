@@ -9,7 +9,7 @@ namespace SimulationTools
     //Low level methods for assigning and removing jobs.
     partial class Schedule
     {
-        private void AssignJobToMachineById(int Jid, int Mid)
+        public void AssignJobToMachineById(int Jid, int Mid)
         {
            // Console.WriteLine("Assigning J{0} to M{1}", PrecedenceDAG.GetJobById(Jid).ID, GetMachineByID(Mid).MachineID);
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
@@ -107,12 +107,12 @@ namespace SimulationTools
         //Test if J is on a critical path.
         public bool IsCritical(Job J)
         {
-            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= EstimatedCmax - 0.001);
+            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= DeterministicCmax - 0.001);
         }
 
         public bool IsAlmostCritical(Job J,double relativeIncreaseAllowed)
         {
-            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= EstimatedCmax * (1 - relativeIncreaseAllowed));
+            return (CalcTailTime(J) + J.MeanProcessingTime + GetEarliestStart(J) >= DeterministicCmax * (1 - relativeIncreaseAllowed));
         }
 
 
@@ -132,7 +132,7 @@ namespace SimulationTools
         {
            // if (GetLatestStart(J) == 0)
            // { Console.WriteLine("WARNING, LSS[J{0}] = 0", J.ID); }
-            return EstimatedCmax - GetLatestStart(J) - J.MeanProcessingTime;
+            return DeterministicCmax - GetLatestStart(J) - J.MeanProcessingTime;
         }
 
         /// <summary>

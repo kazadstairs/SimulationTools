@@ -383,7 +383,7 @@ namespace SimulationTools
 
         private void Update_LSS_StartDateFor(Job j)
         {
-            LSS[j.ID] = this.EstimatedCmax - j.MeanProcessingTime;
+            LSS[j.ID] = this.DeterministicCmax - j.MeanProcessingTime;
             foreach (Job Child in j.Successors)
             {
                 if (LSS[j.ID] > LSS[Child.ID] - j.MeanProcessingTime) // if j is set to start at an impossible time, set it earlier.

@@ -32,10 +32,12 @@ namespace SimulationTools
         private int[] AssignedMachineID; // keeps track of which machine each job is on: MachineId = MachineIdForJobId[j.id]
 
         // useful vars:
-        public double EstimatedCmax;
+        public double DeterministicCmax;
         private double[] ESS;
         private double[] LSS;
         //public double[] DynamicDueDate;
+        public double LSFitness;
+        
 
         // RMs
         public List<RM> RMs;
@@ -132,7 +134,7 @@ namespace SimulationTools
         public void CalcRMs()
         {
             if (RMs.Count > 0) { throw new Exception("RMs aready calculated"); }
-            else if (EstimatedCmax <= 0) { Console.WriteLine("Warning, estimated Cmax = 0. Calling EstimateCmax()."); EstimateCmax(); } // has to be done before calculating RMs
+            else if (DeterministicCmax <= 0) { Console.WriteLine("Warning, estimated Cmax = 0. Calling EstimateCmax()."); EstimateCmax(); } // has to be done before calculating RMs
             foreach (string name in Constants.RMNames)
             {
                 RMs.Add(new RM(name));
@@ -161,10 +163,10 @@ namespace SimulationTools
                     MaxID = i;
                 }
             }
-            EstimatedCmax = Maximum;
+            DeterministicCmax = Maximum;
 
          //   Console.WriteLine("Debug: Cmax is estimated to be {0}", EstimatedCmax);
-            return EstimatedCmax;
+            return DeterministicCmax;
         }
 
 

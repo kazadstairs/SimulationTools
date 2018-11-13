@@ -36,7 +36,7 @@ namespace SimulationTools
 
         public void AddJob(Job j)
         {
-            Console.WriteLine("Adding J{0}",j.ID);
+           // Console.WriteLine("Adding J{0}",j.ID);
             Jobs.Add(j);
             N++;
         }
@@ -68,7 +68,7 @@ namespace SimulationTools
 
         public void AddArcById(int uid, int vid)
         {
-            Console.WriteLine("Adding arc ({0}->{1})",uid,vid);
+           // Console.WriteLine("Adding arc ({0}->{1})",uid,vid);
             AddArc(GetJobById(uid), GetJobById(vid));
         }
 

@@ -42,7 +42,7 @@ namespace SimulationTools
                 //CmaxBlok:
                 top = 50;
                 CalcLSS();
-                left = EstimatedCmax * scale;
+                left = DeterministicCmax * scale;
                 width = 2 * scale;
                 double height = 50 * Machines.Count + 100;
                 file.WriteLine("div.CMAX");
@@ -63,7 +63,7 @@ namespace SimulationTools
                 {
                     file.WriteLine("<div class=\"j{0}\"> J{0}; </div>", j.ID);
                 }
-                file.WriteLine("<div class=\"CMAX\"> Cmax = {0}; </div>", EstimatedCmax);
+                file.WriteLine("<div class=\"CMAX\"> Cmax = {0}; </div>", DeterministicCmax);
                 file.WriteLine(@"</body></html>");
             }
         }
@@ -115,7 +115,7 @@ namespace SimulationTools
             for (int JobID = 0; JobID < PrecedenceDAG.N; JobID++)
             {
                 CurrentJob = PrecedenceDAG.GetJobById(JobID);
-                Console.WriteLine("| {0,-3} | {1,-3} | {6,-3} | {2,-3} | {3,-3} | {4,-3} | {5,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob),EstimatedCmax,CurrentJob.EarliestReleaseDate);
+                Console.WriteLine("| {0,-3} | {1,-3} | {6,-3} | {2,-3} | {3,-3} | {4,-3} | {5,-3} |", JobID, CurrentJob.MeanProcessingTime, GetEarliestStart(CurrentJob), CalcTailTime(CurrentJob), CurrentJob.MeanProcessingTime + GetEarliestStart(CurrentJob) + CalcTailTime(CurrentJob),DeterministicCmax,CurrentJob.EarliestReleaseDate);
 
             }
 

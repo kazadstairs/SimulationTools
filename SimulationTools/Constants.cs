@@ -7,9 +7,8 @@ namespace SimulationTools
 {
     static class Constants
     {
-        public static string OUTPATH;
+        public static string ALLRESULTSPATH;
        // public static int NumberOfEvents = 100;
-        public static int NRuns = 300; // Number of runs in the simulation;
         public static bool INCLUDEJOBINFO = false;  // true: include start and completion times for each job for each simulation run in output.
                                                     // false: do not include start and completion times for each job in simulation run.
 
@@ -18,15 +17,7 @@ namespace SimulationTools
 
         // public static int DISTRIBUTIONTYPE = 1;
 
-        public static string[] DISTRIBUTION = { //"N(p,1)", //Normal, with sigma 1
-                                                 //"N(p,0.01p)", //Normal, sigma is 0.01*p
-                                                   "N(p,0.1p)",
-                                                   "N(p,0.3p)", // Guido´s normal.
-                                                   "Exp(p)", //Exponential with mean p
-                                                 //"LN(p,0.01p)", //LogNormal distribution, sigma is 0.01p
-                                                   "LN(p,0.1p)", //LogNormal distribution, sigma is 0.1p
-                                                 "LN(p,0.3p)" //LogNormal distribution, sigma is 0.25p Variation is HUUGE. Don't use this.
-        };
+       
 
 
         public static string[] RMNames = { "FS", // Sum of free slacks
@@ -50,6 +41,8 @@ namespace SimulationTools
                                            "Start Punctuality",
                                            "Finish Punctuality"
         };
+
+        
 
         
     }

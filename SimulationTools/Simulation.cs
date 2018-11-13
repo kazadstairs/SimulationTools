@@ -73,7 +73,7 @@ namespace SimulationTools
                 if (runnr % 100 == 99) { Console.WriteLine("***** Performing Simulation {0,-4}/{1,-4}...", runnr,NRuns); }
                 SetupSimulation();
                 PerformSimulation();
-                PerformanceMeasures.WriteToFile(Constants.OUTPATH);
+                PerformanceMeasures.WriteToFile(Constants.ALLRESULTSPATH);
       //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }

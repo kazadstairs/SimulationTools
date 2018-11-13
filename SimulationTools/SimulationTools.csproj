@@ -65,6 +65,7 @@
     <Compile Include="ScheduleLowLevelMethods.cs" />
     <Compile Include="SchedulePremades.cs" />
     <Compile Include="SchedulePrintFunctions.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SimulationJob.cs" />
     <Compile Include="SimulationPerformanceMeasures.cs" />
     <Compile Include="Simulation.cs" />

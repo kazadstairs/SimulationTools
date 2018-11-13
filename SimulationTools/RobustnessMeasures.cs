@@ -107,11 +107,11 @@ namespace SimulationTools
             }
             else
             {
-                if (S.EstimatedCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j) < 0)
+                if (S.DeterministicCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j) < 0)
                 {
                     throw new Exception(string.Format("{0}",S.GetStartTimeOfJob(j)));
                 }
-                return S.EstimatedCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j);
+                return S.DeterministicCmax - j.MeanProcessingTime - S.GetStartTimeOfJob(j);
             }
         }
 
