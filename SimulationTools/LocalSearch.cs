@@ -42,7 +42,6 @@ namespace SimulationTools
                     default:
                         throw new Exception("AssignmentType not recognized");
                 }
-                CurrentSchedule.AssignmentDescription += string.Format("MLS{0}",NRuns);
                 CurrentSchedule.CalcESS();
                 CurrentSchedule.SetESS();
 
@@ -83,7 +82,8 @@ namespace SimulationTools
                     BestFitness = CurrentFitness;
                     MLSOptimumSched = new Schedule(CurrentSchedule); // create a copy
                 }*/
-                if (i % 20 == 0) { Console.WriteLine("MLS at {0}/{1}", i, NRuns); }
+                if (i % 20 == 0) { Console.WriteLine("MLS at {0}/{1} ", i, NRuns); }
+                Console.Write(".");
             }
             
             Console.WriteLine("MLS{0} optimal schedule with fitness {1}(check {2}):", NRuns, Top_N_Schedules[0].LSFitness, FitnessFunction(Top_N_Schedules[0]));
@@ -144,7 +144,7 @@ namespace SimulationTools
                 //check Params:
                 string[] Params = rf.ReadLine().Split();
                 if (Params[0] == PI.Description &&
-                    Params[1] == AH &&
+                    Params[1] == (AH + "MLS" + Nruns) &&
                     int.Parse(Params[2]) == Nruns &&
                     int.Parse(Params[3]) == NBest &&
                     Params[4] == HF)
@@ -154,17 +154,22 @@ namespace SimulationTools
                     List<Schedule> MLSScheduleList = new List<Schedule>(NBest);
                     for (int i = 0; i < NBest; i++)
                     {
-                        Schedule CurrentSched = new Schedule(PI);
-                        CurrentSched.LSFitness = double.Parse(rf.ReadLine());
+                        Schedule CurrentSchedule = new Schedule(PI);
+                        CurrentSchedule.LSFitness = double.Parse(rf.ReadLine());
                         for (int j = 0; j < PI.NMachines; j++)
                         {
                             string[] Line = rf.ReadLine().Split();
                             CurrentMachineID = int.Parse(Line[0]);
                             for (int k = 1; k < Line.Length - 1; k++)
                             {
-                                CurrentSched.AssignJobToMachineById(int.Parse(Line[k]), CurrentMachineID);
+                                CurrentSchedule.AssignJobToMachineById(int.Parse(Line[k]), CurrentMachineID);
                             }
                         }
+                        CurrentSchedule.AssignmentDescription = AH;
+                        CurrentSchedule.CalcESS();
+                        CurrentSchedule.SetESS();
+                        CurrentSchedule.CalcRMs();
+                        MLSScheduleList.Add(CurrentSchedule);
                     }
 
                     return MLSScheduleList;
@@ -172,8 +177,11 @@ namespace SimulationTools
                 else
                 {
                     Console.WriteLine("ERROR: File Parameters do not match file name for file:");
+                    Console.WriteLine(Params[0] == PI.Description);
+                    Console.WriteLine(Params[1] == (AH+"MLS"+Nruns));
                     Console.WriteLine(int.Parse(Params[2]) == Nruns);
                     Console.WriteLine(int.Parse(Params[3]) == NBest);
+                    Console.WriteLine(Params[4] == HF);
                     Console.WriteLine(path);
                     throw new Exception("File Paramaters do not match file name!");
                 }

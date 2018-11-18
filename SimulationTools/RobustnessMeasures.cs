@@ -54,11 +54,19 @@ namespace SimulationTools
             return RM(Unweighted, SDROf, Unmodified, S, 0);
         }
 
-        public static double NormalBasedEstimatedCmax(Schedule Sched, double StdDevAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
-        {
+        public static double NormalBasedEstimatedCmax(Schedule Sched, double VariationAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
+        {            
             Console.WriteLine("Comparing Normalbased Estimated Completion times");
-            var S = new Distribution[Sched.PrecedenceDAG.N, Sched.PrecedenceDAG.N]; //all starttimes as distributions (Mean,Var) pairs. S_j^k = S[j,k]
-            Sched.ForeachJobInPrecOrderDo(J => EstimateStartTimeDistribution(J, Sched, S,StdDevAssumption));
+            var C = new Distribution[Sched.PrecedenceDAG.N]; //all starttimes as distributions (Mean,Var) pairs. S_j^k = S[j,k]
+            Sched.ForeachJobInPrecOrderDo(J => EstimateCompletionTimeDistribution(J, Sched, C,VariationAssumption));
+            // completion time of all jobs known, now for each machine, take the maximum of the completion times of the last jobs:
+            Distribution Cmax = new ZeroDistribution();
+            foreach (Machine M in Sched.Machines)
+            {
+                Cmax = DistributionFunctions.Maximum(Cmax, C[M.LastJob().ID],true);
+            }
+
+            /*
             double Cmax = 0;
             double Cj = 0;
             foreach (Job J in Sched.PrecedenceDAG.Jobs)
@@ -71,7 +79,8 @@ namespace SimulationTools
                 }
             }
             Console.WriteLine("E(Cmax) = {0}", Cmax);
-            return Cmax;
+            */
+            return Cmax.Mean;
         }
 
 
@@ -130,7 +139,7 @@ namespace SimulationTools
         /// <param name="S"></param>
         /// <param name="StandardDeviationAssumption">How large the standard deviation is assumed to be, as a factor of the mean processing time.</param>
         /// <returns></returns>
-        private static void EstimateStartTimeDistribution(Job J,Schedule Sched, Distribution [,] S, double StandardDeviationAssumption)
+        private static void _Deprecated_EstimateStartTimeDistribution(Job J,Schedule Sched, Distribution [,] S, double StandardDeviationAssumption)
         {
             // as a starting point, Starttime = completion of machine predecessor.
             // todo: ADD RELEASE DATES TO STARTIME POINT?
@@ -139,7 +148,7 @@ namespace SimulationTools
                 S[J.ID, 0] = new ZeroDistribution();
                 Console.WriteLine("Setting S[{0},{1}] = N(0,0)", J.ID, 0);
             }
-            else
+            else // CASE 1
             {
                 Job Pred = Sched.GetMachinePredecessor(J);
                 Distribution PredCompletion = DistributionFunctions.NormalAddition( S[Pred.ID, Pred.Predecessors.Count], new ConstantAsDistribution(Pred.MeanProcessingTime));
@@ -155,7 +164,7 @@ namespace SimulationTools
                     _k++;
 
                     // both jobs on the same machine
-                    if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID)
+                    if (Predecessor.ID == Sched.GetMachinePredecessor(J).ID) // CASE 1, should never fire
                     {
                         S[J.ID, _k] = S[J.ID, _k - 1];
                         //S[J.ID, _k] = DistributionFunctions.Maximum(S[J.ID, _k - 1],
@@ -166,9 +175,11 @@ namespace SimulationTools
                     }
                     else
                     {
-                        //same machine, but not direct machine predecessor.
+                        //same machine, but not direct machine predecessor.: CASE 2
                         //X = S_i, Y = S^k-1_j so that delta = Y-X = sum_i to mp(j) P
-                        Distribution delta = new Distribution();
+                        S[J.ID, _k] = S[J.ID, _k - 1];
+
+                        /*Distribution delta = new Distribution();
                         Job CurrentJob = Predecessor;
                         int DEBUG = 0;
                         while (CurrentJob != J)
@@ -188,6 +199,7 @@ namespace SimulationTools
                                                     delta);
 
                         Console.WriteLine("Setting S[{0},{1}]", J.ID, _k);
+                        */
                     }
                 }
                 else
@@ -217,6 +229,60 @@ namespace SimulationTools
             //finally, compare with the release date
             S[J.ID, _k] = DistributionFunctions.Maximum(new ConstantAsDistribution(J.EarliestReleaseDate), S[J.ID, _k],true);
             Console.WriteLine("S{0}=S[{0},{1}]={2}",J.ID,_k,S[J.ID,_k].Mean);
+        }
+
+        private static void EstimateCompletionTimeDistribution(Job J, Schedule Sched, Distribution[] C, double StandardDeviationAssumption)
+        {
+            if (Sched.GetMachinePredecessor(J) == null)
+            {
+                C[J.ID] = new ZeroDistribution(); // processing time at end of function
+                Console.WriteLine("Setting C[{0},{1}] = N(0,0)", J.ID, 0);
+            }
+            else // CASE 1
+            {
+                Job Pred = Sched.GetMachinePredecessor(J);
+                C[J.ID] = C[Pred.ID];
+            }
+            // determine the last predecessor on each machine.
+            int[] LastPredecessorID = new int[Sched.Problem.NMachines + 1];
+            for (int i = 0; i < Sched.Problem.NMachines + 1; i++)
+            {
+                LastPredecessorID[i] = -1;
+            }
+            int AssignedMachineID = -1;
+            foreach (Job Pred in J.Predecessors)
+            {
+                AssignedMachineID = Sched.GetMachineByJobID(Pred.ID).MachineID;
+                if (LastPredecessorID[AssignedMachineID] < 0) // if no predecessor yet found on this machine, this job is the last known predecessor on this machine
+                {
+                    LastPredecessorID[AssignedMachineID] = Pred.ID;
+                }
+                else if (C[Pred.ID].Mean > C[Sched.Problem.DAG.GetJobById(LastPredecessorID[AssignedMachineID]).ID].Mean)
+                {
+                    //this job is the last one on the macine (so far)
+                    LastPredecessorID[AssignedMachineID] = Pred.ID;
+                }
+            }//now LastPredecessor contains the IDs of all last jobs on the machine.
+            for (int m = 1; m < Sched.Problem.NMachines + 1; m++)
+            {
+                if (m == Sched.GetMachineByJobID(J.ID).MachineID) //Case 1 or case 2
+                {
+                    //last predecessor on same machine, either considered above, or not the Machine predecessor, so we can ignore it.
+                }
+                else // different machine, update the starttime of J
+                {
+                    if (LastPredecessorID[m] < 0)
+                    {
+                        //no predecessor on this machine: This machine does not influence the startime of J
+                    }
+                    else
+                    {
+                        C[J.ID] = DistributionFunctions.Maximum(C[LastPredecessorID[m]], C[J.ID], true);
+                    }
+                }
+            }
+            //now C[J.ID] is the approximated maximum starttime of J, add the processing time info of J to estimate the completion time:
+            C[J.ID] = DistributionFunctions.NormalAddition(C[J.ID], new Distribution(J.MeanProcessingTime, StandardDeviationAssumption * J.MeanProcessingTime));
         }
 
         private static Distribution GetStartTimeDistribution(Job J, Schedule Sched, Distribution[,] S)

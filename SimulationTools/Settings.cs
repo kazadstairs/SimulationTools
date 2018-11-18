@@ -8,8 +8,8 @@ namespace SimulationTools
 {
     public static class Settings
     {
-        public static int MLS_RUNS = 10;
-        public static int MLS_SCHEDS = 1;
+        public static int MLS_RUNS = 100;
+        public static int MLS_SCHEDS = 10;
         public static string MLS_AH = "Random";
         public static string MLS_HF = "DetCmax";
 
@@ -19,10 +19,11 @@ namespace SimulationTools
 
 
 
-        public static bool PERFORM_MLS = true;
-        public static bool PERFORM_SIMULATIONS = false;
-        public static int N_SIM_RUNS = 300; // Number of runs in the simulation;
-        public static int[] PI_IDS_TO_USE = { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
+        public static bool PERFORM_MLS = false;
+        public static bool PERFORM_SIMULATIONS = true;
+        public static int N_SIM_RUNS = 10; // Number of runs in the simulation;
+        public static bool INCLUDEJOBINFO = false;
+        public static int[] PI_IDS_TO_USE = { 0 }; //, 1, 2, 3, 4, 5, 6, 7, 8 };
 
         public static string[] DISTRIBUTION = { //"N(p,1)", //Normal, with sigma 1
                                                  //"N(p,0.01p)", //Normal, sigma is 0.01*p

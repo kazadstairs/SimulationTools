@@ -77,7 +77,7 @@ namespace SimulationTools
       //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }
-            Console.WriteLine("Simulation completed (Nruns = {0}, INS = {1}, SCHED = {2},",NRuns,Sched.Problem.Description,Sched.AssignmentDescription);
+            Console.WriteLine("Simulation completed (Nruns = {0}, PI = {1}, SCHED = {2},",NRuns,Sched.Problem.Description,Sched.AssignmentDescription);
         }
 
         private void SetupSimulation()

@@ -10,7 +10,18 @@ namespace SimulationTools
     {
         public double Mean;
         public double Variation;
+
+        public Distribution()
+        { }
+
+        public Distribution(double mean, double variation)
+        {
+            Mean = mean;
+            Variation = variation;
+        }
     }
+
+
 
     class ZeroDistribution : Distribution
     {

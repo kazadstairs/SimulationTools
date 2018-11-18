@@ -95,7 +95,7 @@ namespace SimulationTools
                     foreach (ProblemInstance PI in Instances)
                     {
                         Console.WriteLine("Starting Sims for PI: {0}", PI.Description);
-                        List<Schedule> Top_MLS_Scheds = LocalSearch.ReadMLSSchedsFor(PI, Settings.MLS_AH, Settings.MLS_RUNS, Settings.MLS_SCHEDS, Settings.MLS_HF);
+                        List<Schedule> Top_MLS_Scheds = LocalSearch.ReadMLSSchedsFor(PI,Settings.MLS_AH, Settings.MLS_RUNS, Settings.MLS_SCHEDS, Settings.MLS_HF);
                         foreach (Schedule CurrentSched in Top_MLS_Scheds)
                         {
                             foreach (string distribution in Settings.DISTRIBUTION)
@@ -112,6 +112,8 @@ namespace SimulationTools
             }
             else
             {
+
+
                 // DEBUG MODE HERE
                 ProblemInstance[] Instances = AllBlokInstances();
 
@@ -138,11 +140,13 @@ namespace SimulationTools
 
             }
 
-        }   
+        }
         //************************ END OF MAIN *******************************************************************//
 
-
-        // todo: Expand to allow chooosing of starttime decissions.
+        static public void TestEdit(int[] T)
+        {
+            T[2] = 42;
+        }
         static Schedule NewSchedule(ProblemInstance Ins,string AssignmentType,string StartTimeType)
         {
             Schedule Sched = new Schedule(Ins);

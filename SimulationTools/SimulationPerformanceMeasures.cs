@@ -70,7 +70,7 @@ namespace SimulationTools
                     {
                         sw.Write(";{0}", qmname);
                     }
-                    if (Constants.INCLUDEJOBINFO)
+                    if (Settings.INCLUDEJOBINFO)
                     {
                         foreach (SimulationJob j in Sim.SimulationJobs)
                         {
