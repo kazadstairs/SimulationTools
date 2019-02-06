@@ -11,7 +11,8 @@ namespace SimulationTools
     {
         public void AssignJobToMachineById(int Jid, int Mid)
         {
-           // Console.WriteLine("Assigning J{0} to M{1}", PrecedenceDAG.GetJobById(Jid).ID, GetMachineByID(Mid).MachineID);
+            // Console.WriteLine("Assigning J{0} to M{1}", PrecedenceDAG.GetJobById(Jid).ID, GetMachineByID(Mid).MachineID);
+            if (Mid == 0) { throw new Exception("Machines are 1 based"); }
             AssignJobToMachine(PrecedenceDAG.GetJobById(Jid), GetMachineByID(Mid));
         }
 
@@ -159,7 +160,7 @@ namespace SimulationTools
             return (GetEarliestStart(X) + X.MeanProcessingTime > _StartTimeofV);
         }
 
-        public double CalcStartTimeOfMoveJob(Job MoveJob)
+        public double CalcStartTimeOfMoveJob(Job MoveJob) // for i in pred(Movejob), return max_i {ESS[i]+p_i}
         {
             double EarliestStartofMoveJob = 0.0;
             double tempStarttime;
@@ -176,9 +177,9 @@ namespace SimulationTools
 
          public double CalcTailTimeOfMoveJob(Job MoveJob)
         {
-            if (MoveJob.ID == 0)
-            {
-            }
+          //  if (MoveJob.ID == 0)
+          //  {
+          //  }
             double MaxTailTime = 0.0;
             double tempTailtime;
             foreach (Job Suc in MoveJob.Successors) //intentionally exclude machine pred. Using Sv- = MAX(Si- + pi) = MAX(Si + pi)

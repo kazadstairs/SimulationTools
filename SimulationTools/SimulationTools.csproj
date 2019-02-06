@@ -45,6 +45,7 @@
     <Compile Include="Distribution.cs" />
     <Compile Include="FitnessFunctions.cs" />
     <Compile Include="NeighborhoodFunctions.cs" />
+    <Compile Include="Number.cs" />
     <Compile Include="RM.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="DistributionFunctions.cs" />

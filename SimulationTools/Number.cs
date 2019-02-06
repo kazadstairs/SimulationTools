@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationTools
 {
-    //public class State
-    //{
-    //    double CurrentTime;
-   // }
+    class Number
+    {
+    }
 }
-

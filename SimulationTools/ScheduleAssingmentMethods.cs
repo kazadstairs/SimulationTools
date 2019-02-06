@@ -106,16 +106,19 @@ namespace SimulationTools
         /// </summary>
         public void PinedoSchedule()
         {
-            AssignJobToMachineById(1, 0);
-            AssignJobToMachineById(2, 0);
-            AssignJobToMachineById(6, 0);
-            AssignJobToMachineById(8, 0);
+            AssignJobToMachineById(0, 1); //Dummy job
 
-            AssignJobToMachineById(3, 1);
-            AssignJobToMachineById(4, 1);
-            AssignJobToMachineById(5, 1);
-            AssignJobToMachineById(7, 1);
-            AssignJobToMachineById(9, 1);
+            AssignJobToMachineById(1, 1);
+            AssignJobToMachineById(2, 1);
+            AssignJobToMachineById(6, 1);
+            AssignJobToMachineById(8, 1);
+
+            AssignJobToMachineById(3, 2);
+            AssignJobToMachineById(4, 2);
+            AssignJobToMachineById(5, 2);
+            AssignJobToMachineById(7, 2);
+            AssignJobToMachineById(9, 2);
+
         }
 
         /// <summary>

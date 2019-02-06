@@ -30,6 +30,7 @@ namespace SimulationTools
                     while (RemoveAndReinstert(CurrentSchedule, FitnessFunction) != null)
                     {
                         // keep doing remove and reinserts
+                        Console.Write("|");
                         NSSaturated = false;
                         ImprovementFound = true;
                     }
@@ -51,6 +52,7 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule NeighborSwaps(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
+            Console.Write("NS");
             int StartMachineId = DistributionFunctions.UniformInt(CurrentSchedule.Problem.NMachines - 1) + 1; // 1 to 11 (incl)
             int CurrentMachineId = StartMachineId;
             int NMachinesTried = 0;
@@ -127,14 +129,16 @@ namespace SimulationTools
         /// <returns></returns>
         public static Schedule RemoveAndReinstert(Schedule CurrentSchedule, Func<Schedule, double> FitnessFunction)
         {
+            Console.Write("RR");
             //Qk: CurrentSchedu
             //loop over all jobs:
             int MoveJobID = DistributionFunctions.UniformInt(CurrentSchedule.PrecedenceDAG.N);
             int NjobsTried = 0;
             Job MoveJob;
             //Schedule FullSchedule = new Schedule(CurrentSchedule);
-            double OriginalFitness = FitnessFunction(CurrentSchedule);
             CurrentSchedule.CalcLSS();
+            double OriginalFitness = FitnessFunction(CurrentSchedule);
+            
             
 
             while (NjobsTried < CurrentSchedule.PrecedenceDAG.N)
@@ -236,7 +240,7 @@ namespace SimulationTools
         private static bool MoveAndInsertIsImprovement(Schedule ScheduleBeforeMove,Job MoveJob, double ESSv_withoutMachinePred, double Tailtimev_withoutMachinePred, Machine NewMachine, int NewPosIndex, double Currentfitness)
         {
             // note Cmax >= Sx + Px + Tx
-            
+            if (Settings.MLS_HF != "DetCmax") { throw new Exception("MoveAndInsertIsImprovement in NeighborhoodFunctions.cs ONLY works for DetCmax"); }
             double Sv, Tv;
             if (NewPosIndex == 0)
             {

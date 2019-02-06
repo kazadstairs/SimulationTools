@@ -69,15 +69,17 @@ namespace SimulationTools
         {
             for (int runnr = 0; runnr < NRuns; runnr++)
             {
-                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,Constants.PermittedIncreaseForPunctuality,Sched.PrecedenceDAG.N,this);
-                if (runnr % 100 == 99) { Console.WriteLine("***** Performing Simulation {0,-4}/{1,-4}...", runnr,NRuns); }
+                PerformanceMeasures = new SimulationPerformanceMeasures(runnr,Settings.PermittedIncreaseForPunctuality,Sched.PrecedenceDAG.N,this);
+               // if (runnr % 100 == 0) { Console.WriteLine("{0,-4}/{1,-4}...", runnr,NRuns); }
                 SetupSimulation();
                 PerformSimulation();
                 PerformanceMeasures.WriteToFile(Constants.ALLRESULTSPATH);
       //          Console.WriteLine("{0} Jobs started", DEBUGJobsStarted);
                 CleanJobs();
             }
-            Console.WriteLine("Simulation completed (Nruns = {0}, PI = {1}, SCHED = {2},",NRuns,Sched.Problem.Description,Sched.AssignmentDescription);
+            //  Console.WriteLine("Simulation complete. Settings were:");
+            //  Console.WriteLine("Nruns = {0}, PI = {1}, SCHED = {2}, Distro = {3}",NRuns,Sched.Problem.Description,Sched.AssignmentDescription,DistributionType);
+            
         }
 
         private void SetupSimulation()

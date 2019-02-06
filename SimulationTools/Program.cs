@@ -30,8 +30,8 @@ namespace SimulationTools
             //  BASEPATH = string.Format(@"C: \Users\3496724\Source\Repos\SimulationTools\"); //KBG pcs
             BASEPATH = string.Format(@"C:\Users\Gebruiker\Documents\UU\MSc Thesis\Code\Simulation\SimulationTools\"); //Laptop
 
-            Constants.ALLRESULTSPATH = string.Format(@"{0}Results\RMs\allresults.txt", Program.BASEPATH);
-            INSTANCEFOLDER = string.Format(@"{0}probleminstances\", BASEPATH);
+            Constants.ALLRESULTSPATH = string.Format(@"{0}Results\RMs\{1}", Program.BASEPATH,Settings.RESULTSFILENAME);
+            INSTANCEFOLDER = string.Format(@"C: \Users\Gebruiker\Documents\UU\MSc Thesis\Code\probleminstances\"); //string.Format(@"{0}probleminstances\", BASEPATH);
             SCHEDULEFOLDER = string.Format(@"{0}\Results\Schedules\", BASEPATH);
 
             //
@@ -58,7 +58,19 @@ namespace SimulationTools
                     foreach (ProblemInstance PI in Instances)
                     {
                         Console.WriteLine("Performing MLS{0} on PI {1}...", Settings.MLS_RUNS, PI.Description);
-                        List<Schedule> Top_MLS_Scheds = LocalSearch.MLS(Settings.MLS_RUNS, Settings.MLS_SCHEDS, PI, "Random", FitnessFunctions.MeanBasedCmax, NeighborhoodFunctions.VNHC);
+                        Func<Schedule, double> fitnessfunction;
+                        switch (Settings.MLS_HF)
+                        {
+                            case "DetCmax":
+                                fitnessfunction = FitnessFunctions.MeanBasedCmax;
+                                break;
+                            case "NormalApproxCmax":
+                                fitnessfunction = FitnessFunctions.NormalApproxCmax;
+                                break;
+                            default:
+                                throw new Exception(string.Format("Settings.MLS_HF ({0}) did not match pattern \"DetCmax\" or \"NormalApproxCmax\"", Settings.MLS_HF));
+                        }
+                        List<Schedule> Top_MLS_Scheds = LocalSearch.MLS(Settings.MLS_RUNS, Settings.MLS_SCHEDS, PI, "Random", fitnessfunction, NeighborhoodFunctions.VNHC);
                         Console.WriteLine("Completed MLS{0} on PI {1}, writing to File...", Settings.MLS_RUNS, PI.Description);
                         LocalSearch.WriteScheduleListToFile(Top_MLS_Scheds, Settings.MLS_RUNS, Settings.MLS_HF);
                         Console.WriteLine("Completed MLS{0} on PI {1}, written to file.", Settings.MLS_RUNS, PI.Description);
@@ -92,18 +104,29 @@ namespace SimulationTools
                         Console.WriteLine(Distr);
                     }
 
-                    foreach (ProblemInstance PI in Instances)
+                    int PIcounter = 0;
+                    foreach(ProblemInstance PI in Instances)
                     {
                         Console.WriteLine("Starting Sims for PI: {0}", PI.Description);
-                        List<Schedule> Top_MLS_Scheds = LocalSearch.ReadMLSSchedsFor(PI,Settings.MLS_AH, Settings.MLS_RUNS, Settings.MLS_SCHEDS, Settings.MLS_HF);
+                        Console.WriteLine("CALCULATING RM MEANS instead of sums!");
+
+                        Console.Write("Reading schedules from file...");
+                        List<Schedule> Top_MLS_Scheds = LocalSearch.ReadMLSSchedsFor(PI, Settings.MLS_AH, Settings.MLS_RUNS, Settings.MLS_SCHEDS, Settings.MLS_HF, false);
+
+                        Console.WriteLine("   ... Completed.");
+                        int SchedID = 0;
                         foreach (Schedule CurrentSched in Top_MLS_Scheds)
                         {
+                            CurrentSched.AssignmentDescription += string.Format("MLSID{0}", SchedID);
+                            Console.WriteLine("Starting Simulations for Sched with id: {0}", SchedID);
                             foreach (string distribution in Settings.DISTRIBUTION)
                             {
                                 new Simulation(Settings.N_SIM_RUNS, CurrentSched, distribution).Perform();
                             }
+                            SchedID++;
                         }
-                        Console.WriteLine("Completed Sims for PI: {0}", PI.Description);
+                        PIcounter++;
+                        Console.WriteLine("Completed Sims for PI: {0} ({1}/{2})", PI.Description, PIcounter, Instances.Length);
                     }
                     Console.WriteLine("All Simulation operations complete. Output written to:");
                     Console.WriteLine("{0}", Constants.ALLRESULTSPATH);
@@ -112,8 +135,11 @@ namespace SimulationTools
             }
             else
             {
-
-
+               // ProblemInstance Pinedo = new ProblemInstance();
+               // Pinedo.InstanciatePinedo();
+               // Schedule TestSched = new Schedule(Pinedo);
+               // TestSched.PinedoSchedule();
+               // RobustnessMeasures.NormalBasedEstimatedCmax(TestSched, 0.3);
                 // DEBUG MODE HERE
                 ProblemInstance[] Instances = AllBlokInstances();
 
@@ -129,8 +155,8 @@ namespace SimulationTools
                 foreach (Schedule currentSched in SchedulesToSimulate)
                 {
                     currentSched.CalcRMs();
-                    currentSched.MakeHTMLImage(currentSched.AssignmentDescription);
-                    currentSched.CreateDotFile();
+                    //currentSched.MakeHTMLImage(currentSched.AssignmentDescription);
+                    //currentSched.CreateDotFile();
                     foreach (string distribution in Settings.DISTRIBUTION)
                     {
                         new Simulation(Settings.N_SIM_RUNS, currentSched, distribution).Perform();
@@ -191,20 +217,27 @@ namespace SimulationTools
         static ProblemInstance[] SelectProblemInstances()
         {
             ProblemInstance[] Instances;
-            if (Settings.PI_IDS_TO_USE.Length > 0)
+            if (Settings.PROBLEM_INSTANCES_TO_USE.Length > 0)
             {
                 // Load instance names from the files
-                INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
-                for (int _i = 0; _i < INSTANCENAMES.Length; _i++)
+              //  INSTANCENAMES = System.IO.Directory.GetFiles(INSTANCEFOLDER);
+              //  for (int _i = 0; _i < INSTANCENAMES.Length; _i++)
+              //  {
+              //      string[] temp = INSTANCENAMES[_i].Split('\\');
+              //      INSTANCENAMES[_i] = temp[temp.Length - 1];
+              //  }
+
+                Instances = new ProblemInstance[Settings.PROBLEM_INSTANCES_TO_USE.Length];
+
+                //int InstancesFilledCounter = 0;
+                for (int PI_id = 0; PI_id < Settings.PROBLEM_INSTANCES_TO_USE.Length; PI_id++)
                 {
-                    string[] temp = INSTANCENAMES[_i].Split('\\');
-                    INSTANCENAMES[_i] = temp[temp.Length - 1];
+                    Instances[PI_id] = new ProblemInstance();
+                    Instances[PI_id].ReadFromFile(INSTANCEFOLDER + Settings.PROBLEM_INSTANCES_TO_USE[PI_id], Settings.PROBLEM_INSTANCES_TO_USE[PI_id]);
+
                 }
-
-                Instances = new ProblemInstance[Settings.PI_IDS_TO_USE.Length];
-
-                int InstancesFilledCounter = 0;
-                for (int i = 0; i < INSTANCENAMES.Length + 1; i++)
+                /*
+                for (int i = 0; i < Settings.PROBLEM_INSTANCES_TO_USE.Length + 1; i++)
                 {
                     foreach (int ID in Settings.PI_IDS_TO_USE)
                     {
@@ -216,6 +249,7 @@ namespace SimulationTools
                         }
                     }
                 }
+                */
             }
             else
             {

@@ -44,6 +44,7 @@ namespace SimulationTools
                 }
                 CurrentSchedule.CalcESS();
                 CurrentSchedule.SetESS();
+                CurrentSchedule.AssignmentDescription += string.Format("MLS_run_{0}", i);
 
                 //optimize it
                 HillClimb(CurrentSchedule, NeighborhoodOperator, FitnessFunction);
@@ -96,7 +97,7 @@ namespace SimulationTools
 
         public static void WriteScheduleListToFile(List<Schedule> ListToWrite, int Nruns, string HeuristicFunctionName)
         {
-            string FileName = String.Format("MLSSCheds_For_{0}_{1}_Top_{3}{4}.txt",
+            string FileName = String.Format("MLSSCheds_For_{0}_{2}_Top_{3}{4}.txt",
                     ListToWrite[0].Problem.Description,
                     ListToWrite[0].AssignmentDescription,
                     Nruns,
@@ -129,7 +130,7 @@ namespace SimulationTools
             }
         }
 
-        public static List<Schedule> ReadMLSSchedsFor(ProblemInstance PI, string AH, int Nruns, int NBest, string HF)
+        public static List<Schedule> ReadMLSSchedsFor(ProblemInstance PI, string AH, int Nruns, int NBest, string HF, bool CheckCompatibility)
         {
             // check if file exists:
             string FileName = String.Format("MLSSCheds_For_{0}_{1}_Top_{3}{4}.txt",
@@ -143,11 +144,14 @@ namespace SimulationTools
             {
                 //check Params:
                 string[] Params = rf.ReadLine().Split();
-                if (Params[0] == PI.Description &&
+                if (!CheckCompatibility) { Console.WriteLine("Warning... File compatibility not checked on loading MLS Schedule"); }
+                if (!CheckCompatibility ||
+                    (Params[0] == PI.Description &&
                     Params[1] == (AH + "MLS" + Nruns) &&
                     int.Parse(Params[2]) == Nruns &&
                     int.Parse(Params[3]) == NBest &&
                     Params[4] == HF)
+                    )
                 {
                     //Loaded correct file
                     int CurrentMachineID;
@@ -168,22 +172,24 @@ namespace SimulationTools
                         CurrentSchedule.AssignmentDescription = AH;
                         CurrentSchedule.CalcESS();
                         CurrentSchedule.SetESS();
+                        CurrentSchedule.EstimateCmax();
                         CurrentSchedule.CalcRMs();
                         MLSScheduleList.Add(CurrentSchedule);
+                        Console.Write(".");
                     }
 
                     return MLSScheduleList;
                 }
                 else
                 {
-                    Console.WriteLine("ERROR: File Parameters do not match file name for file:");
-                    Console.WriteLine(Params[0] == PI.Description);
-                    Console.WriteLine(Params[1] == (AH+"MLS"+Nruns));
-                    Console.WriteLine(int.Parse(Params[2]) == Nruns);
-                    Console.WriteLine(int.Parse(Params[3]) == NBest);
-                    Console.WriteLine(Params[4] == HF);
-                    Console.WriteLine(path);
-                    throw new Exception("File Paramaters do not match file name!");
+                        Console.WriteLine("ERROR: File Parameters do not match file name for file:");
+                        Console.WriteLine(Params[0] == PI.Description);
+                        Console.WriteLine("{0} == {1}, {2}", Params[1], (AH + "MLS" + Nruns), Params[1] == (AH + "MLS" + Nruns));
+                        Console.WriteLine(int.Parse(Params[2]) == Nruns);
+                        Console.WriteLine(int.Parse(Params[3]) == NBest);
+                        Console.WriteLine(Params[4] == HF);
+                        Console.WriteLine(path);
+                        throw new Exception("File Paramaters do not match file name!");
                 }
             }
 

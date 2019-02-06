@@ -24,6 +24,11 @@ namespace SimulationTools
             return RM(Unweighted, FreeSlackOf, Upperbound, S, fraction);
         }
 
+        public static double SowUFS(Schedule S, double fraction)
+        {
+            return RM(NSucc, FreeSlackOf, Upperbound, S, fraction);
+        }
+
         public static double SowFS(Schedule S)
         {
             return RM(NSucc, FreeSlackOf, Unmodified, S, 0);
@@ -49,21 +54,30 @@ namespace SimulationTools
             return RM(NSucc, TotalSlackOf, Unmodified, S, 0);
         }
 
+        public static double SowUTS(Schedule S, double fraction)
+        {
+            return RM(NSucc, TotalSlackOf, Upperbound, S, fraction);
+        }
+
         public static double SoSDR(Schedule S)
         {
             return RM(Unweighted, SDROf, Unmodified, S, 0);
         }
 
-        public static double NormalBasedEstimatedCmax(Schedule Sched, double VariationAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
+        public static Distribution NormalBasedEstimatedCmax(Schedule Sched, double VariationAssumption) // As actual Distr. of jobs not known, assume they are normal with StdDev = StdDevAssumption * MeanProcTime
         {            
-            Console.WriteLine("Comparing Normalbased Estimated Completion times");
+            //Console.WriteLine("Comparing Normalbased Estimated Completion times");
             var C = new Distribution[Sched.PrecedenceDAG.N]; //all starttimes as distributions (Mean,Var) pairs. S_j^k = S[j,k]
             Sched.ForeachJobInPrecOrderDo(J => EstimateCompletionTimeDistribution(J, Sched, C,VariationAssumption));
             // completion time of all jobs known, now for each machine, take the maximum of the completion times of the last jobs:
             Distribution Cmax = new ZeroDistribution();
             foreach (Machine M in Sched.Machines)
             {
-                Cmax = DistributionFunctions.Maximum(Cmax, C[M.LastJob().ID],true);
+                if (M.LastJob() != null)
+                {
+                    Cmax = DistributionFunctions.Maximum(Cmax, C[M.LastJob().ID], true);
+                }
+                //else nothing: empty machines do not contribute to potential delay.
             }
 
             /*
@@ -80,7 +94,34 @@ namespace SimulationTools
             }
             Console.WriteLine("E(Cmax) = {0}", Cmax);
             */
-            return Cmax.Mean;
+            if (Cmax.Mean < 0.01)
+            {
+                Console.WriteLine("WARNING, very small MAKESPAN: {0}",Cmax.Mean);
+            }
+            if (Cmax.Mean < Sched.DeterministicCmax - 0.1)
+            {
+                Console.Write("WARNING: CMax.Mean too small fired in NormalBasedEstimatedCmax.. recalculating and setting deterministic ESS...");
+                Sched.CalcESS();
+                Sched.SetESS();
+                Sched.EstimateCmax();
+                if (Cmax.Mean < Sched.DeterministicCmax - 0.1)
+                {
+                    Console.WriteLine("ERROR: CMax.Mean too small. Cmax.Mean = {0}, DetCmax = {1}", Cmax.Mean, Sched.DeterministicCmax);
+                    Sched.ForeachJobInPrecOrderDo(J => Console.WriteLine("S{0,-2} = {1,-3}, P{0,-2} = {2,-3}, C{0,-2}={3,-3}, C[{0,-2}] = {4,-3}.",
+                                                                            J.ID,
+                                                                            Sched.GetStartTimeOfJob(J),
+                                                                            J.MeanProcessingTime,
+                                                                            Sched.GetStartTimeOfJob(J) + J.MeanProcessingTime,
+                                                                            C[J.ID].Mean));
+                    throw new Exception("Cmax.Mean too small");
+                }
+                else
+                {
+                    Console.WriteLine("... RESOLVED. Hope this does not cause other bugs.");
+                }
+               
+            }
+            return Cmax;
         }
 
 
@@ -236,7 +277,7 @@ namespace SimulationTools
             if (Sched.GetMachinePredecessor(J) == null)
             {
                 C[J.ID] = new ZeroDistribution(); // processing time at end of function
-                Console.WriteLine("Setting C[{0},{1}] = N(0,0)", J.ID, 0);
+                //Console.WriteLine("Setting C[{0},{1}] = N(0,0)", J.ID, 0);
             }
             else // CASE 1
             {
@@ -281,9 +322,12 @@ namespace SimulationTools
                     }
                 }
             }
+            //compare to release date:
+            C[J.ID] = DistributionFunctions.Maximum(C[J.ID], new ConstantAsDistribution(J.EarliestReleaseDate),true);
             //now C[J.ID] is the approximated maximum starttime of J, add the processing time info of J to estimate the completion time:
             C[J.ID] = DistributionFunctions.NormalAddition(C[J.ID], new Distribution(J.MeanProcessingTime, StandardDeviationAssumption * J.MeanProcessingTime));
         }
+
 
         private static Distribution GetStartTimeDistribution(Job J, Schedule Sched, Distribution[,] S)
         {
@@ -334,12 +378,13 @@ namespace SimulationTools
         }
 
 // weights:
-private static double Unweighted(Job j, Schedule S)
+
+        private static double Unweighted(Job j, Schedule S)
         {
             return 1;
         }
 
-        private static double NSucc(Job j, Schedule S)
+        public static double NSucc(Job j, Schedule S)
         {
             double weight = j.Successors.Count;
             if (!j.Successors.Contains(S.GetMachineSuccessor(j)))

@@ -158,10 +158,10 @@ namespace SimulationTools
                     t2 = Phi((Y.Mean - X.Mean) / _theta);
                     t3 = StandardNormalPDF((X.Mean - Y.Mean) / _theta);
                     Z.Mean = X.Mean * t1 + Y.Mean * t2 + _theta * t3;
-                    double EX2 = (X.Variation + X.Mean * X.Mean) * t1 +
+                    double EZ2 = (X.Variation + X.Mean * X.Mean) * t1 +
                                  (Y.Variation + Y.Mean * Y.Mean) * t2 +
                                  (X.Mean + Y.Mean) * _theta * t3;
-                    Z.Variation = EX2 - Z.Mean * Z.Mean;
+                    Z.Variation = EZ2 - Z.Mean * Z.Mean;
                 }
             }
             else

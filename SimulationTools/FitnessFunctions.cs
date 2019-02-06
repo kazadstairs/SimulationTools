@@ -18,6 +18,11 @@ namespace SimulationTools
             return - S.EstimateCmax();
         }
 
+        public static double NormalApproxCmax(Schedule S)
+        {
+            return -RobustnessMeasures.NormalBasedEstimatedCmax(S, 0.3).Mean;
+        }
+
       
         
     }
